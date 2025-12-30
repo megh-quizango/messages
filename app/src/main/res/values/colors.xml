@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 Colors -->
+    <color name="blue_primary">#2196F3</color>
+    <color name="blue_primary_container">#E3F2FD</color>
+    <color name="blue_on_primary_container">#1565C0</color>
+    
+    <!-- App Colors - Matching mockup requirements -->
+    <color name="background_dark">#0F0E15</color>
+    <color name="container_color">#1C2025</color>
+    <color name="icon_container_color">#121418</color>
+    
+    <!-- Additional UI Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B3B3B3</color>
+    
+    <!-- Standard Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="gray_light">#F5F5F5</color>
+    <color name="gray_dark">#424242</color>
+    
+    <!-- Replacement colors for deprecated Holo colors -->
+    <color name="holo_yellow_dark">#FFC107</color>
+    <color name="holo_pink_dark">#E91E63</color>
+    
+    <!-- Language Screen Colors -->
+    <color name="language_container_bg">#E6F0FF</color>
+    <color name="button_primary">#0C56CF</color>
+    
+    <!-- Bottom Navigation Colors -->
+    <color name="bottom_nav_selected">#FFFFFF</color>
+    <color name="bottom_nav_unselected">#9696A3</color>
+    <color name="bottom_nav_background">#0C56CF</color>
+</resources>

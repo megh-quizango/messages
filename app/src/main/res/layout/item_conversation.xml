@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imageContact"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/contact"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textContactName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:text="Contact Name"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end"
+        app:layout_constraintEnd_toStartOf="@+id/textTime"
+        app:layout_constraintStart_toEndOf="@+id/imageContact"
+        app:layout_constraintTop_toTopOf="@+id/imageContact" />
+
+    <TextView
+        android:id="@+id/textTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2 Min"
+        android:textColor="@color/gray_dark"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textContactName" />
+
+    <TextView
+        android:id="@+id/textSnippet"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="Message snippet..."
+        android:textColor="@color/gray_dark"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="@+id/textUnreadDot"
+        app:layout_constraintStart_toStartOf="@+id/textContactName"
+        app:layout_constraintTop_toBottomOf="@+id/textContactName" />
+
+    <View
+        android:id="@+id/textUnreadDot"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="@drawable/bg_unread_dot"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textSnippet"
+        app:layout_constraintBottom_toBottomOf="@+id/textSnippet" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonStartChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Start Chat"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:backgroundTint="#0C56CF"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:icon="@android:drawable/ic_menu_send"
+        app:iconTint="@color/white"
+        app:iconGravity="textStart"
+        app:iconPadding="4dp"
+        app:cornerRadius="50dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/textContactName"
+        app:layout_constraintTop_toBottomOf="@+id/textSnippet" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

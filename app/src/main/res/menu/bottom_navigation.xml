@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_messages"
+        android:icon="@drawable/messages_vector"
+        android:title="Messages" />
+
+    <item
+        android:id="@+id/nav_contacts"
+        android:icon="@drawable/contacts_vector"
+        android:title="Contacts" />
+
+    <item
+        android:id="@+id/nav_personalize"
+        android:icon="@drawable/personalize_vector"
+        android:title="Personalize" />
+
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/settings_vector"
+        android:title="Settings" />
+
+</menu>

@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Search Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_search_pill"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_search"
+                android:tint="#9696A3" />
+
+            <EditText
+                android:id="@+id/editTextSearch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:background="@android:color/transparent"
+                android:hint="Search Messages"
+                android:textColorHint="#9696A3"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:inputType="text"
+                android:imeOptions="actionSearch" />
+
+        </LinearLayout>
+
+        <!-- Category Tabs -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginBottom="8dp">
+
+            <LinearLayout
+                android:id="@+id/layoutTabs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <TextView
+                    android:id="@+id/tabAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:text="All"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_tab_selected" />
+
+                <TextView
+                    android:id="@+id/tabPersonal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:text="Personal"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    android:background="@drawable/bg_tab_unselected" />
+
+                <TextView
+                    android:id="@+id/tabOTPs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:text="OTPs"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    android:background="@drawable/bg_tab_unselected" />
+
+                <TextView
+                    android:id="@+id/tabOffers"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:text="Offers"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    android:background="@drawable/bg_tab_unselected" />
+
+                <TextView
+                    android:id="@+id/tabTransactions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:text="Transactions"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    android:background="@drawable/bg_tab_unselected" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <!-- Conversations List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewConversations"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:clipToPadding="false"
+            android:paddingBottom="112dp" />
+
+    </LinearLayout>
+
+
+    <!-- Start Chat FAB -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabStartChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="120dp"
+        android:text="Start Chat"
+        android:textColor="@color/white"
+        android:backgroundTint="#0C56CF"
+        app:icon="@drawable/start"
+        app:iconTint="@color/white"
+        app:cornerRadius="80dp" />
+
+    <!-- Bottom Navigation -->
+    <LinearLayout
+        android:id="@+id/bottomContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
+
+        <!-- Bottom Navigation -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="#0C56CF"
+            app:itemIconSize="24dp"
+            app:itemHorizontalTranslationEnabled="false"
+            app:itemIconTint="@color/bottom_nav_item_selector"
+            app:itemTextColor="@color/bottom_nav_item_selector"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/bottom_navigation" />
+
+        <!-- Banner Ad -->
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adViewBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:adSize="BANNER"
+            app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+
+    </LinearLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

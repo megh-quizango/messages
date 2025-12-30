@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Messages.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="BottomNavStyle" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemHorizontalTranslationEnabled">false</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">4dp</item>
+    </style>
+    <style name="BottomNavText">
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineSpacingExtra">0dp</item>
+    </style>
+
+</resources>
+
