@@ -1,13 +1,20 @@
 package com.quizangomedia.messages.ui.main
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
@@ -29,6 +36,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: MainViewModel
     private lateinit var adapter: ConversationAdapter
     private var selectedTab: TextView? = null
+    private var isSettingSelectedItem = false
+    
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission granted, load conversations
+            viewModel.loadConversations("All")
+        } else {
+            // Permission denied
+            Toast.makeText(
+                this,
+                "SMS permission is required to display messages",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,22 +60,51 @@ class MainActivity : AppCompatActivity() {
 //        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.bottomNavigationView.post {
-            val menuView = binding.bottomNavigationView.getChildAt(0)
-            menuView.setPadding(0, 0, 0, 0)
-            menuView.minimumHeight = 0
+        // Remove extra padding from internal menu container while preserving outer padding
+        binding.bottomNavigationView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                binding.bottomNavigationView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                
+                // Preserve the padding we set in XML (8dp top and bottom) for breathing room
+                val topPadding = binding.bottomNavigationView.paddingTop
+                val bottomPadding = binding.bottomNavigationView.paddingBottom
+                binding.bottomNavigationView.setPadding(0, topPadding, 0, bottomPadding)
+                binding.bottomNavigationView.minimumHeight = 0
+                
+                // Remove padding from the internal menu container (usually a LinearLayout)
+                val menuView = binding.bottomNavigationView.getChildAt(0) as? ViewGroup
+                menuView?.let {
+                    it.setPadding(0, 0, 0, 0)
+                    it.minimumHeight = 0
+                    
+                    // Remove padding from individual menu item views
+                    for (i in 0 until it.childCount) {
+                        val child = it.getChildAt(i)
+                        child?.let { item ->
+                            if (item is ViewGroup) {
+                                // Keep horizontal padding but remove vertical
+                                item.setPadding(item.paddingLeft, 0, item.paddingRight, 0)
+                                item.minimumHeight = 0
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+
+
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            // Add bottom padding to root so ad view stays above system navigation
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
         }
-
-
-
-//        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-//            insets
-//        }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomContainer) { view, insets ->
-            val bottomInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
-            view.setPadding(0, 0, 0, bottomInset)
+        
+        // Bottom navigation should not have extra padding from window insets
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigationView) { view, insets ->
+            // Don't add padding - we want it to be exactly the size of its content
             insets
         }
 
@@ -65,6 +118,30 @@ class MainActivity : AppCompatActivity() {
         setupBottomNavigation()
         setupBannerAd()
         observeConversations()
+        
+        // Request SMS permission and load conversations
+        checkSmsPermissionAndLoad()
+        
+        // Set Messages as selected initially
+        binding.bottomNavigationView.post {
+            setSelectedNavigationItem(R.id.nav_messages)
+        }
+    }
+    
+    private fun checkSmsPermissionAndLoad() {
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_SMS
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // Permission already granted, load conversations
+                viewModel.loadConversations("All")
+            }
+            else -> {
+                // Request permission
+                requestPermissionLauncher.launch(Manifest.permission.READ_SMS)
+            }
+        }
     }
     
     private fun setupTabs() {
@@ -121,6 +198,11 @@ class MainActivity : AppCompatActivity() {
     
     private fun setupBottomNavigation() {
         binding.bottomNavigationView.setOnItemSelectedListener { item ->
+            // Ignore if we're programmatically setting the selected item
+            if (isSettingSelectedItem) {
+                return@setOnItemSelectedListener true
+            }
+            
             when (item.itemId) {
                 R.id.nav_messages -> {
                     // Already on Messages screen
@@ -141,9 +223,22 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
-        
-        // Set Messages as selected
-        binding.bottomNavigationView.selectedItemId = R.id.nav_messages
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Ensure Messages tab is selected when activity is visible
+        setSelectedNavigationItem(R.id.nav_messages)
+    }
+    
+    private fun setSelectedNavigationItem(itemId: Int) {
+        if (binding.bottomNavigationView.selectedItemId != itemId) {
+            isSettingSelectedItem = true
+            binding.bottomNavigationView.selectedItemId = itemId
+            binding.bottomNavigationView.post {
+                isSettingSelectedItem = false
+            }
+        }
     }
     
     private fun setupBannerAd() {
@@ -155,7 +250,5 @@ class MainActivity : AppCompatActivity() {
         viewModel.conversations.observe(this) { conversations ->
             adapter.submitList(conversations)
         }
-        
-        viewModel.loadConversations("All")
     }
 }

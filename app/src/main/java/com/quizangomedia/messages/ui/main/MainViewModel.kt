@@ -54,6 +54,7 @@ class MainViewModel : ViewModel() {
             "OTPs" -> "${Telephony.Sms.BODY} LIKE ? OR ${Telephony.Sms.BODY} LIKE ? OR ${Telephony.Sms.BODY} LIKE ?"
             "Offers" -> "${Telephony.Sms.BODY} LIKE ? OR ${Telephony.Sms.BODY} LIKE ?"
             "Transactions" -> "${Telephony.Sms.BODY} LIKE ? OR ${Telephony.Sms.BODY} LIKE ?"
+            "Personal" -> "(${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ?)"
             else -> null
         }
         
@@ -61,6 +62,7 @@ class MainViewModel : ViewModel() {
             "OTPs" -> arrayOf("%OTP%", "%code%", "%verification%")
             "Offers" -> arrayOf("%offer%", "%discount%")
             "Transactions" -> arrayOf("%transaction%", "%payment%")
+            "Personal" -> arrayOf("%OTP%", "%code%", "%verification%", "%offer%", "%discount%", "%transaction%", "%payment%")
             else -> null
         }
         

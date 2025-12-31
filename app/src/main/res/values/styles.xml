@@ -4,7 +4,8 @@
     <style name="BottomNavStyle" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="itemHorizontalTranslationEnabled">false</item>
         <item name="android:paddingTop">0dp</item>
-        <item name="android:paddingBottom">4dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:minHeight">0dp</item>
     </style>
     <style name="BottomNavText">
         <item name="android:textSize">12sp</item>

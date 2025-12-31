@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Switch
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.RecyclerView
 import com.quizangomedia.messages.R
 
@@ -15,73 +17,105 @@ class SettingsAdapter(
 ) : RecyclerView.Adapter<SettingsAdapter.ViewHolder>() {
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == 0 || items.subList(0, position).sumOf { it.options.size + 1 } == position) {
-            TYPE_HEADER
-        } else {
-            TYPE_OPTION
-        }
+        return TYPE_SECTION
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val layoutId = if (viewType == TYPE_HEADER) {
-            R.layout.item_settings_header
-        } else {
-            R.layout.item_settings_option
-        }
-        val view = LayoutInflater.from(parent.context).inflate(layoutId, parent, false)
-        return ViewHolder(view, viewType)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_settings_section, parent, false)
+        return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        var currentPosition = position
-        var itemIndex = 0
-        
-        for (item in items) {
-            if (currentPosition == 0) {
-                holder.bindHeader(item.title)
-                return
-            }
-            currentPosition--
-            
-            if (currentPosition < item.options.size) {
-                holder.bindOption(item.options[currentPosition], onOptionClick)
-                return
-            }
-            currentPosition -= item.options.size
-        }
+        val item = items[position]
+        holder.bindSection(item, onOptionClick)
     }
 
     override fun getItemCount(): Int {
-        return items.size + items.sumOf { it.options.size }
+        return items.size
     }
 
-    class ViewHolder(itemView: View, viewType: Int) : RecyclerView.ViewHolder(itemView) {
-        private val textHeader: TextView? = itemView.findViewById(R.id.textHeader)
-        private val textTitle: TextView? = itemView.findViewById(R.id.textTitle)
-        private val imageIcon: ImageView? = itemView.findViewById(R.id.imageIcon)
-        private val switchToggle: Switch? = itemView.findViewById(R.id.switchToggle)
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val textHeader: TextView = itemView.findViewById(R.id.textHeader)
+        private val optionsContainer: ViewGroup = itemView.findViewById(R.id.optionsContainer)
 
-        fun bindHeader(title: String) {
-            textHeader?.text = title
-        }
-
-        fun bindOption(option: SettingsOption, onOptionClick: (SettingsOption) -> Unit) {
-            textTitle?.text = option.title
-            imageIcon?.setImageResource(option.iconRes ?: 0)
-            imageIcon?.visibility = if (option.iconRes != null) View.VISIBLE else View.GONE
+        fun bindSection(item: SettingsItem, onOptionClick: (SettingsOption) -> Unit) {
+            textHeader.text = item.title
             
-            switchToggle?.visibility = if (option.switchState != null) View.VISIBLE else View.GONE
-            switchToggle?.isChecked = option.switchState ?: false
+            // Clear existing views
+            optionsContainer.removeAllViews()
             
-            itemView.setOnClickListener {
-                onOptionClick(option)
+            // Add each option to the container
+            item.options.forEach { option ->
+                val optionView = LayoutInflater.from(itemView.context)
+                    .inflate(R.layout.item_settings_option, optionsContainer, false)
+                
+                val textTitle: TextView = optionView.findViewById(R.id.textTitle)
+                val imageIcon: ImageView = optionView.findViewById(R.id.imageIcon)
+                val switchToggle: Switch = optionView.findViewById(R.id.switchToggle)
+                
+                textTitle.text = option.title
+                
+                // Add view to container first so it can be measured
+                optionsContainer.addView(optionView)
+                
+                // Now set up icon and constraints using ConstraintSet for proper updates
+                val constraintLayout = optionView as ConstraintLayout
+                val constraintSet = ConstraintSet()
+                constraintSet.clone(constraintLayout)
+                
+                // Convert 16dp to pixels for margin
+                val margin16dp = (16 * itemView.context.resources.displayMetrics.density).toInt()
+                
+                if (option.iconRes != null) {
+                    // Set icon resource first
+                    imageIcon.setImageResource(option.iconRes)
+                    
+                    // Ensure icon constraints are set
+                    constraintSet.connect(R.id.imageIcon, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 0)
+                    constraintSet.connect(R.id.imageIcon, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP, 0)
+                    constraintSet.connect(R.id.imageIcon, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
+                    
+                    // Constrain text to start after icon with explicit margin for spacing
+                    constraintSet.clear(R.id.textTitle, ConstraintSet.START)
+                    constraintSet.connect(R.id.textTitle, ConstraintSet.START, R.id.imageIcon, ConstraintSet.END, margin16dp)
+                    constraintSet.applyTo(constraintLayout)
+                    
+                    // Make icon visible AFTER constraints are applied
+                    imageIcon.visibility = View.VISIBLE
+                    
+                    // Force layout recalculation
+                    constraintLayout.requestLayout()
+                } else {
+                    // When icon is gone, constrain text to parent start
+                    imageIcon.visibility = View.GONE
+                    constraintSet.clear(R.id.textTitle, ConstraintSet.START)
+                    constraintSet.connect(R.id.textTitle, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 0)
+                    constraintSet.applyTo(constraintLayout)
+                    constraintLayout.requestLayout()
+                }
+                
+                switchToggle.visibility = if (option.switchState != null) View.VISIBLE else View.GONE
+                if (option.switchState != null) {
+                    switchToggle.isChecked = option.switchState
+                    switchToggle.setOnCheckedChangeListener { _, isChecked ->
+                        // Handle toggle state change
+                        // TODO: Save preference
+                    }
+                }
+                
+                optionView.setOnClickListener {
+                    if (option.switchState == null) {
+                        onOptionClick(option)
+                    } else {
+                        // Toggle the switch when clicking the row
+                        switchToggle.toggle()
+                    }
+                }
             }
         }
     }
 
     companion object {
-        private const val TYPE_HEADER = 0
-        private const val TYPE_OPTION = 1
+        private const val TYPE_SECTION = 0
     }
 }
-
