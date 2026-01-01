@@ -1,11 +1,12 @@
 package com.quizangomedia.messages.ui.private
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.quizangomedia.messages.R
+import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.databinding.ActivityPrivateConversationsBinding
 
 class PrivateConversationsActivity : AppCompatActivity() {
@@ -25,13 +26,35 @@ class PrivateConversationsActivity : AppCompatActivity() {
             insets
         }
         
-        setupToolbar()
+        setupBackButton()
+        setupIcons()
+        setupBannerAd()
+        showEmptyState()
     }
-    
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
+
+    private fun setupBackButton() {
+        binding.buttonBack.setOnClickListener {
             finish()
         }
     }
-}
 
+    private fun setupIcons() {
+        binding.imageAdd.setOnClickListener {
+            // TODO: Implement add private conversation
+        }
+
+        binding.imageSettings.setOnClickListener {
+            // TODO: Implement settings
+        }
+    }
+
+    private fun setupBannerAd() {
+        val adRequest = AdRequest.Builder().build()
+        binding.adViewBanner.loadAd(adRequest)
+    }
+
+    private fun showEmptyState() {
+        binding.layoutEmpty.visibility = View.VISIBLE
+        binding.recyclerViewConversations.visibility = View.GONE
+    }
+}

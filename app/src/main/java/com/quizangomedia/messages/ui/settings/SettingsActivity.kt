@@ -101,7 +101,7 @@ class SettingsActivity : AppCompatActivity() {
             )),
             SettingsItem("Go To", listOf(
                 SettingsOption("Manage Apps", R.drawable.manage, null, false) { startActivity(Intent(this, ManageAppsActivity::class.java)) },
-                SettingsOption("Private Conversations", R.drawable.lock, null, false) { startActivity(Intent(this, PrivateConversationsActivity::class.java)) },
+                SettingsOption("Private Conversations", R.drawable.lock, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.pin.PinActivity::class.java)) },
                 SettingsOption("Spam & Block", R.drawable.spam, null, false) { startActivity(Intent(this, SpamBlockActivity::class.java)) },
                 SettingsOption("Archive", R.drawable.archive, null, false),
                 SettingsOption("Recycle Bin", null, null, false),

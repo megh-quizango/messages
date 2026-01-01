@@ -1,85 +1,169 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
+    <!-- ================= BACK BUTTON ================= -->
+
+    <ImageButton
+        android:id="@+id/buttonBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_back_button"
+        android:src="@drawable/ic_arrow_back"
+        android:contentDescription="Back"
+        android:scaleType="centerInside"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- ================= HEADING ================= -->
+
+    <TextView
+        android:id="@+id/textHeading"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:theme="@style/Theme.Messages.AppBarOverlay">
+        android:layout_marginStart="16dp"
+        android:text="Manage Apps"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="@id/buttonBack"
+        app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+        app:layout_constraintStart_toEndOf="@id/buttonBack"/>
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:navigationIcon="@drawable/ic_arrow_back"
-            app:title="Manage Apps"
-            app:titleTextColor="@color/white" />
+    <!-- ================= RAM PERCENTAGE ================= -->
 
-    </com.google.android.material.appbar.AppBarLayout>
+    <TextView
+        android:id="@+id/textRamPercentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="44%"
+        android:textColor="#0C56CF"
+        android:textSize="48sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/buttonBack"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    <!-- ================= PROGRESS BAR ================= -->
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp"
-            android:gravity="center_horizontal">
+    <ProgressBar
+        android:id="@+id/progressBarRam"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="16dp"
+        android:progressDrawable="@drawable/bg_progress_bar"
+        android:max="100"
+        android:progress="44"
+        android:minHeight="12dp"
+        android:maxHeight="12dp"
+        app:layout_constraintTop_toBottomOf="@id/textRamPercentage"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Storage Indicator -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="44%"
-                android:textColor="@color/blue_primary"
-                android:textSize="48sp"
-                android:textStyle="bold" />
+    <!-- ================= AVAILABLE SPACE LABEL ================= -->
 
-            <ProgressBar
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:progress="44"
-                android:max="100"
-                android:progressTint="@color/blue_primary" />
+    <TextView
+        android:id="@+id/textAvailableSpace"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Available Space"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/progressBarRam"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Available Space"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
+    <!-- ================= LOADING INDICATOR ================= -->
 
-            <!-- Phone Icon -->
-            <ImageView
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:layout_marginTop="32dp"
-                android:src="@drawable/phone"
-                android:contentDescription="Phone"
-                app:tint="@color/blue_primary" />
+    <ImageView
+        android:id="@+id/imageLoading"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_marginTop="64dp"
+        android:src="@drawable/loading"
+        android:contentDescription="Loading"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/textAvailableSpace"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Manage Button -->
-            <com.google.android.material.button.MaterialButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="Manage"
-                android:textSize="18sp"
-                android:paddingHorizontal="48dp" />
+    <!-- ================= LOADING PERCENTAGE TEXT ================= -->
 
-        </LinearLayout>
+    <TextView
+        android:id="@+id/textLoadingPercentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0%"
+        android:textColor="#0C56CF"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintTop_toTopOf="@id/imageLoading"
+        app:layout_constraintBottom_toBottomOf="@id/imageLoading"
+        app:layout_constraintStart_toStartOf="@id/imageLoading"
+        app:layout_constraintEnd_toEndOf="@id/imageLoading"/>
 
-    </androidx.core.widget.NestedScrollView>
+    <!-- ================= PHONE IMAGE ================= -->
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <ImageView
+        android:id="@+id/imagePhone"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="64dp"
+        android:layout_marginLeft="6dp"
+        android:src="@drawable/phone"
+        android:contentDescription="Phone"
+        android:visibility="gone"
+        android:scaleType="fitCenter"
+        app:layout_constraintTop_toBottomOf="@id/textAvailableSpace"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"/>
 
+    <!-- ================= MANAGE BUTTON ================= -->
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonManage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="MANAGE"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:backgroundTint="#0C56CF"
+        android:paddingStart="48dp"
+        android:paddingEnd="48dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        app:cornerRadius="50dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/imagePhone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ================= BANNER AD ================= -->
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adViewBanner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

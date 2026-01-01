@@ -20,9 +20,13 @@ class MainViewModel : ViewModel() {
     private val _conversations = MutableLiveData<List<Conversation>>()
     val conversations: LiveData<List<Conversation>> = _conversations
     
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+    
     fun loadConversations(category: String = "All") {
         viewModelScope.launch {
             try {
+                _isLoading.postValue(true)
                 val conversations = withContext(Dispatchers.IO) {
                     loadConversationsFromDevice(category)
                 }
@@ -30,6 +34,8 @@ class MainViewModel : ViewModel() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 _conversations.postValue(emptyList())
+            } finally {
+                _isLoading.postValue(false)
             }
         }
     }

@@ -250,5 +250,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.conversations.observe(this) { conversations ->
             adapter.submitList(conversations)
         }
+        
+        viewModel.isLoading.observe(this) { isLoading ->
+            binding.progressIndicator.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.recyclerViewConversations.visibility = if (isLoading) View.GONE else View.VISIBLE
+        }
     }
 }

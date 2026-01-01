@@ -25,7 +25,7 @@ class SecurityQuestionAdapter(
     override fun getItemCount() = questions.size
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val textQuestion: TextView = itemView.findViewById(R.id.textQuestion)
+        private val textQuestion: TextView = itemView as TextView
 
         fun bind(question: String) {
             textQuestion.text = question

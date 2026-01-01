@@ -1,216 +1,273 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
+    <!-- ================= BACK BUTTON ================= -->
+
+    <ImageButton
+        android:id="@+id/buttonBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_back_button"
+        android:src="@drawable/ic_arrow_back"
+        android:contentDescription="Back"
+        android:scaleType="centerInside"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- ================= HEADING ================= -->
+
+    <TextView
+        android:id="@+id/textHeading"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:theme="@style/Theme.Messages.AppBarOverlay">
+        android:layout_marginStart="16dp"
+        android:text="Enter Pin"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="@id/buttonBack"
+        app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+        app:layout_constraintStart_toEndOf="@id/buttonBack"/>
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:navigationIcon="@drawable/ic_arrow_back"
-            app:title="Enter Pin"
-            app:titleTextColor="@color/white" />
+    <!-- ================= LOCK ICON ================= -->
 
-    </com.google.android.material.appbar.AppBarLayout>
+    <ImageView
+        android:id="@+id/imageLock"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="64dp"
+        android:src="@drawable/lock"
+        android:contentDescription="Lock"
+        app:layout_constraintTop_toBottomOf="@id/buttonBack"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    <!-- ================= PIN TEXT ================= -->
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="32dp">
+    <TextView
+        android:id="@+id/textPinInstruction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Create your PIN"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/imageLock"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Padlock Icon -->
-            <ImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginTop="32dp"
-                android:src="@drawable/lock"
-                android:contentDescription="Security"
-                app:tint="@color/blue_primary" />
+    <!-- ================= PIN DOTS ================= -->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Create Your Pin"
-                android:textColor="@color/black"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+    <LinearLayout
+        android:id="@+id/layoutPinDots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/textPinInstruction"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- PIN Dots -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:orientation="horizontal"
-                android:gravity="center">
+        <View
+            android:id="@+id/dot1"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/bg_pin_dot"
+            android:alpha="0.3"/>
 
-                <View
-                    android:id="@+id/dot1"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_margin="8dp"
-                    android:background="@drawable/bg_pin_dot"
-                    android:alpha="0.3" />
+        <View
+            android:id="@+id/dot2"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/bg_pin_dot"
+            android:alpha="0.3"/>
 
-                <View
-                    android:id="@+id/dot2"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_margin="8dp"
-                    android:background="@drawable/bg_pin_dot"
-                    android:alpha="0.3" />
+        <View
+            android:id="@+id/dot3"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/bg_pin_dot"
+            android:alpha="0.3"/>
 
-                <View
-                    android:id="@+id/dot3"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_margin="8dp"
-                    android:background="@drawable/bg_pin_dot"
-                    android:alpha="0.3" />
+        <View
+            android:id="@+id/dot4"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/bg_pin_dot"
+            android:alpha="0.3"/>
 
-                <View
-                    android:id="@+id/dot4"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_margin="8dp"
-                    android:background="@drawable/bg_pin_dot"
-                    android:alpha="0.3" />
+    </LinearLayout>
 
-            </LinearLayout>
+    <!-- ================= KEYPAD ================= -->
 
-            <!-- Keypad -->
-            <GridLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="48dp"
-                android:columnCount="3"
-                android:rowCount="4"
-                android:alignmentMode="alignMargins">
+    <GridLayout
+        android:id="@+id/gridKeypad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:layout_marginBottom="16dp"
+        android:columnCount="3"
+        android:rowCount="4"
+        android:alignmentMode="alignMargins"
+        app:layout_constraintTop_toBottomOf="@id/layoutPinDots"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/adViewBanner">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button1"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="1"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button1"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="1"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button2"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="2"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button2"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="2"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button3"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="3"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button3"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="3"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button4"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="4"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button4"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="4"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button5"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="5"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button5"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="5"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button6"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="6"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button6"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="6"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button7"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="7"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button7"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="7"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button8"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="8"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button8"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="8"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button9"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="9"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button9"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="9"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <View
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp" />
+        <View
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button0"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="0"
-                    android:textSize="24sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button0"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:text="0"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:backgroundTint="#E6F0FF"
+            app:cornerRadius="50dp"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonDelete"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="8dp"
-                    android:text="X"
-                    android:textSize="24sp" />
+        <ImageButton
+            android:id="@+id/buttonDelete"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_delete"
+            android:background="@drawable/bg_keypad_button"
+            android:contentDescription="Delete"
+            android:scaleType="centerInside"
+            android:padding="20dp"
+            app:tint="@color/black"/>
 
-            </GridLayout>
+    </GridLayout>
 
-        </LinearLayout>
+    <!-- ================= BANNER AD ================= -->
 
-    </androidx.core.widget.NestedScrollView>
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adViewBanner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+</androidx.constraintlayout.widget.ConstraintLayout>

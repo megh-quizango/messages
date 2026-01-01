@@ -1,0 +1,140 @@
+package com.quizangomedia.messages.ui.blocking
+
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.view.View
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.ads.AdRequest
+import com.quizangomedia.messages.databinding.ActivityBlockedConversationsBinding
+import com.quizangomedia.messages.ui.blocking.overlay.ConversationSelectionActivity
+import com.quizangomedia.messages.ui.main.MainViewModel
+
+class BlockedConversationsActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityBlockedConversationsBinding
+    private lateinit var viewModel: MainViewModel
+    private lateinit var adapter: BlockedConversationsAdapter
+    private lateinit var sharedPreferences: SharedPreferences
+    private val blockedConversations = mutableSetOf<Long>()
+
+    companion object {
+        private const val PREFS_NAME = "MessagesPrefs"
+        private const val KEY_BLOCKED_CONVERSATIONS = "blocked_conversations"
+        private const val REQUEST_CODE_SELECT_CONVERSATIONS = 2001
+        
+        fun getBlockedConversations(context: Context): Set<Long> {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val blockedSet = prefs.getStringSet(KEY_BLOCKED_CONVERSATIONS, emptySet()) ?: emptySet()
+            return blockedSet.mapNotNull { it.toLongOrNull() }.toSet()
+        }
+        
+        fun saveBlockedConversations(context: Context, threadIds: Set<Long>) {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val stringSet = threadIds.map { it.toString() }.toSet()
+            prefs.edit().putStringSet(KEY_BLOCKED_CONVERSATIONS, stringSet).apply()
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        enableEdgeToEdge()
+        binding = ActivityBlockedConversationsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        
+        // Load blocked conversations from SharedPreferences
+        blockedConversations.addAll(getBlockedConversations(this))
+        
+        setupBackButton()
+        setupAddButton()
+        setupRecyclerView()
+        setupBannerAd()
+        
+        viewModel.loadConversations("All")
+        observeConversations()
+    }
+
+    private fun setupBackButton() {
+        binding.buttonBack.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun setupAddButton() {
+        binding.imageAddBlocked.setOnClickListener {
+            startActivityForResult(
+                Intent(this, ConversationSelectionActivity::class.java),
+                REQUEST_CODE_SELECT_CONVERSATIONS
+            )
+        }
+    }
+
+    private fun setupRecyclerView() {
+        adapter = BlockedConversationsAdapter(
+            onUnblockClick = { threadId ->
+                blockedConversations.remove(threadId)
+                saveBlockedConversations(this, blockedConversations)
+                updateUI()
+            }
+        )
+        binding.recyclerViewBlockedConversations.layoutManager = LinearLayoutManager(this)
+        binding.recyclerViewBlockedConversations.adapter = adapter
+    }
+
+    private fun setupBannerAd() {
+        val adRequest = AdRequest.Builder().build()
+        binding.adViewBanner.loadAd(adRequest)
+    }
+
+    private fun observeConversations() {
+        viewModel.conversations.observe(this) { conversations ->
+            updateUI(conversations)
+        }
+    }
+
+    private fun updateUI(conversations: List<com.quizangomedia.messages.data.model.Conversation>? = null) {
+        val allConversations = conversations ?: viewModel.conversations.value ?: emptyList()
+        val blocked = allConversations.filter { blockedConversations.contains(it.threadId) }
+        if (blocked.isEmpty()) {
+            binding.layoutEmpty.visibility = View.VISIBLE
+            binding.recyclerViewBlockedConversations.visibility = View.GONE
+        } else {
+            binding.layoutEmpty.visibility = View.GONE
+            binding.recyclerViewBlockedConversations.visibility = View.VISIBLE
+            adapter.submitList(blocked)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_SELECT_CONVERSATIONS) {
+            val selectedContacts = data?.getParcelableArrayListExtra<CustomBlockingActivity.BlockedContact>("selected_contacts")
+            selectedContacts?.forEach { contact: CustomBlockingActivity.BlockedContact ->
+                // Find conversation by phone number and add to blocked list
+                viewModel.conversations.value?.firstOrNull { it.address == contact.phoneNumber }?.let {
+                    blockedConversations.add(it.threadId)
+                }
+            }
+            // Save to SharedPreferences
+            saveBlockedConversations(this, blockedConversations)
+            updateUI()
+        }
+    }
+}
+

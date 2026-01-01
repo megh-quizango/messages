@@ -152,6 +152,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- ================= LOADING INDICATOR ================= -->
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressIndicator"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:indicatorColor="#0C56CF"
+        app:trackColor="#E6F0FF"
+        app:layout_constraintTop_toTopOf="@id/recyclerViewConversations"
+        app:layout_constraintBottom_toBottomOf="@id/recyclerViewConversations"
+        app:layout_constraintStart_toStartOf="@id/recyclerViewConversations"
+        app:layout_constraintEnd_toEndOf="@id/recyclerViewConversations"/>
+
     <!-- ================= BOTTOM NAV ================= -->
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

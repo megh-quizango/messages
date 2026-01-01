@@ -125,6 +125,24 @@
             android:exported="false"
             android:theme="@style/Theme.Messages" />
 
+        <!-- BlockedConversationsActivity -->
+        <activity
+            android:name=".ui.blocking.BlockedConversationsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- ConversationSelectionActivity -->
+        <activity
+            android:name=".ui.blocking.overlay.ConversationSelectionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- ContactSelectionActivity -->
+        <activity
+            android:name=".ui.blocking.overlay.ContactSelectionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
         <!-- PrivateConversationsActivity -->
         <activity
             android:name=".ui.private.PrivateConversationsActivity"
@@ -146,6 +164,18 @@
         <!-- ManageAppsActivity -->
         <activity
             android:name=".ui.manageapps.ManageAppsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- ManageAppsDetailActivity -->
+        <activity
+            android:name=".ui.manageapps.ManageAppsDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- ManageAppsCompleteActivity -->
+        <activity
+            android:name=".ui.manageapps.ManageAppsCompleteActivity"
             android:exported="false"
             android:theme="@style/Theme.Messages" />
 

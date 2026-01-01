@@ -6,8 +6,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivitySpamBlockBinding
+import com.quizangomedia.messages.ui.blocking.BlockedConversationsActivity
 import com.quizangomedia.messages.ui.blocking.CustomBlockingActivity
 
 class SpamBlockActivity : AppCompatActivity() {
@@ -27,28 +29,38 @@ class SpamBlockActivity : AppCompatActivity() {
             insets
         }
         
-        setupToolbar()
+        setupBackButton()
         setupOptions()
+        setupBannerAd()
     }
     
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
+    private fun setupBackButton() {
+        binding.buttonBack.setOnClickListener {
             finish()
         }
     }
     
     private fun setupOptions() {
         binding.cardKeywords.setOnClickListener {
-            startActivity(Intent(this, CustomBlockingActivity::class.java))
+            val intent = Intent(this, CustomBlockingActivity::class.java)
+            intent.putExtra("from_numbers", false)
+            startActivity(intent)
         }
         
         binding.cardNumbers.setOnClickListener {
-            startActivity(Intent(this, CustomBlockingActivity::class.java))
+            val intent = Intent(this, CustomBlockingActivity::class.java)
+            intent.putExtra("from_numbers", true)
+            startActivity(intent)
         }
         
         binding.cardMessageBlocked.setOnClickListener {
-            startActivity(Intent(this, CustomBlockingActivity::class.java))
+            startActivity(Intent(this, BlockedConversationsActivity::class.java))
         }
+    }
+    
+    private fun setupBannerAd() {
+        val adRequest = AdRequest.Builder().build()
+        binding.adViewBanner.loadAd(adRequest)
     }
 }
 

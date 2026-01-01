@@ -32,4 +32,8 @@
     <color name="bottom_nav_selected">#FFFFFF</color>
     <color name="bottom_nav_unselected">#9696A3</color>
     <color name="bottom_nav_background">#0C56CF</color>
+    
+    <!-- Custom Blocking Colors -->
+    <color name="primary_blue">#0C56CF</color>
+    <color name="light_blue">#E6F0FF</color>
 </resources>
