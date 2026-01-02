@@ -23,9 +23,13 @@ class LanguageActivity : AppCompatActivity() {
     private lateinit var adapter: LanguageAdapter
     private var selectedLanguage: String = "System Default"
     private var nativeAd: NativeAd? = null
+    private var isFromSettings: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Check if opened from Settings
+        isFromSettings = intent.getBooleanExtra("from_settings", false)
         
         enableEdgeToEdge()
         binding = ActivityLanguageBinding.inflate(layoutInflater)
@@ -70,9 +74,14 @@ class LanguageActivity : AppCompatActivity() {
                 .putBoolean("IS_LANGUAGE_SET", true)
                 .apply()
             
-            // Navigate to Default SMS Activity
-            startActivity(Intent(this, com.quizangomedia.messages.ui.defaultsms.DefaultSmsActivity::class.java))
-            finish()
+            // If opened from Settings, return to Settings
+            if (isFromSettings) {
+                finish()
+            } else {
+                // Navigate to Default SMS Activity (for first-time setup)
+                startActivity(Intent(this, com.quizangomedia.messages.ui.defaultsms.DefaultSmsActivity::class.java))
+                finish()
+            }
         }
     }
     

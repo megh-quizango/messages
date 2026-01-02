@@ -24,6 +24,8 @@
     <uses-permission android:name="android.permission.WRITE_MMS" />
     <uses-permission android:name="android.permission.BROADCAST_SMS" />
     <uses-permission android:name="android.permission.BROADCAST_WAP_PUSH" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <application
         android:name=".MessagesApp"
@@ -93,7 +95,8 @@
         <activity
             android:name=".ui.conversation.ConversationDetailActivity"
             android:exported="false"
-            android:theme="@style/Theme.Messages" />
+            android:theme="@style/Theme.Messages"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- PersonalizeActivity -->
         <activity
@@ -179,6 +182,61 @@
             android:exported="false"
             android:theme="@style/Theme.Messages" />
 
+        <!-- ScheduledMessagesActivity -->
+        <activity
+            android:name=".ui.scheduled.ScheduledMessagesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- CallerSettingsActivity -->
+        <activity
+            android:name=".ui.caller.CallerSettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- StarredActivity -->
+        <activity
+            android:name=".ui.starred.StarredActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+        
+        <!-- RecycleBinActivity -->
+        <activity
+            android:name=".ui.recyclebin.RecycleBinActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- NotificationsActivity -->
+        <activity
+            android:name=".ui.notifications.NotificationsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- AdvanceActivity -->
+        <activity
+            android:name=".ui.advance.AdvanceActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- FeedbackActivity -->
+        <activity
+            android:name=".ui.feedback.FeedbackActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- SwipeGesturesActivity -->
+        <activity
+            android:name=".ui.swipe.SwipeGesturesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- SingleContactSelectionActivity -->
+        <activity
+            android:name=".ui.blocking.overlay.SingleContactSelectionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages"
+            android:launchMode="singleTop" />
+
         <!-- SMS Receiver -->
         <receiver
             android:name=".receiver.SmsReceiver"
@@ -226,6 +284,11 @@
                 <action android:name="android.provider.Telephony.SMS_DEFAULT_CHANGED" />
             </intent-filter>
         </receiver>
+
+        <!-- Scheduled Message Receiver -->
+        <receiver
+            android:name=".receiver.ScheduledMessageReceiver"
+            android:exported="false" />
 
     </application>
 

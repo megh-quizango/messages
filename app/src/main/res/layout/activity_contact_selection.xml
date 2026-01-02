@@ -11,7 +11,7 @@
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/white"
-        app:title="Select Contacts"
+        app:title="Select Contact"
         app:titleTextColor="@color/black"
         app:navigationIcon="@drawable/ic_arrow_back"
         app:layout_constraintTop_toTopOf="parent"

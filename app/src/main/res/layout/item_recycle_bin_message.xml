@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Person Icon -->
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imageContact"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_person"
+        app:civ_border_width="0dp"
+        app:civ_border_color="@android:color/transparent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Contact Name -->
+    <TextView
+        android:id="@+id/textContactName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:text="Contact Name"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:ellipsize="end"
+        android:maxLines="1"
+        app:layout_constraintTop_toTopOf="@id/imageContact"
+        app:layout_constraintStart_toEndOf="@id/imageContact"
+        app:layout_constraintEnd_toStartOf="@id/textDate"/>
+
+    <!-- Date and Time -->
+    <TextView
+        android:id="@+id/textDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Oct 21, 2025, 4:32 PM"
+        android:textColor="@color/gray_dark"
+        android:textSize="12sp"
+        app:layout_constraintTop_toTopOf="@id/textContactName"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Message Preview -->
+    <TextView
+        android:id="@+id/textMessagePreview"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="32dp"
+        android:text="Message preview text..."
+        android:textColor="@color/gray_dark"
+        android:textSize="14sp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        app:layout_constraintTop_toBottomOf="@id/textContactName"
+        app:layout_constraintStart_toStartOf="@id/textContactName"
+        app:layout_constraintEnd_toStartOf="@id/imageRecover"/>
+
+    <!-- Recover Icon -->
+    <ImageView
+        android:id="@+id/imageRecover"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_recover"
+        android:contentDescription="Recover"
+        app:tint="#FFA500"
+        app:layout_constraintBottom_toBottomOf="@id/textMessagePreview"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

@@ -44,6 +44,9 @@ class MainViewModel : ViewModel() {
         val context = MessagesApp.instance
         val conversationsMap = mutableMapOf<Long, Conversation>()
         
+        // Load deleted conversation IDs from recycle bin
+        val deletedThreadIds = getDeletedThreadIds(context)
+        
         // Query SMS from device
         val uri = Telephony.Sms.CONTENT_URI
         val projection = arrayOf(
@@ -56,38 +59,35 @@ class MainViewModel : ViewModel() {
             Telephony.Sms.TYPE
         )
         
-        val selection = when (category) {
-            "OTPs" -> "${Telephony.Sms.BODY} LIKE ? OR ${Telephony.Sms.BODY} LIKE ? OR ${Telephony.Sms.BODY} LIKE ?"
-            "Offers" -> "${Telephony.Sms.BODY} LIKE ? OR ${Telephony.Sms.BODY} LIKE ?"
-            "Transactions" -> "${Telephony.Sms.BODY} LIKE ? OR ${Telephony.Sms.BODY} LIKE ?"
-            "Personal" -> "(${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ? AND ${Telephony.Sms.BODY} NOT LIKE ?)"
-            else -> null
-        }
-        
-        val selectionArgs = when (category) {
-            "OTPs" -> arrayOf("%OTP%", "%code%", "%verification%")
-            "Offers" -> arrayOf("%offer%", "%discount%")
-            "Transactions" -> arrayOf("%transaction%", "%payment%")
-            "Personal" -> arrayOf("%OTP%", "%code%", "%verification%", "%offer%", "%discount%", "%transaction%", "%payment%")
-            else -> null
-        }
-        
         val sortOrder = "${Telephony.Sms.DATE} DESC"
         
+        // Load all messages first, then filter by category in memory for better accuracy
         context.contentResolver.query(
             uri,
             projection,
-            selection,
-            selectionArgs,
+            null,
+            null,
             sortOrder
         )?.use { cursor ->
             while (cursor.moveToNext()) {
                 val threadId = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
+                
+                // Skip conversations that are in recycle bin
+                if (deletedThreadIds.contains(threadId)) {
+                    continue
+                }
+                
                 val address = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)) ?: ""
                 val body = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.BODY)) ?: ""
                 val date = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.DATE))
                 val read = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
                 val type = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
+                
+                // Filter by category using case-insensitive matching
+                // For Personal category, also check if contact exists in device
+                if (!matchesCategory(body, category, address, context)) {
+                    continue
+                }
                 
                 val conversation = conversationsMap.getOrPut(threadId) {
                     Conversation().apply {
@@ -120,6 +120,90 @@ class MainViewModel : ViewModel() {
         return conversationsMap.values.sortedByDescending { it.date }
     }
     
+    private fun matchesCategory(messageBody: String, category: String, address: String, context: Context): Boolean {
+        if (category == "All") {
+            return true
+        }
+        
+        val bodyLower = messageBody.lowercase()
+        
+        return when (category) {
+            "OTPs" -> isOTPMessage(bodyLower)
+            "Offers" -> isOfferMessage(bodyLower)
+            "Transactions" -> isTransactionMessage(bodyLower)
+            "Personal" -> {
+                // Personal messages - must be from saved contacts AND exclude OTPs, Offers, and Transactions
+                val isFromContact = isContactInDevice(context, address)
+                val isNotOTP = !isOTPMessage(bodyLower)
+                val isNotOffer = !isOfferMessage(bodyLower)
+                val isNotTransaction = !isTransactionMessage(bodyLower)
+                
+                isFromContact && isNotOTP && isNotOffer && isNotTransaction
+            }
+            else -> true
+        }
+    }
+    
+    private fun isContactInDevice(context: Context, phoneNumber: String): Boolean {
+        // Check if the phone number exists in device contacts
+        val contactName = getContactName(context, phoneNumber)
+        return contactName != null
+    }
+    
+    private fun isOTPMessage(bodyLower: String): Boolean {
+        // OTP keywords - case insensitive
+        return bodyLower.contains("otp") ||
+                bodyLower.contains("one time password") ||
+                bodyLower.contains("verification code") ||
+//                bodyLower.contains("verification") ||
+//                bodyLower.contains("verify") ||
+//                bodyLower.contains("code") ||
+//                bodyLower.contains("pin") ||
+//                bodyLower.contains("password") ||
+//                bodyLower.contains("authenticate") ||
+//                bodyLower.contains("activation") ||
+                bodyLower.matches(Regex(".*\\b\\d{4,8}\\b.*")) // Contains 4-8 digit number (common OTP pattern)
+    }
+    
+    private fun isOfferMessage(bodyLower: String): Boolean {
+        // Offer keywords - case insensitive
+        return bodyLower.contains("offer") ||
+                bodyLower.contains("discount") ||
+                bodyLower.contains("deal") ||
+                bodyLower.contains("sale") ||
+                bodyLower.contains("promo") ||
+                bodyLower.contains("promotion") ||
+//                bodyLower.contains("coupon") ||
+//                bodyLower.contains("voucher") ||
+//                bodyLower.contains("cashback") ||
+//                bodyLower.contains("reward") ||
+//                bodyLower.contains("bonus") ||
+//                bodyLower.contains("special") ||
+                bodyLower.contains("limited time")
+    }
+    
+    private fun isTransactionMessage(bodyLower: String): Boolean {
+        // Transaction keywords - case insensitive
+        return bodyLower.contains("transaction") ||
+                bodyLower.contains("payment") ||
+                bodyLower.contains("paid") ||
+                bodyLower.contains("credited") ||
+                bodyLower.contains("debited") ||
+                bodyLower.contains("balance") ||
+//                bodyLower.contains("account") ||
+//                bodyLower.contains("bank") ||
+                bodyLower.contains("upi") ||
+//                bodyLower.contains("transfer") ||
+                bodyLower.contains("withdrawal") ||
+//                bodyLower.contains("deposit") ||
+//                bodyLower.contains("invoice") ||
+//                bodyLower.contains("receipt") ||
+                bodyLower.contains("refund") ||
+//                bodyLower.contains("rs.") ||
+//                bodyLower.contains("inr") ||
+                bodyLower.contains("₹")
+    }
+    
     private fun getContactName(context: Context, phoneNumber: String): String? {
         val uri = Uri.withAppendedPath(
             android.provider.ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
@@ -138,5 +222,17 @@ class MainViewModel : ViewModel() {
         }
         
         return null
+    }
+    
+    private fun getDeletedThreadIds(context: Context): Set<Long> {
+        val prefs = context.getSharedPreferences("recycle_bin", Context.MODE_PRIVATE)
+        val deletedJson = prefs.getString("deleted_conversations", null)
+        if (deletedJson != null) {
+            val gson = com.google.gson.Gson()
+            val type = object : com.google.gson.reflect.TypeToken<List<com.quizangomedia.messages.ui.main.DeletedConversationData>>() {}.type
+            val deletedConversations = gson.fromJson<List<com.quizangomedia.messages.ui.main.DeletedConversationData>>(deletedJson, type)
+            return deletedConversations.map { it.threadId }.toSet()
+        }
+        return emptySet()
     }
 }

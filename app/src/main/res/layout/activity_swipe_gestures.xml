@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- ================= BACK BUTTON ================= -->
+
+    <ImageButton
+        android:id="@+id/buttonBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_back_button"
+        android:src="@drawable/ic_arrow_back"
+        android:contentDescription="Back"
+        android:scaleType="centerInside"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- ================= HEADING ================= -->
+
+    <TextView
+        android:id="@+id/textHeading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Swipe Gestures"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="@id/buttonBack"
+        app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+        app:layout_constraintStart_toEndOf="@id/buttonBack"/>
+
+    <!-- ================= SCROLL VIEW ================= -->
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/buttonBack"
+        app:layout_constraintBottom_toTopOf="@id/adViewBanner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Right Swipe Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="32dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Right Swipe"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/buttonChangeRight"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CHANGE"
+                        android:textColor="#0C56CF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textRightSwipeAction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mark as Read"
+                    android:textColor="@color/gray_dark"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Right Swipe Visual -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_swipe_container">
+
+                    <!-- Blue part on left - fills full height -->
+                    <FrameLayout
+                        android:layout_width="68dp"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_swipe_icon_left"
+                        android:padding="12dp"
+                        android:layout_gravity="start">
+
+                        <ImageView
+                            android:id="@+id/imageRightSwipeIcon"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/mark_read"
+                            android:scaleType="fitCenter"
+                            android:contentDescription="Right swipe action"/>
+
+                    </FrameLayout>
+
+                    <!-- Person icon and lines on right - immediately after blue part -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginStart="68dp"
+                        android:layout_gravity="start|center_vertical">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/imagePersonRight"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_person"
+                            app:civ_border_width="0dp"
+                            app:civ_border_color="@android:color/transparent"/>
+
+                        <View
+                            android:layout_width="16dp"
+                            android:layout_height="2dp"
+                            android:background="#9696A3"
+                            android:layout_marginStart="8dp"
+                            android:alpha="0.6"/>
+
+                        <View
+                            android:layout_width="16dp"
+                            android:layout_height="2dp"
+                            android:background="#9696A3"
+                            android:layout_marginStart="4dp"
+                            android:alpha="0.6"/>
+
+                    </LinearLayout>
+
+                </FrameLayout>
+
+            </LinearLayout>
+
+            <!-- Left Swipe Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Left Swipe"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/buttonChangeLeft"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CHANGE"
+                        android:textColor="#0C56CF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"/>
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textLeftSwipeAction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Archive"
+                    android:textColor="@color/gray_dark"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Left Swipe Visual -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_swipe_container">
+
+                    <!-- Person icon and lines on left -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_gravity="start|center_vertical"
+                        android:layout_marginStart="8dp">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/imagePersonLeft"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_person"
+                            app:civ_border_width="0dp"
+                            app:civ_border_color="@android:color/transparent"/>
+
+                        <View
+                            android:layout_width="16dp"
+                            android:layout_height="2dp"
+                            android:background="#9696A3"
+                            android:layout_marginStart="8dp"
+                            android:alpha="0.6"/>
+
+                        <View
+                            android:layout_width="16dp"
+                            android:layout_height="2dp"
+                            android:background="#9696A3"
+                            android:layout_marginStart="4dp"
+                            android:alpha="0.6"/>
+
+                    </LinearLayout>
+
+                    <!-- Blue part on right - fills full height -->
+                    <FrameLayout
+                        android:layout_width="68dp"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_swipe_icon_right"
+                        android:padding="12dp"
+                        android:layout_gravity="end">
+
+                        <ImageView
+                            android:id="@+id/imageLeftSwipeIcon"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/archive_swipe"
+                            android:scaleType="fitCenter"
+                            android:contentDescription="Left swipe action"/>
+
+                    </FrameLayout>
+
+                </FrameLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- ================= BANNER AD ================= -->
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adViewBanner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

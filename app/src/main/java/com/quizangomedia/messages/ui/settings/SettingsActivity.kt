@@ -2,10 +2,16 @@ package com.quizangomedia.messages.ui.settings
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -104,18 +110,22 @@ class SettingsActivity : AppCompatActivity() {
                 SettingsOption("Private Conversations", R.drawable.lock, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.pin.PinActivity::class.java)) },
                 SettingsOption("Spam & Block", R.drawable.spam, null, false) { startActivity(Intent(this, SpamBlockActivity::class.java)) },
                 SettingsOption("Archive", R.drawable.archive, null, false),
-                SettingsOption("Recycle Bin", null, null, false),
-                SettingsOption("Schedule Messages", null, null, false),
-                SettingsOption("Caller Settings", null, null, false),
-                SettingsOption("Starred", null, null, false),
-                SettingsOption("Swipe Gestures", null, null, false),
-                SettingsOption("Add Signature", null, null, false),
-                SettingsOption("Notifications", null, null, false),
-                SettingsOption("Language", null, null, false) { startActivity(Intent(this, LanguageActivity::class.java)) },
-                SettingsOption("Advance", null, null, false),
-                SettingsOption("Feedback", null, null, false),
+                SettingsOption("Recycle Bin", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.recyclebin.RecycleBinActivity::class.java)) },
+                SettingsOption("Schedule Messages", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.scheduled.ScheduledMessagesActivity::class.java)) },
+                SettingsOption("Caller Settings", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.caller.CallerSettingsActivity::class.java)) },
+                SettingsOption("Starred", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.starred.StarredActivity::class.java)) },
+                SettingsOption("Swipe Gestures", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.swipe.SwipeGesturesActivity::class.java)) },
+                SettingsOption("Add Signature", null, null, false) { showSignatureDialog() },
+                SettingsOption("Notifications", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.notifications.NotificationsActivity::class.java)) },
+                SettingsOption("Language", null, null, false) { 
+                    startActivity(Intent(this, LanguageActivity::class.java).apply {
+                        putExtra("from_settings", true)
+                    })
+                },
+                SettingsOption("Advance", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.advance.AdvanceActivity::class.java)) },
+                SettingsOption("Feedback", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.feedback.FeedbackActivity::class.java)) },
                 SettingsOption("Share App!", null, null, false),
-                SettingsOption("Rate Us", null, null, false)
+                SettingsOption("Rate Us", null, null, false) { showRateUsBottomSheet() }
             )),
             SettingsItem("Backups", listOf(
                 SettingsOption("Export Messages", null, null, false),
@@ -182,6 +192,84 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupBannerAd() {
         val adRequest = AdRequest.Builder().build()
         binding.adViewBanner.loadAd(adRequest)
+    }
+    
+    private fun showSignatureDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_signature, null)
+        val editTextSignature = dialogView.findViewById<EditText>(R.id.editTextSignature)
+        val buttonDelete = dialogView.findViewById<TextView>(R.id.buttonDelete)
+        val buttonCancel = dialogView.findViewById<TextView>(R.id.buttonCancel)
+        val buttonSave = dialogView.findViewById<TextView>(R.id.buttonSave)
+        
+        // Load saved signature
+        val prefs = getSharedPreferences("signature", MODE_PRIVATE)
+        val savedSignature = prefs.getString("signature_text", "")
+        editTextSignature.setText(savedSignature)
+        
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+        
+        buttonSave.setOnClickListener {
+            val signature = editTextSignature.text.toString().trim()
+            prefs.edit().putString("signature_text", signature).apply()
+            dialog.dismiss()
+        }
+        
+        buttonDelete.setOnClickListener {
+            prefs.edit().remove("signature_text").apply()
+            editTextSignature.setText("")
+        }
+        
+        buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialog.show()
+    }
+    
+    private fun showRateUsBottomSheet() {
+        val bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_rate_us, null)
+        val bottomSheet = BottomSheetDialog(this)
+        bottomSheet.setContentView(bottomSheetView)
+        
+        val star1 = bottomSheetView.findViewById<ImageView>(R.id.star1)
+        val star2 = bottomSheetView.findViewById<ImageView>(R.id.star2)
+        val star3 = bottomSheetView.findViewById<ImageView>(R.id.star3)
+        val star4 = bottomSheetView.findViewById<ImageView>(R.id.star4)
+        val star5 = bottomSheetView.findViewById<ImageView>(R.id.star5)
+        val buttonRateUs = bottomSheetView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonRateUs)
+        
+        val stars = listOf(star1, star2, star3, star4, star5)
+        var selectedRating = 0
+        
+        fun updateStars(rating: Int) {
+            stars.forEachIndexed { index, star ->
+                if (index < rating) {
+                    star.setImageResource(R.drawable.ic_star_filled)
+                } else {
+                    star.setImageResource(R.drawable.ic_star_outline)
+                }
+            }
+            selectedRating = rating
+            buttonRateUs.isEnabled = rating > 0
+            buttonRateUs.alpha = if (rating > 0) 1f else 0.5f
+        }
+        
+        stars.forEachIndexed { index, star ->
+            star?.setOnClickListener {
+                updateStars(index + 1)
+            }
+        }
+        
+        buttonRateUs?.setOnClickListener {
+            if (selectedRating > 0) {
+                // TODO: Open Play Store rating or handle rating submission
+                bottomSheet.dismiss()
+            }
+        }
+        
+        bottomSheet.show()
     }
 }
 

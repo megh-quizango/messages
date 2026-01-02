@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="24dp"
+    android:background="@drawable/bg_dialog_rounded">
+
+    <!-- No delay -->
+    <RadioButton
+        android:id="@+id/radioNoDelay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No delay"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:buttonTint="#0C56CF"
+        android:padding="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 3 seconds -->
+    <RadioButton
+        android:id="@+id/radioThreeSeconds"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="3 seconds"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:buttonTint="#0C56CF"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/radioNoDelay"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 5 seconds -->
+    <RadioButton
+        android:id="@+id/radioFiveSeconds"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="5 seconds"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:buttonTint="#0C56CF"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/radioThreeSeconds"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

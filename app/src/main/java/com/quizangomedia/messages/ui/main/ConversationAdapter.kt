@@ -27,6 +27,10 @@ class ConversationAdapter(
     override fun onBindViewHolder(holder: ConversationViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
+    
+    fun getConversationAt(position: Int): Conversation {
+        return getItem(position)
+    }
 
     inner class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val textContactName: TextView = itemView.findViewById(R.id.textContactName)
