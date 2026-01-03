@@ -18,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.ads.AdRequest
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -58,6 +60,22 @@ class ContactsActivity : AppCompatActivity() {
         binding = ActivityContactsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Check if opened from FAB
+        val fromFab = intent.getBooleanExtra("from_fab", false)
+        
+        // Hide bottom navigation if opened from FAB
+        if (fromFab) {
+            binding.bottomNavigationView.visibility = View.GONE
+            binding.adViewBanner.visibility = View.GONE
+            
+            // Update RecyclerView constraint to fill the space using ConstraintSet
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(binding.root as ConstraintLayout)
+            constraintSet.clear(binding.recyclerViewContacts.id, ConstraintSet.BOTTOM)
+            constraintSet.connect(binding.recyclerViewContacts.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
+            constraintSet.applyTo(binding.root as ConstraintLayout)
+        }
+        
         // Handle window insets - same as MainActivity
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -72,47 +90,50 @@ class ContactsActivity : AppCompatActivity() {
             insets
         }
         
-        // Fix bottom navigation padding
-        binding.bottomNavigationView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                binding.bottomNavigationView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                
-                val topPadding = binding.bottomNavigationView.paddingTop
-                val bottomPadding = binding.bottomNavigationView.paddingBottom
-                binding.bottomNavigationView.setPadding(0, topPadding, 0, bottomPadding)
-                binding.bottomNavigationView.minimumHeight = 0
-                
-                val menuView = binding.bottomNavigationView.getChildAt(0) as? ViewGroup
-                menuView?.let {
-                    it.setPadding(0, 0, 0, 0)
-                    it.minimumHeight = 0
+        // Fix bottom navigation padding (only if visible)
+        if (!fromFab) {
+            binding.bottomNavigationView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    binding.bottomNavigationView.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     
-                    for (i in 0 until it.childCount) {
-                        val child = it.getChildAt(i)
-                        child?.let { item ->
-                            if (item is ViewGroup) {
-                                item.setPadding(item.paddingLeft, 0, item.paddingRight, 0)
-                                item.minimumHeight = 0
+                    val topPadding = binding.bottomNavigationView.paddingTop
+                    val bottomPadding = binding.bottomNavigationView.paddingBottom
+                    binding.bottomNavigationView.setPadding(0, topPadding, 0, bottomPadding)
+                    binding.bottomNavigationView.minimumHeight = 0
+                    
+                    val menuView = binding.bottomNavigationView.getChildAt(0) as? ViewGroup
+                    menuView?.let {
+                        it.setPadding(0, 0, 0, 0)
+                        it.minimumHeight = 0
+                        
+                        for (i in 0 until it.childCount) {
+                            val child = it.getChildAt(i)
+                            child?.let { item ->
+                                if (item is ViewGroup) {
+                                    item.setPadding(item.paddingLeft, 0, item.paddingRight, 0)
+                                    item.minimumHeight = 0
+                                }
                             }
                         }
                     }
                 }
-            }
-        })
+            })
+        }
         
         setupBackButton()
         setupSearchBar()
         setupRecyclerView()
-        setupBottomNavigation()
+        if (!fromFab) {
+            setupBottomNavigation()
+            // Set Contacts as selected initially
+            binding.bottomNavigationView.post {
+                setSelectedNavigationItem(R.id.nav_contacts)
+            }
+        }
         setupBannerAd()
         
         // Request permission and load contacts
         checkContactsPermissionAndLoad()
-        
-        // Set Contacts as selected initially
-        binding.bottomNavigationView.post {
-            setSelectedNavigationItem(R.id.nav_contacts)
-        }
     }
     
     private fun setupBackButton() {
@@ -183,12 +204,27 @@ class ContactsActivity : AppCompatActivity() {
     }
     
     private fun setSelectedNavigationItem(itemId: Int) {
-        if (binding.bottomNavigationView.selectedItemId != itemId) {
-            isSettingSelectedItem = true
-            binding.bottomNavigationView.selectedItemId = itemId
-            binding.bottomNavigationView.post {
+        isSettingSelectedItem = true
+        
+        // First, uncheck all menu items
+        for (i in 0 until binding.bottomNavigationView.menu.size()) {
+            binding.bottomNavigationView.menu.getItem(i).isChecked = false
+        }
+        
+        // Then check the selected item
+        binding.bottomNavigationView.menu.findItem(itemId)?.isChecked = true
+        binding.bottomNavigationView.selectedItemId = itemId
+        
+        // Force refresh
+        binding.bottomNavigationView.invalidate()
+        binding.bottomNavigationView.post {
+            // Force refresh after layout
+            binding.bottomNavigationView.invalidate()
+            binding.bottomNavigationView.postDelayed({
                 isSettingSelectedItem = false
-            }
+                // One more refresh to ensure tint is applied
+                binding.bottomNavigationView.invalidate()
+            }, 50)
         }
     }
     

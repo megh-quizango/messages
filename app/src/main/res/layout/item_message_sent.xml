@@ -3,25 +3,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
 
+    <!-- Selection Check -->
     <ImageView
         android:id="@+id/imageCheck"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="4dp"
         android:src="@drawable/ic_check"
         android:visibility="gone"
-        android:contentDescription="Selected"
         app:layout_constraintTop_toTopOf="@id/cardMessage"
         app:layout_constraintBottom_toBottomOf="@id/cardMessage"
-        app:layout_constraintEnd_toStartOf="@id/cardMessage"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/cardMessage" />
 
+    <!-- Message Bubble -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardMessage"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:maxWidth="280dp"
         app:cardCornerRadius="16dp"
         app:cardBackgroundColor="#0C56CF"
         app:cardElevation="2dp"
@@ -29,28 +34,26 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/imageCheck"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_default="percent"
-        app:layout_constraintWidth_percent="0.8"
-        app:layout_constraintHorizontal_bias="1.0">
-        
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        
+        app:layout_goneMarginStart="0dp"
+        app:layout_goneMarginEnd="8dp"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_chainStyle="packed">
+
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="12dp">
 
+            <!-- Message Text -->
             <TextView
                 android:id="@+id/textMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Message text"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
 
+            <!-- Time / Star -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -62,28 +65,22 @@
                     android:id="@+id/textTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginEnd="4dp"
-                    android:text="2m"
-                    android:textColor="@color/white"
                     android:textSize="12sp"
-                    android:alpha="0.7" />
+                    android:textColor="@color/white"
+                    android:alpha="0.7"
+                    android:layout_marginEnd="4dp" />
 
                 <ImageView
                     android:id="@+id/imageStarBadge"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_star_badge"
-                    android:visibility="gone"
-                    android:contentDescription="Starred"/>
+                    android:visibility="gone" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-        </FrameLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

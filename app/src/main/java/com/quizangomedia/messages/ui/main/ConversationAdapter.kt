@@ -1,5 +1,6 @@
 package com.quizangomedia.messages.ui.main
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.data.model.Conversation
+import com.quizangomedia.messages.util.AvatarHelper
+import de.hdodenhof.circleimageview.CircleImageView
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -17,6 +20,10 @@ import java.util.Locale
 class ConversationAdapter(
     private val onConversationClick: (Conversation) -> Unit
 ) : ListAdapter<Conversation, ConversationAdapter.ConversationViewHolder>(ConversationDiffCallback()) {
+    
+    companion object {
+        private const val TAG = "ConversationAdapter"
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -28,11 +35,35 @@ class ConversationAdapter(
         holder.bind(getItem(position))
     }
     
+    override fun onViewRecycled(holder: ConversationViewHolder) {
+        super.onViewRecycled(holder)
+        // Cancel any pending image loads when view is recycled
+        holder.cancelPendingLoads()
+    }
+    
+    override fun onBindViewHolder(holder: ConversationViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) {
+            // No payload, bind normally
+            super.onBindViewHolder(holder, position, payloads)
+        } else {
+            // Partial update - only update the views that changed
+            val conversation = getItem(position)
+            val payload = payloads[0] as? Set<*>
+            if (payload != null) {
+                holder.bindPartial(conversation, payload)
+            } else {
+                holder.bind(conversation)
+            }
+        }
+    }
+    
     fun getConversationAt(position: Int): Conversation {
         return getItem(position)
     }
 
     inner class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val imageContact: CircleImageView = itemView.findViewById(R.id.imageContact)
+        private val textAvatarLetter: TextView = itemView.findViewById(R.id.textAvatarLetter)
         private val textContactName: TextView = itemView.findViewById(R.id.textContactName)
         private val textSnippet: TextView = itemView.findViewById(R.id.textSnippet)
         private val textTime: TextView = itemView.findViewById(R.id.textTime)
@@ -40,6 +71,11 @@ class ConversationAdapter(
         private val buttonStartChat: MaterialButton = itemView.findViewById(R.id.buttonStartChat)
 
         fun bind(conversation: Conversation) {
+            Log.d(TAG, "bind: Binding conversation - threadId=${conversation.threadId}, contactName='${conversation.contactName}', address='${conversation.address}', photoUri='${conversation.photoUri}'")
+            
+            // Reset avatar state first to prevent showing stale data
+            resetAvatarState()
+            
             textContactName.text = conversation.contactName ?: conversation.address
             textSnippet.text = conversation.snippet
             textTime.text = formatTime(conversation.date)
@@ -51,24 +87,85 @@ class ConversationAdapter(
                 textUnreadDot.visibility = View.GONE
             }
             
-            // Show "Start Chat" button for certain conversations (e.g., promotional messages)
-            // This can be customized based on business logic
-            val showStartChat = conversation.contactName == null || 
-                               conversation.address.contains("VD-", ignoreCase = true) ||
-                               conversation.snippet.contains("ALERT", ignoreCase = true)
+            // Hide "Start Chat" button - users can click on the conversation item itself
+            buttonStartChat.visibility = View.GONE
             
-            if (showStartChat && position == itemCount - 1) {
-                buttonStartChat.visibility = View.VISIBLE
-                buttonStartChat.setOnClickListener {
-                    onConversationClick(conversation)
-                }
-            } else {
-                buttonStartChat.visibility = View.GONE
-            }
+            // Log TextView state before loading avatar
+            Log.d(TAG, "bind: Before loadAvatar - textAvatarLetter visibility=${textAvatarLetter.visibility}, text='${textAvatarLetter.text}', width=${textAvatarLetter.width}, height=${textAvatarLetter.height}")
+            Log.d(TAG, "bind: Before loadAvatar - imageContact width=${imageContact.width}, height=${imageContact.height}")
+            
+            // Load avatar with contact image, first letter, or icon
+            AvatarHelper.loadAvatar(
+                imageContact,
+                textAvatarLetter,
+                conversation.photoUri,
+                conversation.contactName,
+                conversation.address,
+                itemView.context
+            )
+            
+            // Log TextView state after loading avatar
+            Log.d(TAG, "bind: After loadAvatar - textAvatarLetter visibility=${textAvatarLetter.visibility}, text='${textAvatarLetter.text}', width=${textAvatarLetter.width}, height=${textAvatarLetter.height}")
             
             itemView.setOnClickListener {
                 onConversationClick(conversation)
             }
+        }
+        
+        private fun resetAvatarState() {
+            // Cancel any pending Picasso requests
+            com.squareup.picasso.Picasso.get().cancelRequest(imageContact)
+            
+            // Reset image view to a clean state
+            imageContact.setImageDrawable(null)
+            imageContact.visibility = View.VISIBLE
+            // Reset background color will be set by AvatarHelper
+            
+            // Reset text view to a clean state
+            textAvatarLetter.text = ""
+            textAvatarLetter.visibility = View.GONE
+            textAvatarLetter.background = null
+            textAvatarLetter.alpha = 1.0f
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                textAvatarLetter.elevation = 0f
+                textAvatarLetter.translationZ = 0f
+            }
+        }
+        
+        fun cancelPendingLoads() {
+            // Cancel any pending Picasso requests
+            com.squareup.picasso.Picasso.get().cancelRequest(imageContact)
+        }
+        
+        fun bindPartial(conversation: Conversation, payload: Set<*>) {
+            // Only update the views that changed based on payload
+            payload.forEach { change ->
+                when (change) {
+                    "snippet" -> textSnippet.text = conversation.snippet
+                    "date" -> textTime.text = formatTime(conversation.date)
+                    "unreadCount" -> {
+                        if (conversation.unreadCount > 0) {
+                            textUnreadDot.visibility = View.VISIBLE
+                        } else {
+                            textUnreadDot.visibility = View.GONE
+                        }
+                    }
+                    "contactName" -> {
+                        textContactName.text = conversation.contactName ?: conversation.address
+                        // Reload avatar when contact name changes
+                        AvatarHelper.loadAvatar(
+                            imageContact,
+                            textAvatarLetter,
+                            conversation.photoUri,
+                            conversation.contactName,
+                            conversation.address,
+                            itemView.context
+                        )
+                    }
+                }
+            }
+            // Ensure button is always hidden during partial updates
+            buttonStartChat.visibility = View.GONE
         }
         
         private fun formatTime(timestamp: Long): String {
@@ -95,11 +192,28 @@ class ConversationAdapter(
 
     class ConversationDiffCallback : DiffUtil.ItemCallback<Conversation>() {
         override fun areItemsTheSame(oldItem: Conversation, newItem: Conversation): Boolean {
+            // Items are the same if they have the same threadId
             return oldItem.threadId == newItem.threadId
         }
 
         override fun areContentsTheSame(oldItem: Conversation, newItem: Conversation): Boolean {
-            return oldItem == newItem
+            // Contents are the same if all fields match
+            return oldItem.address == newItem.address &&
+                   oldItem.snippet == newItem.snippet &&
+                   oldItem.date == newItem.date &&
+                   oldItem.unreadCount == newItem.unreadCount &&
+                   oldItem.contactName == newItem.contactName
+        }
+        
+        override fun getChangePayload(oldItem: Conversation, newItem: Conversation): Any? {
+            // Return a payload to indicate what changed for partial updates
+            // This allows RecyclerView to only update the specific views that changed
+            val payload = mutableSetOf<String>()
+            if (oldItem.snippet != newItem.snippet) payload.add("snippet")
+            if (oldItem.date != newItem.date) payload.add("date")
+            if (oldItem.unreadCount != newItem.unreadCount) payload.add("unreadCount")
+            if (oldItem.contactName != newItem.contactName) payload.add("contactName")
+            return if (payload.isEmpty()) null else payload
         }
     }
 }

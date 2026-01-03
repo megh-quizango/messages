@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -39,8 +40,16 @@ import com.quizangomedia.messages.data.model.Conversation
 import android.provider.Telephony
 import android.content.ContentValues
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import com.quizangomedia.messages.observer.SmsContentObserver
 
 class MainActivity : AppCompatActivity() {
+    
+    companion object {
+        private const val TAG = "MainActivity"
+    }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainViewModel
@@ -50,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     private var pendingPhoneCall: String? = null
     private var allConversations: List<Conversation> = emptyList()
     private var currentSearchQuery: String = ""
+    private var smsContentObserver: SmsContentObserver? = null
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -97,6 +107,17 @@ class MainActivity : AppCompatActivity() {
 //        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Set navigation bar color to white with black icons
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.navigationBarColor = getColor(android.R.color.white)
+            // Set navigation bar icons to dark/black for visibility on white background
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                var flags = window.decorView.systemUiVisibility
+                flags = flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                window.decorView.systemUiVisibility = flags
+            }
+        }
         // Remove extra padding from internal menu container while preserving outer padding
         binding.bottomNavigationView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
@@ -152,6 +173,7 @@ class MainActivity : AppCompatActivity() {
         setupTabs()
         setupRecyclerView()
         setupSearch()
+        setupMenu()
         setupFab()
         setupBottomNavigation()
         setupBannerAd()
@@ -163,6 +185,59 @@ class MainActivity : AppCompatActivity() {
         // Set Messages as selected initially
         binding.bottomNavigationView.post {
             setSelectedNavigationItem(R.id.nav_messages)
+        }
+        
+        // Register ContentObserver to detect new SMS messages
+        registerSmsContentObserver()
+    }
+    
+    private fun registerSmsContentObserver() {
+        Log.d(TAG, "registerSmsContentObserver called")
+        val handler = Handler(Looper.getMainLooper())
+        smsContentObserver = SmsContentObserver(handler) {
+            Log.d(TAG, "SMS ContentObserver onChange triggered")
+            // Reload conversations when SMS database changes
+            // Use postDelayed to debounce rapid changes and allow database to commit
+            handler.removeCallbacksAndMessages(null)
+            handler.postDelayed({
+                val category = when (selectedTab?.id) {
+                    R.id.tabAll -> "All"
+                    R.id.tabPersonal -> "Personal"
+                    R.id.tabOTPs -> "OTPs"
+                    R.id.tabOffers -> "Offers"
+                    R.id.tabTransactions -> "Transactions"
+                    else -> "All"
+                }
+                Log.d(TAG, "ContentObserver: Reloading conversations for category: $category (background refresh, no loading indicator)")
+                // Background refresh - don't show loading indicator to avoid hiding RecyclerView
+                viewModel.loadConversations(category, showLoading = false)
+            }, 500) // 500ms delay to ensure database is committed
+        }
+        
+        // Register observer for both inbox and sent SMS
+        contentResolver.registerContentObserver(
+            Telephony.Sms.CONTENT_URI,
+            true,
+            smsContentObserver!!
+        )
+        contentResolver.registerContentObserver(
+            Telephony.Sms.Inbox.CONTENT_URI,
+            true,
+            smsContentObserver!!
+        )
+        contentResolver.registerContentObserver(
+            Telephony.Sms.Sent.CONTENT_URI,
+            true,
+            smsContentObserver!!
+        )
+        Log.d(TAG, "SMS ContentObserver registered for all SMS URIs")
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister ContentObserver to prevent memory leaks
+        smsContentObserver?.let {
+            contentResolver.unregisterContentObserver(it)
         }
     }
     
@@ -230,6 +305,7 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, ConversationDetailActivity::class.java)
             intent.putExtra("thread_id", conversation.threadId)
             intent.putExtra("address", conversation.address)
+            intent.putExtra("contact_name", conversation.contactName ?: "")
             startActivity(intent)
         }
         
@@ -256,6 +332,189 @@ class MainActivity : AppCompatActivity() {
         
         // Clear focus when clicking outside the search field
         setupClickOutsideToClearFocus()
+    }
+    
+    private fun setupMenu() {
+        binding.imageViewMenu.setOnClickListener {
+            showPopupMenu(it)
+        }
+    }
+    
+    private fun showPopupMenu(anchor: View) {
+        // Create a custom popup window instead of PopupMenu for better control
+        val popupView = layoutInflater.inflate(R.layout.popup_menu_custom, null)
+        val popupWindow = android.widget.PopupWindow(
+            popupView,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        )
+        
+        // Set background with rounded corners
+        popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.bg_popup_menu))
+        popupWindow.elevation = 8f
+        
+        // Setup menu items
+        val layoutFilterByTime = popupView.findViewById<LinearLayout>(R.id.layoutFilterByTime)
+        val layoutMarkAllRead = popupView.findViewById<LinearLayout>(R.id.layoutMarkAllRead)
+        
+        layoutFilterByTime.setOnClickListener {
+            popupWindow.dismiss()
+            showFilterTimeBottomSheet()
+        }
+        
+        layoutMarkAllRead.setOnClickListener {
+            popupWindow.dismiss()
+            markAllAsRead()
+        }
+        
+        // Measure the popup view to get its width
+        popupView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        
+        // Get screen width to ensure menu fits
+        val displayMetrics = resources.displayMetrics
+        val maxWidth = (displayMetrics.widthPixels * 0.85).toInt() // 85% of screen width
+        val popupWidth = popupView.measuredWidth.coerceAtMost(maxWidth)
+        popupWindow.width = popupWidth
+        
+        // Show popup below the anchor, aligned to the right
+        val xOffset = anchor.width - popupWidth
+        popupWindow.showAsDropDown(anchor, xOffset, 0)
+    }
+    
+    private fun showFilterTimeBottomSheet() {
+        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_filter_time, null)
+        val bottomSheetDialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        bottomSheetDialog.setContentView(bottomSheetView)
+        
+        // Ensure rounded corners are visible
+        bottomSheetDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        var selectedFilter = "Default"
+        val layouts = listOf(
+            bottomSheetView.findViewById<LinearLayout>(R.id.layoutDefault),
+            bottomSheetView.findViewById<LinearLayout>(R.id.layoutToday),
+            bottomSheetView.findViewById<LinearLayout>(R.id.layoutMonth),
+            bottomSheetView.findViewById<LinearLayout>(R.id.layoutYear),
+            bottomSheetView.findViewById<LinearLayout>(R.id.layoutCustom)
+        )
+        
+        fun updateSelection(selectedLayout: LinearLayout, filterName: String) {
+            layouts.forEachIndexed { index, layout ->
+                val textView = layout.getChildAt(0) as? TextView
+                textView?.setTextColor(if (layout == selectedLayout) getColor(R.color.blue_primary) else getColor(R.color.gray_dark))
+            }
+            selectedFilter = filterName
+        }
+        
+        bottomSheetView.findViewById<LinearLayout>(R.id.layoutDefault).setOnClickListener {
+            updateSelection(it as LinearLayout, "Default")
+        }
+        
+        bottomSheetView.findViewById<LinearLayout>(R.id.layoutToday).setOnClickListener {
+            updateSelection(it as LinearLayout, "Today")
+        }
+        
+        bottomSheetView.findViewById<LinearLayout>(R.id.layoutMonth).setOnClickListener {
+            updateSelection(it as LinearLayout, "Month")
+        }
+        
+        bottomSheetView.findViewById<LinearLayout>(R.id.layoutYear).setOnClickListener {
+            updateSelection(it as LinearLayout, "Year")
+        }
+        
+        bottomSheetView.findViewById<LinearLayout>(R.id.layoutCustom).setOnClickListener {
+            updateSelection(it as LinearLayout, "Custom")
+            showCustomDateRangePicker(bottomSheetDialog)
+        }
+        
+        bottomSheetView.findViewById<TextView>(R.id.textViewReset).setOnClickListener {
+            updateSelection(layouts[0], "Default")
+        }
+        
+        bottomSheetView.findViewById<TextView>(R.id.textViewOk).setOnClickListener {
+            applyTimeFilter(selectedFilter)
+            bottomSheetDialog.dismiss()
+        }
+        
+        bottomSheetDialog.show()
+    }
+    
+    private fun showCustomDateRangePicker(bottomSheetDialog: com.google.android.material.bottomsheet.BottomSheetDialog) {
+        val calendar = java.util.Calendar.getInstance()
+        val startDatePicker = android.app.DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                val startCalendar = java.util.Calendar.getInstance()
+                startCalendar.set(year, month, dayOfMonth)
+                val startTime = startCalendar.timeInMillis
+                
+                val endDatePicker = android.app.DatePickerDialog(
+                    this,
+                    { _, year2, month2, dayOfMonth2 ->
+                        val endCalendar = java.util.Calendar.getInstance()
+                        endCalendar.set(year2, month2, dayOfMonth2, 23, 59, 59)
+                        val endTime = endCalendar.timeInMillis
+                        
+                        if (endTime >= startTime) {
+                            applyCustomDateRange(startTime, endTime)
+                            bottomSheetDialog.dismiss()
+                        } else {
+                            Toast.makeText(this, "End date must be after start date", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    calendar.get(java.util.Calendar.YEAR),
+                    calendar.get(java.util.Calendar.MONTH),
+                    calendar.get(java.util.Calendar.DAY_OF_MONTH)
+                )
+                endDatePicker.show()
+            },
+            calendar.get(java.util.Calendar.YEAR),
+            calendar.get(java.util.Calendar.MONTH),
+            calendar.get(java.util.Calendar.DAY_OF_MONTH)
+        )
+        startDatePicker.show()
+    }
+    
+    private fun applyTimeFilter(filter: String) {
+        val category = when (selectedTab?.id) {
+            R.id.tabAll -> "All"
+            R.id.tabPersonal -> "Personal"
+            R.id.tabOTPs -> "OTPs"
+            R.id.tabOffers -> "Offers"
+            R.id.tabTransactions -> "Transactions"
+            else -> "All"
+        }
+        viewModel.loadConversations(category, timeFilter = filter)
+    }
+    
+    private fun applyCustomDateRange(startTime: Long, endTime: Long) {
+        val category = when (selectedTab?.id) {
+            R.id.tabAll -> "All"
+            R.id.tabPersonal -> "Personal"
+            R.id.tabOTPs -> "OTPs"
+            R.id.tabOffers -> "Offers"
+            R.id.tabTransactions -> "Transactions"
+            else -> "All"
+        }
+        viewModel.loadConversations(category, timeFilter = "Custom", startDate = startTime, endDate = endTime)
+    }
+    
+    private fun markAllAsRead() {
+        viewModel.markAllAsRead()
+        // Reload conversations to update UI
+        val category = when (selectedTab?.id) {
+            R.id.tabAll -> "All"
+            R.id.tabPersonal -> "Personal"
+            R.id.tabOTPs -> "OTPs"
+            R.id.tabOffers -> "Offers"
+            R.id.tabTransactions -> "Transactions"
+            else -> "All"
+        }
+        viewModel.loadConversations(category)
     }
     
     private fun setupClickOutsideToClearFocus() {
@@ -302,27 +561,29 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun filterConversations() {
-        if (currentSearchQuery.isEmpty()) {
+        val listToShow = if (currentSearchQuery.isEmpty()) {
             // Show all conversations for current category
-            adapter.submitList(allConversations)
-            return
+            allConversations
+        } else {
+            val query = currentSearchQuery.lowercase().trim()
+            allConversations.filter { conversation ->
+                // Search in contact name
+                val contactName = conversation.contactName?.lowercase() ?: ""
+                // Search in phone number/address
+                val address = conversation.address.lowercase()
+                // Search in message snippet
+                val snippet = conversation.snippet.lowercase()
+                
+                contactName.contains(query) ||
+                address.contains(query) ||
+                snippet.contains(query)
+            }
         }
         
-        val query = currentSearchQuery.lowercase().trim()
-        val filtered = allConversations.filter { conversation ->
-            // Search in contact name
-            val contactName = conversation.contactName?.lowercase() ?: ""
-            // Search in phone number/address
-            val address = conversation.address.lowercase()
-            // Search in message snippet
-            val snippet = conversation.snippet.lowercase()
-            
-            contactName.contains(query) ||
-            address.contains(query) ||
-            snippet.contains(query)
+        adapter.submitList(listToShow) {
+            // Update empty state after list is submitted
+            updateEmptyState(listToShow.isEmpty())
         }
-        
-        adapter.submitList(filtered)
     }
     
     private fun markConversationAsRead(threadId: Long, position: Int) {
@@ -444,6 +705,8 @@ class MainActivity : AppCompatActivity() {
                         viewHolder?.itemView?.translationX = 0f
                         viewHolder?.itemView?.alpha = 1f
                     }
+                    // Update empty state after deletion
+                    updateEmptyState(currentList.isEmpty())
                 }
             } else {
                 // If position is invalid, refresh the list (which will filter out deleted items)
@@ -501,7 +764,9 @@ class MainActivity : AppCompatActivity() {
     
     private fun setupFab() {
         binding.fabStartChat.setOnClickListener {
-            startActivity(Intent(this, ComposeActivity::class.java))
+            startActivity(Intent(this, ContactsActivity::class.java).apply {
+                putExtra("from_fab", true)
+            })
         }
     }
     
@@ -541,12 +806,27 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun setSelectedNavigationItem(itemId: Int) {
-        if (binding.bottomNavigationView.selectedItemId != itemId) {
-            isSettingSelectedItem = true
-            binding.bottomNavigationView.selectedItemId = itemId
-            binding.bottomNavigationView.post {
+        isSettingSelectedItem = true
+        
+        // First, uncheck all menu items
+        for (i in 0 until binding.bottomNavigationView.menu.size()) {
+            binding.bottomNavigationView.menu.getItem(i).isChecked = false
+        }
+        
+        // Then check the selected item
+        binding.bottomNavigationView.menu.findItem(itemId)?.isChecked = true
+        binding.bottomNavigationView.selectedItemId = itemId
+        
+        // Force refresh
+        binding.bottomNavigationView.invalidate()
+        binding.bottomNavigationView.post {
+            // Force refresh after layout
+            binding.bottomNavigationView.invalidate()
+            binding.bottomNavigationView.postDelayed({
                 isSettingSelectedItem = false
-            }
+                // One more refresh to ensure tint is applied
+                binding.bottomNavigationView.invalidate()
+            }, 50)
         }
     }
     
@@ -556,20 +836,163 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun observeConversations() {
-        viewModel.conversations.observe(this) { conversations ->
+        viewModel.conversations.observe(this) { newConversations ->
+            Log.d(TAG, "observeConversations: Received ${newConversations.size} conversations")
             // Store all conversations for search filtering
-            allConversations = conversations
+            allConversations = newConversations
             // Apply search filter if there's an active search query
             if (currentSearchQuery.isNotEmpty()) {
+                Log.d(TAG, "Applying search filter with query: $currentSearchQuery")
                 filterConversations()
             } else {
-                adapter.submitList(conversations)
+                // Get current list from adapter
+                val currentList = adapter.currentList.toMutableList()
+                Log.d(TAG, "Current adapter list size: ${currentList.size}, New list size: ${newConversations.size}")
+                
+                // If current list is empty, just submit the new list
+                if (currentList.isEmpty()) {
+                    Log.d(TAG, "Current list is empty, submitting new list directly")
+                    adapter.submitList(newConversations) {
+                        updateEmptyState(newConversations.isEmpty())
+                    }
+                } else {
+                    // Intelligently merge: add new conversations and move updated ones to top
+                    Log.d(TAG, "Merging conversation lists")
+                    val mergedList = mergeConversationLists(currentList, newConversations)
+                    Log.d(TAG, "Merged list size: ${mergedList.size}")
+                    
+                    // Check if the merged list is actually different from current list
+                    val isDifferent = mergedList.size != currentList.size || 
+                                     mergedList.zip(currentList).any { (new, old) -> 
+                                         new.threadId != old.threadId || 
+                                         new.date != old.date || 
+                                         new.snippet != old.snippet || 
+                                         new.unreadCount != old.unreadCount 
+                                     }
+                    
+                    if (isDifferent) {
+                        // Check if we have new messages that require moving items to top
+                        val hasNewMessages = mergedList.isNotEmpty() && currentList.isNotEmpty() && 
+                                            mergedList.first().threadId != currentList.first().threadId
+                        
+                        Log.d(TAG, "List has changes, submitting merged list. Has new messages: $hasNewMessages")
+                        adapter.submitList(mergedList) {
+                            updateEmptyState(mergedList.isEmpty())
+                            // Only scroll to top if a conversation was actually moved there
+                            if (hasNewMessages) {
+                                Log.d(TAG, "Conversation moved to top, scrolling to position 0")
+                                binding.recyclerViewConversations.scrollToPosition(0)
+                            }
+                        }
+                    } else {
+                        Log.d(TAG, "No changes detected, skipping list update")
+                    }
+                }
             }
         }
         
         viewModel.isLoading.observe(this) { isLoading ->
             binding.progressIndicator.visibility = if (isLoading) View.VISIBLE else View.GONE
-            binding.recyclerViewConversations.visibility = if (isLoading) View.GONE else View.VISIBLE
+            // Hide empty state and RecyclerView when loading
+            if (isLoading) {
+                binding.layoutEmptyState.visibility = View.GONE
+                binding.recyclerViewConversations.visibility = View.GONE
+            } else {
+                // After loading, check if list is empty
+                val currentList = adapter.currentList
+                updateEmptyState(currentList.isEmpty())
+            }
         }
+    }
+    
+    private fun updateEmptyState(isEmpty: Boolean) {
+        // Only show empty state if not loading
+        val isLoading = viewModel.isLoading.value ?: false
+        if (!isLoading) {
+            if (isEmpty) {
+                binding.layoutEmptyState.visibility = View.VISIBLE
+                binding.recyclerViewConversations.visibility = View.GONE
+            } else {
+                binding.layoutEmptyState.visibility = View.GONE
+                binding.recyclerViewConversations.visibility = View.VISIBLE
+            }
+        }
+    }
+    
+    /**
+     * Intelligently merges new conversations with existing list:
+     * - Adds new conversations to the top
+     * - Updates existing conversations in place
+     * - Moves conversations with new messages to the top
+     * - Preserves order of unchanged conversations from current list
+     */
+    private fun mergeConversationLists(
+        currentList: List<Conversation>,
+        newList: List<Conversation>
+    ): List<Conversation> {
+        Log.d(TAG, "mergeConversationLists - current: ${currentList.size}, new: ${newList.size}")
+        val newMap = newList.associateBy { it.threadId }
+        val conversationsToMoveToTop = mutableListOf<Conversation>()
+        val unchangedConversations = mutableListOf<Conversation>()
+        val processedThreadIds = mutableSetOf<Long>()
+        
+        // First pass: identify conversations that have new messages or are completely new
+        newList.forEach { newConv ->
+            val currentConv = currentList.find { it.threadId == newConv.threadId }
+            if (currentConv == null) {
+                // New conversation - add to top
+                Log.d(TAG, "New conversation ${newConv.threadId}, adding to top")
+                conversationsToMoveToTop.add(newConv)
+                processedThreadIds.add(newConv.threadId)
+            } else {
+                // Existing conversation - check if it has new messages
+                // Consider it has new message if:
+                // 1. Date is newer (new message received)
+                // 2. Unread count increased
+                // 3. Snippet changed AND date is same or newer (message updated)
+                val hasNewMessage = newConv.date > currentConv.date || 
+                                   newConv.unreadCount > currentConv.unreadCount ||
+                                   (newConv.snippet != currentConv.snippet && newConv.date >= currentConv.date)
+                if (hasNewMessage) {
+                    // Has new message - move to top
+                    Log.d(TAG, "Conversation ${newConv.threadId} has new message (oldDate: ${currentConv.date}, newDate: ${newConv.date}, oldUnread: ${currentConv.unreadCount}, newUnread: ${newConv.unreadCount}), moving to top")
+                    conversationsToMoveToTop.add(newConv)
+                    processedThreadIds.add(newConv.threadId)
+                }
+            }
+        }
+        
+        // Sort conversations to move to top by date (newest first)
+        conversationsToMoveToTop.sortByDescending { it.date }
+        
+        // Second pass: preserve order of unchanged conversations from current list
+        // This maintains the relative position of conversations that haven't changed
+        currentList.forEach { currentConv ->
+            if (!processedThreadIds.contains(currentConv.threadId)) {
+                // This conversation wasn't moved to top, check if it exists in new list
+                val newConv = newMap[currentConv.threadId]
+                if (newConv != null) {
+                    // Conversation exists in new list but hasn't changed - keep in same relative position
+                    unchangedConversations.add(newConv)
+                    processedThreadIds.add(newConv.threadId)
+                } else {
+                    // Conversation was removed from new list - don't add it
+                    Log.d(TAG, "Conversation ${currentConv.threadId} removed from new list")
+                }
+            }
+        }
+        
+        // Third pass: add any remaining new conversations that weren't processed
+        // (This shouldn't happen, but it's a safety check)
+        newList.forEach { newConv ->
+            if (!processedThreadIds.contains(newConv.threadId)) {
+                Log.d(TAG, "Adding remaining conversation ${newConv.threadId} to unchanged list")
+                unchangedConversations.add(newConv)
+            }
+        }
+        
+        Log.d(TAG, "mergeConversationLists result - toTop: ${conversationsToMoveToTop.size}, unchanged: ${unchangedConversations.size}")
+        // Combine: conversations with new messages first (sorted by date), then unchanged ones in their original order
+        return conversationsToMoveToTop + unchangedConversations
     }
 }

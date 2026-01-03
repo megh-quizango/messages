@@ -1,7 +1,10 @@
 package com.quizangomedia.messages.ui.settings
 
+import android.app.role.RoleManager
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Telephony
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +12,7 @@ import android.view.ViewTreeObserver
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -100,7 +104,28 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         val settingsItems = listOf(
             SettingsItem("General", listOf(
-                SettingsOption("Default SMS apps Messages", null, null, true),
+                SettingsOption("Default SMS apps Messages", null, null, true) { 
+                    // Check if app is already default SMS app
+                    val isDefaultSmsApp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        // Android 10+ - Use RoleManager
+                        val roleManager = getSystemService(RoleManager::class.java)
+                        roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
+                    } else {
+                        // Android 9 and below - Use Telephony
+                        val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
+                        defaultSmsPackage != null && packageName == defaultSmsPackage
+                    }
+                    
+                    if (isDefaultSmsApp) {
+                        // App is already default - show toast
+                        Toast.makeText(this, "App is already set as default", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // App is not default - open DefaultSmsActivity
+                        startActivity(Intent(this, com.quizangomedia.messages.ui.defaultsms.DefaultSmsActivity::class.java).apply {
+                            putExtra("from_settings", true)
+                        })
+                    }
+                },
                 SettingsOption("Contacts colored icons", null, true, false),
                 SettingsOption("Color SIM card icons", R.drawable.sim, false, false),
                 SettingsOption("Quick access to OTP", R.drawable.otp, true, false)
@@ -180,12 +205,27 @@ class SettingsActivity : AppCompatActivity() {
     }
     
     private fun setSelectedNavigationItem(itemId: Int) {
-        if (binding.bottomNavigationView.selectedItemId != itemId) {
-            isSettingSelectedItem = true
-            binding.bottomNavigationView.selectedItemId = itemId
-            binding.bottomNavigationView.post {
+        isSettingSelectedItem = true
+        
+        // First, uncheck all menu items
+        for (i in 0 until binding.bottomNavigationView.menu.size()) {
+            binding.bottomNavigationView.menu.getItem(i).isChecked = false
+        }
+        
+        // Then check the selected item
+        binding.bottomNavigationView.menu.findItem(itemId)?.isChecked = true
+        binding.bottomNavigationView.selectedItemId = itemId
+        
+        // Force refresh
+        binding.bottomNavigationView.invalidate()
+        binding.bottomNavigationView.post {
+            // Force refresh after layout
+            binding.bottomNavigationView.invalidate()
+            binding.bottomNavigationView.postDelayed({
                 isSettingSelectedItem = false
-            }
+                // One more refresh to ensure tint is applied
+                binding.bottomNavigationView.invalidate()
+            }, 50)
         }
     }
     

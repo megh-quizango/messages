@@ -7,12 +7,18 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.ContactsContract
+import android.provider.Telephony
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
+import com.quizangomedia.messages.observer.SmsContentObserver
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -36,6 +42,10 @@ import java.util.Locale
 
 class ConversationDetailActivity : AppCompatActivity() {
 
+    companion object {
+        private const val TAG = "ConversationDetail"
+    }
+
     private lateinit var binding: ActivityConversationDetailBinding
     private lateinit var viewModel: ConversationDetailViewModel
     private lateinit var adapter: MessageAdapter
@@ -46,6 +56,7 @@ class ConversationDetailActivity : AppCompatActivity() {
     private var scheduledDate: Long? = null
     private var scheduledTime: Int? = null // Hour
     private var scheduledMinute: Int? = null
+    private var smsContentObserver: SmsContentObserver? = null
 
     private val requestCallPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -66,8 +77,14 @@ class ConversationDetailActivity : AppCompatActivity() {
         
         threadId = intent.getLongExtra("thread_id", -1)
         address = intent.getStringExtra("address") ?: ""
-        contactName = intent.getStringExtra("contact_name") ?: address
+        contactName = intent.getStringExtra("contact_name") ?: ""
         isScheduling = intent.getBooleanExtra("is_scheduling", false)
+        
+        // If contact name is not provided, look it up
+        if (contactName.isEmpty() && address.isNotEmpty()) {
+            contactName = lookupContactName(address) ?: address
+            Log.d(TAG, "onCreate: Looked up contact name for $address: $contactName")
+        }
         
         enableEdgeToEdge()
         binding = ActivityConversationDetailBinding.inflate(layoutInflater)
@@ -122,10 +139,58 @@ class ConversationDetailActivity : AppCompatActivity() {
         if (isScheduling) {
             showDatePicker()
         }
+        
+        // Register ContentObserver to detect new messages in this conversation
+        registerSmsContentObserver()
+    }
+    
+    private fun registerSmsContentObserver() {
+        val handler = Handler(Looper.getMainLooper())
+        smsContentObserver = SmsContentObserver(handler) {
+            // Reload messages when SMS database changes
+            // Use postDelayed to debounce rapid changes and allow database to commit
+            handler.removeCallbacksAndMessages(null)
+            handler.postDelayed({
+                // Force reload messages
+                viewModel.loadMessages(threadId, address)
+            }, 500) // 500ms delay to ensure database is committed
+        }
+        
+        // Register observer for both inbox and sent SMS
+        contentResolver.registerContentObserver(
+            Telephony.Sms.CONTENT_URI,
+            true,
+            smsContentObserver!!
+        )
+        contentResolver.registerContentObserver(
+            Telephony.Sms.Inbox.CONTENT_URI,
+            true,
+            smsContentObserver!!
+        )
+        contentResolver.registerContentObserver(
+            Telephony.Sms.Sent.CONTENT_URI,
+            true,
+            smsContentObserver!!
+        )
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister ContentObserver to prevent memory leaks
+        smsContentObserver?.let {
+            contentResolver.unregisterContentObserver(it)
+        }
     }
     
     private fun setupToolbar() {
-        binding.textContactName.text = contactName.ifEmpty { address }
+        // Use contact name if available, otherwise use address
+        val displayName = if (contactName.isNotEmpty() && contactName != address) {
+            contactName
+        } else {
+            address
+        }
+        binding.textContactName.text = displayName
+        Log.d(TAG, "setupToolbar: Display name set to: $displayName (contactName: $contactName, address: $address)")
         binding.buttonBack.setOnClickListener {
             finish()
         }
@@ -331,11 +396,21 @@ class ConversationDetailActivity : AppCompatActivity() {
     }
 
     private fun observeMessages() {
-        viewModel.messages.observe(this) { messages ->
-            adapter.submitList(messages)
-            loadStarredMessages() // Refresh starred status when messages load
-            if (messages.isNotEmpty()) {
-                binding.recyclerViewMessages.scrollToPosition(messages.size - 1)
+        viewModel.messages.observe(this) { newMessages ->
+            val currentList = adapter.currentList
+            val wasEmpty = currentList.isEmpty()
+            
+            adapter.submitList(newMessages) {
+                loadStarredMessages() // Refresh starred status when messages load
+                
+                if (newMessages.isNotEmpty()) {
+                    // If list was empty or new messages were added, scroll to bottom
+                    if (wasEmpty || newMessages.size > currentList.size) {
+                        binding.recyclerViewMessages.post {
+                            binding.recyclerViewMessages.smoothScrollToPosition(newMessages.size - 1)
+                        }
+                    }
+                }
             }
         }
         
@@ -480,6 +555,57 @@ class ConversationDetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun lookupContactName(phoneNumber: String): String? {
+        // Normalize phone number for matching
+        fun normalizePhoneNumber(phone: String): String {
+            var normalized = phone.replace(Regex("[\\s\\-\\(\\)]"), "")
+            if (normalized.startsWith("+")) {
+                normalized = normalized.substring(1)
+            }
+            if (normalized.length > 10) {
+                if (normalized.startsWith("91") && normalized.length == 12) {
+                    normalized = normalized.substring(2)
+                } else if (normalized.startsWith("0") && normalized.length == 11) {
+                    normalized = normalized.substring(1)
+                }
+            }
+            if (normalized.length > 10) {
+                normalized = normalized.takeLast(10)
+            }
+            return normalized
+        }
+        
+        val normalizedNumber = normalizePhoneNumber(phoneNumber)
+        val variations = listOf(
+            normalizedNumber,
+            phoneNumber,
+            if (normalizedNumber.length > 10) normalizedNumber.takeLast(10) else null
+        ).filterNotNull().distinct()
+        
+        for (number in variations) {
+            val uri = Uri.withAppendedPath(
+                ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+                Uri.encode(number)
+            )
+            
+            val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
+            
+            contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val nameIndex = cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME)
+                    if (nameIndex >= 0) {
+                        val name = cursor.getString(nameIndex)
+                        if (!name.isNullOrEmpty()) {
+                            return name
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null
+    }
+    
     private fun initiatePhoneCall() {
         val phoneNumber = address.trim()
         if (phoneNumber.isNotEmpty()) {

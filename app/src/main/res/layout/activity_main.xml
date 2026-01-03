@@ -43,6 +43,18 @@
             android:textColor="@color/black"
             android:textSize="14sp"
             android:imeOptions="actionSearch"/>
+
+        <ImageView
+            android:id="@+id/imageViewMenu"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="12dp"
+            android:src="@android:drawable/ic_menu_more"
+            android:tint="#9696A3"
+            android:contentDescription="More options"
+            android:clickable="true"
+            android:focusable="true"/>
+
     </LinearLayout>
 
     <!-- ================= CATEGORY TABS (RESTORED) ================= -->
@@ -151,6 +163,37 @@
         app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ================= EMPTY STATE ================= -->
+
+    <LinearLayout
+        android:id="@+id/layoutEmptyState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/recyclerViewConversations"
+        app:layout_constraintBottom_toBottomOf="@id/recyclerViewConversations"
+        app:layout_constraintStart_toStartOf="@id/recyclerViewConversations"
+        app:layout_constraintEnd_toEndOf="@id/recyclerViewConversations">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/feedback"
+            android:contentDescription="Empty state icon"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/textEmptyState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Message list empty"
+            android:textSize="16sp"
+            android:textColor="#9696A3"
+            android:gravity="center"/>
+    </LinearLayout>
 
     <!-- ================= LOADING INDICATOR ================= -->
 

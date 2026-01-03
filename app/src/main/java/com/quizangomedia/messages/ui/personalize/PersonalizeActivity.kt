@@ -248,12 +248,27 @@ class PersonalizeActivity : AppCompatActivity() {
     }
     
     private fun setSelectedNavigationItem(itemId: Int) {
-        if (binding.bottomNavigationView.selectedItemId != itemId) {
-            isSettingSelectedItem = true
-            binding.bottomNavigationView.selectedItemId = itemId
-            binding.bottomNavigationView.post {
+        isSettingSelectedItem = true
+        
+        // First, uncheck all menu items
+        for (i in 0 until binding.bottomNavigationView.menu.size()) {
+            binding.bottomNavigationView.menu.getItem(i).isChecked = false
+        }
+        
+        // Then check the selected item
+        binding.bottomNavigationView.menu.findItem(itemId)?.isChecked = true
+        binding.bottomNavigationView.selectedItemId = itemId
+        
+        // Force refresh
+        binding.bottomNavigationView.invalidate()
+        binding.bottomNavigationView.post {
+            // Force refresh after layout
+            binding.bottomNavigationView.invalidate()
+            binding.bottomNavigationView.postDelayed({
                 isSettingSelectedItem = false
-            }
+                // One more refresh to ensure tint is applied
+                binding.bottomNavigationView.invalidate()
+            }, 50)
         }
     }
     

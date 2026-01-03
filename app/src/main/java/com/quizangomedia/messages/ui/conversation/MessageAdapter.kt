@@ -212,7 +212,18 @@ class MessageAdapter(
         }
 
         override fun areContentsTheSame(oldItem: MessageListItem, newItem: MessageListItem): Boolean {
-            return oldItem == newItem
+            return when {
+                oldItem is MessageListItem.MessageItem && newItem is MessageListItem.MessageItem -> {
+                    oldItem.message.id == newItem.message.id &&
+                    oldItem.message.body == newItem.message.body &&
+                    oldItem.message.date == newItem.message.date &&
+                    oldItem.message.type == newItem.message.type &&
+                    oldItem.message.status == newItem.message.status
+                }
+                oldItem is MessageListItem.DateHeader && newItem is MessageListItem.DateHeader ->
+                    oldItem.date == newItem.date
+                else -> false
+            }
         }
     }
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Google Messages style chat bubble max width -->
+    <dimen name="chat_bubble_max_width">320dp</dimen>
+
+    <!-- Optional spacing values (future-proofing) -->
+    <dimen name="chat_bubble_margin_small">8dp</dimen>
+    <dimen name="chat_bubble_margin_large">64dp</dimen>
+
+</resources>

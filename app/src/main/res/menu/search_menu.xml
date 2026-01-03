@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_filter_by_time"
+        android:title="Filter By Time"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_mark_all_read"
+        android:title="Mark All Read"
+        app:showAsAction="never"/>
+</menu>
+
