@@ -11,6 +11,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityFeedbackBinding
+import com.quizangomedia.messages.util.ThemeManager
 
 class FeedbackActivity : AppCompatActivity() {
 
@@ -22,6 +23,9 @@ class FeedbackActivity : AppCompatActivity() {
         
         binding = ActivityFeedbackBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -65,11 +69,24 @@ class FeedbackActivity : AppCompatActivity() {
     }
     
     private fun setTabSelected(tab: TextView, isSelected: Boolean) {
+        val themeColor = ThemeManager.getThemeColor(this)
+        val themeColorLight = ThemeManager.getThemeColorLight(this)
+        
         if (isSelected) {
-            tab.setBackgroundResource(R.drawable.bg_feedback_tab_selected)
+            // Create new drawable with theme color dynamically
+            val selectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = 8f * resources.displayMetrics.density
+                setColor(themeColor)
+            }
+            tab.background = selectedDrawable
             tab.setTextColor(getColor(R.color.white))
         } else {
-            tab.setBackgroundResource(R.drawable.bg_feedback_tab_unselected)
+            // Create new drawable with theme light color dynamically
+            val unselectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = 8f * resources.displayMetrics.density
+                setColor(themeColorLight)
+            }
+            tab.background = unselectedDrawable
             tab.setTextColor(getColor(R.color.black))
         }
     }
@@ -85,6 +102,11 @@ class FeedbackActivity : AppCompatActivity() {
     }
     
     private fun setupSubmitButton() {
+        // Set backgroundTint to null for submit button and apply theme color directly
+        binding.buttonSubmit.backgroundTintList = null
+        val themeColor = ThemeManager.getThemeColor(this)
+        binding.buttonSubmit.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        
         binding.buttonSubmit.setOnClickListener {
             // TODO: Implement feedback submission
             val category = selectedCategory ?: ""

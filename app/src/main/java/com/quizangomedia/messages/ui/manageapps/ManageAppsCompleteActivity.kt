@@ -13,6 +13,7 @@ import com.google.android.gms.ads.nativead.NativeAdView
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityManageAppsCompleteBinding
 import com.quizangomedia.messages.databinding.NativeAdLayoutBinding
+import com.quizangomedia.messages.util.ThemeManager
 
 class ManageAppsCompleteActivity : AppCompatActivity() {
 
@@ -25,6 +26,9 @@ class ManageAppsCompleteActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityManageAppsCompleteBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

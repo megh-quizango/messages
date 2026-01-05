@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.quizangomedia.messages.databinding.ActivityContactSelectionBinding
+import com.quizangomedia.messages.util.ThemeManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,6 +55,9 @@ class SingleContactSelectionActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityContactSelectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

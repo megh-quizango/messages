@@ -29,6 +29,7 @@ import com.quizangomedia.messages.ui.spam.SpamBlockActivity
 import com.quizangomedia.messages.ui.private.PrivateConversationsActivity
 import com.quizangomedia.messages.ui.language.LanguageActivity
 import com.quizangomedia.messages.ui.manageapps.ManageAppsActivity
+import com.quizangomedia.messages.util.ThemeManager
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -89,10 +90,15 @@ class SettingsActivity : AppCompatActivity() {
         setupBottomNavigation()
         setupBannerAd()
         
-        // Set Settings as selected initially
+        // Set Settings as selected initially and apply theme
         binding.bottomNavigationView.post {
             setSelectedNavigationItem(R.id.nav_settings)
+            // Apply theme after bottom nav is fully laid out
+            ThemeManager.applyTheme(this, binding.root)
         }
+        
+        // Also apply theme immediately
+        ThemeManager.applyTheme(this, binding.root)
     }
     
     private fun setupBackButton() {
@@ -250,6 +256,9 @@ class SettingsActivity : AppCompatActivity() {
             .setView(dialogView)
             .create()
         
+        // Apply theme to dialog
+        ThemeManager.applyTheme(this, dialogView)
+        
         buttonSave.setOnClickListener {
             val signature = editTextSignature.text.toString().trim()
             prefs.edit().putString("signature_text", signature).apply()
@@ -272,6 +281,9 @@ class SettingsActivity : AppCompatActivity() {
         val bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_rate_us, null)
         val bottomSheet = BottomSheetDialog(this)
         bottomSheet.setContentView(bottomSheetView)
+        
+        // Apply theme to bottom sheet
+        ThemeManager.applyTheme(this, bottomSheetView)
         
         val star1 = bottomSheetView.findViewById<ImageView>(R.id.star1)
         val star2 = bottomSheetView.findViewById<ImageView>(R.id.star2)

@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityRecycleBinBinding
 import com.quizangomedia.messages.ui.main.DeletedConversationData
+import com.quizangomedia.messages.util.ThemeManager
 
 class RecycleBinActivity : AppCompatActivity() {
 
@@ -32,6 +33,9 @@ class RecycleBinActivity : AppCompatActivity() {
         
         binding = ActivityRecycleBinBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         
@@ -105,14 +109,18 @@ class RecycleBinActivity : AppCompatActivity() {
     }
     
     private fun showRecoverConfirmationDialog(deletedConversation: DeletedConversationData) {
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Restore Conversation")
             .setMessage("Do you want to restore the conversation?")
             .setPositiveButton("Yes") { _, _ ->
                 restoreConversation(deletedConversation)
             }
             .setNegativeButton("No", null)
-            .show()
+            .create()
+        
+        // Apply theme to dialog
+        dialog.show()
+        dialog.window?.decorView?.let { ThemeManager.applyTheme(this, it) }
     }
     
     private fun restoreConversation(deletedConversation: DeletedConversationData) {

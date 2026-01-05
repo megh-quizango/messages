@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.quizangomedia.messages.databinding.ActivityContactSelectionBinding
 import com.quizangomedia.messages.ui.blocking.CustomBlockingActivity
+import com.quizangomedia.messages.util.ThemeManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -56,6 +57,9 @@ class ContactSelectionActivity : AppCompatActivity() {
         binding = ActivityContactSelectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -66,7 +70,17 @@ class ContactSelectionActivity : AppCompatActivity() {
         setupRecyclerView()
         setupDoneButton()
         
+        // Set backgroundTint to null for done button and apply theme color directly
+        binding.buttonDone.backgroundTintList = null
+        val themeColor = ThemeManager.getThemeColor(this)
+        binding.buttonDone.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        
         checkContactsPermissionAndLoad()
+        
+        // Apply theme after views are laid out
+        binding.root.post {
+            ThemeManager.applyTheme(this, binding.root)
+        }
     }
 
     private fun setupToolbar() {

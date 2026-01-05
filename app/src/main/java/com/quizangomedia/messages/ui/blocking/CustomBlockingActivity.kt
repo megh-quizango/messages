@@ -28,6 +28,7 @@ import com.quizangomedia.messages.databinding.DialogAddPhoneNumberBinding
 import com.quizangomedia.messages.databinding.DialogUnblockConfirmationBinding
 import com.quizangomedia.messages.ui.blocking.overlay.ConversationSelectionActivity
 import com.quizangomedia.messages.ui.blocking.overlay.ContactSelectionActivity
+import com.quizangomedia.messages.util.ThemeManager
 
 class CustomBlockingActivity : AppCompatActivity() {
 
@@ -86,6 +87,9 @@ class CustomBlockingActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityCustomBlockingBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -166,12 +170,28 @@ class CustomBlockingActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
+        val themeColor = ThemeManager.getThemeColor(this)
+        val themeColorLight = ThemeManager.getThemeColorLight(this)
+        
         if (isKeywordsTabSelected) {
             // Keywords tab selected
             binding.tabKeywords.setBackgroundResource(R.drawable.bg_tab_connected_selected_left)
             binding.tabKeywords.setTextColor(getColor(R.color.white))
+            // Apply theme color to selected tab background dynamically
+            val selectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadii = floatArrayOf(12f, 12f, 0f, 0f, 12f, 12f, 0f, 0f)
+                setColor(themeColor)
+            }
+            binding.tabKeywords.background = selectedDrawable
+            
             binding.tabContacts.setBackgroundResource(R.drawable.bg_tab_connected_unselected_right)
             binding.tabContacts.setTextColor(getColor(R.color.black))
+            // Apply theme light color to unselected tab
+            val unselectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadii = floatArrayOf(0f, 0f, 12f, 12f, 0f, 0f, 12f, 12f)
+                setColor(themeColorLight)
+            }
+            binding.tabContacts.background = unselectedDrawable
 
             binding.layoutKeywordsContent.visibility = View.VISIBLE
             binding.layoutContactsContent.visibility = View.GONE
@@ -181,8 +201,21 @@ class CustomBlockingActivity : AppCompatActivity() {
             // Contacts tab selected
             binding.tabContacts.setBackgroundResource(R.drawable.bg_tab_connected_selected_right)
             binding.tabContacts.setTextColor(getColor(R.color.white))
+            // Apply theme color to selected tab background dynamically
+            val selectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadii = floatArrayOf(0f, 0f, 12f, 12f, 0f, 0f, 12f, 12f)
+                setColor(themeColor)
+            }
+            binding.tabContacts.background = selectedDrawable
+            
             binding.tabKeywords.setBackgroundResource(R.drawable.bg_tab_connected_unselected_left)
             binding.tabKeywords.setTextColor(getColor(R.color.black))
+            // Apply theme light color to unselected tab
+            val unselectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadii = floatArrayOf(12f, 12f, 0f, 0f, 12f, 12f, 0f, 0f)
+                setColor(themeColorLight)
+            }
+            binding.tabKeywords.background = unselectedDrawable
 
             binding.layoutKeywordsContent.visibility = View.GONE
             binding.layoutContactsContent.visibility = View.VISIBLE
@@ -226,6 +259,13 @@ class CustomBlockingActivity : AppCompatActivity() {
         binding.recyclerViewKeywords.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewKeywords.adapter = keywordsAdapter
 
+        // Apply theme to add keyword buttons
+        val themeColor = ThemeManager.getThemeColor(this)
+        binding.buttonAddKeywords.backgroundTintList = null
+        binding.buttonAddKeywords.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        binding.fabAddKeyword.backgroundTintList = null
+        binding.fabAddKeyword.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+
         binding.buttonAddKeywords.setOnClickListener {
             showAddKeywordDialog()
         }
@@ -244,6 +284,13 @@ class CustomBlockingActivity : AppCompatActivity() {
         binding.recyclerViewContacts.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewContacts.adapter = contactsAdapter
 
+        // Apply theme to add contact buttons
+        val themeColor = ThemeManager.getThemeColor(this)
+        binding.buttonAddContacts.backgroundTintList = null
+        binding.buttonAddContacts.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        binding.fabAddContact.backgroundTintList = null
+        binding.fabAddContact.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+
         binding.buttonAddContacts.setOnClickListener {
             showAddBlacklistContactsDialog()
         }
@@ -258,6 +305,9 @@ class CustomBlockingActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setView(dialogBinding.root)
             .create()
+
+        // Apply theme to dialog
+        ThemeManager.applyThemeToDialog(this, dialogBinding.root)
 
         dialogBinding.buttonCancel.setOnClickListener {
             dialog.dismiss()
@@ -275,6 +325,10 @@ class CustomBlockingActivity : AppCompatActivity() {
             }
         }
 
+        // Apply theme after dialog is shown
+        dialog.setOnShowListener {
+            ThemeManager.applyTheme(this, dialogBinding.root)
+        }
         dialog.show()
     }
 
@@ -283,6 +337,9 @@ class CustomBlockingActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setView(dialogBinding.root)
             .create()
+
+        // Apply theme to dialog
+        ThemeManager.applyThemeToDialog(this, dialogBinding.root)
 
         dialogBinding.buttonCancel.setOnClickListener {
             dialog.dismiss()
@@ -300,6 +357,10 @@ class CustomBlockingActivity : AppCompatActivity() {
             }
         }
 
+        // Apply theme after dialog is shown
+        dialog.setOnShowListener {
+            ThemeManager.applyTheme(this, dialogBinding.root)
+        }
         dialog.show()
     }
 
@@ -308,6 +369,9 @@ class CustomBlockingActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setView(dialogBinding.root)
             .create()
+
+        // Apply theme to dialog
+        ThemeManager.applyThemeToDialog(this, dialogBinding.root)
 
         dialogBinding.buttonCancel.setOnClickListener {
             dialog.dismiss()
@@ -334,6 +398,10 @@ class CustomBlockingActivity : AppCompatActivity() {
             showAddPhoneNumberDialog()
         }
 
+        // Apply theme after dialog is shown
+        dialog.setOnShowListener {
+            ThemeManager.applyTheme(this, dialogBinding.root)
+        }
         dialog.show()
     }
 
@@ -345,6 +413,9 @@ class CustomBlockingActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setView(dialogBinding.root)
             .create()
+
+        // Apply theme to dialog
+        ThemeManager.applyTheme(this, dialogBinding.root)
 
         dialogBinding.buttonCancel.setOnClickListener {
             dialog.dismiss()
@@ -369,6 +440,9 @@ class CustomBlockingActivity : AppCompatActivity() {
             .setView(dialogBinding.root)
             .create()
 
+        // Apply theme to dialog
+        ThemeManager.applyThemeToDialog(this, dialogBinding.root)
+
         dialogBinding.buttonCancel.setOnClickListener {
             dialog.dismiss()
         }
@@ -380,6 +454,10 @@ class CustomBlockingActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
+        // Apply theme after dialog is shown
+        dialog.setOnShowListener {
+            ThemeManager.applyTheme(this, dialogBinding.root)
+        }
         dialog.show()
     }
 

@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityManageAppsBinding
+import com.quizangomedia.messages.util.ThemeManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,6 +33,9 @@ class ManageAppsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityManageAppsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -147,6 +151,14 @@ class ManageAppsActivity : AppCompatActivity() {
         // Show phone image and manage button
         binding.imagePhone.visibility = View.VISIBLE
         binding.buttonManage.visibility = View.VISIBLE
+        
+        // Apply theme to manage button - set backgroundTint to null and apply theme color directly
+        binding.buttonManage.backgroundTintList = null
+        val themeColor = ThemeManager.getThemeColor(this)
+        binding.buttonManage.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        binding.root.post {
+            ThemeManager.applyTheme(this, binding.root)
+        }
         
         // Setup manage button click
         binding.buttonManage.setOnClickListener {

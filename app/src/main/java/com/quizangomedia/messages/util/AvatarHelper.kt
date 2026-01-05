@@ -18,6 +18,7 @@ object AvatarHelper {
         Color.parseColor("#FF6B9D"),  // Pink
         Color.parseColor("#4ECDC4"),  // Teal
         Color.parseColor("#95E1D3"),  // Light teal
+        // Light blue - will be replaced with theme light color dynamically
         Color.parseColor("#E6F0FF"),  // Light blue
         Color.parseColor("#FFD93D"),  // Yellow
         Color.parseColor("#6BCF7F"),  // Green
@@ -32,11 +33,23 @@ object AvatarHelper {
     /**
      * Get a consistent color for a given identifier (name or phone number)
      * The same identifier will always return the same color
+     * If the color is #E6F0FF, it will be replaced with theme light color if context is provided
      */
-    fun getColorForIdentifier(identifier: String): Int {
+    fun getColorForIdentifier(identifier: String, context: android.content.Context? = null): Int {
         val hash = identifier.hashCode()
         val index = Math.abs(hash) % avatarColors.size
-        return avatarColors[index]
+        var color = avatarColors[index]
+        
+        // Replace #E6F0FF with theme light color if context is provided
+        if (context != null && color == Color.parseColor("#E6F0FF")) {
+            color = try {
+                Color.parseColor(AppPreferences.getThemeColorLight(context))
+            } catch (e: Exception) {
+                color // Fallback to original color
+            }
+        }
+        
+        return color
     }
     
     /**
@@ -111,7 +124,7 @@ object AvatarHelper {
         Log.d(TAG, "loadAvatar: hasContactName=$hasContactName, addressIsName=$addressIsName, shouldShowLetter=$shouldShowLetter")
         
         val identifier = contactName ?: address
-        val color = getColorForIdentifier(identifier)
+        val color = getColorForIdentifier(identifier, context)
         val displayName = if (hasContactName) contactName!! else if (addressIsName) address else address
         val firstLetter = getFirstLetter(displayName, address)
         

@@ -32,8 +32,22 @@ class BackgroundAppsAdapter(
             binding.textAppName.text = app.appName
             binding.imageAppIcon.setImageDrawable(app.icon)
             
-            // Set background tint to null to prevent MaterialButton from applying default tint
+            // Set background tint to null to allow theme override and remove shadow
             binding.buttonStop.backgroundTintList = null
+            binding.buttonStop.elevation = 0f
+            binding.buttonStop.stateListAnimator = null
+            
+            // Apply theme color to text
+            val themeColor = com.quizangomedia.messages.util.ThemeManager.getThemeColor(binding.root.context)
+            binding.buttonStop.setTextColor(themeColor)
+            
+            // Apply theme to button background (transparent with themed stroke)
+            binding.buttonStop.background?.mutate()?.let { drawable ->
+                if (drawable is android.graphics.drawable.GradientDrawable) {
+                    drawable.setStroke(2, themeColor)
+                    drawable.setColor(android.graphics.Color.TRANSPARENT)
+                }
+            }
             
             if (app.isStopped) {
                 binding.buttonStop.text = "Stopped"

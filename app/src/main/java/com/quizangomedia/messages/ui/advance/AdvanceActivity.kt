@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityAdvanceBinding
+import com.quizangomedia.messages.util.ThemeManager
 
 class AdvanceActivity : AppCompatActivity() {
 
@@ -40,6 +41,9 @@ class AdvanceActivity : AppCompatActivity() {
         
         binding = ActivityAdvanceBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         
@@ -174,6 +178,9 @@ class AdvanceActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .create()
+        
+        // Apply theme to dialog
+        ThemeManager.applyTheme(this, dialogView)
         
         // Set window background to transparent to show rounded corners
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)

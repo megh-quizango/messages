@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.databinding.ActivityScheduledMessagesBinding
 import com.quizangomedia.messages.ui.blocking.overlay.SingleContactSelectionActivity
+import com.quizangomedia.messages.util.ThemeManager
 
 class ScheduledMessagesActivity : AppCompatActivity() {
 
@@ -40,6 +41,9 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityScheduledMessagesBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

@@ -1,7 +1,10 @@
 package com.quizangomedia.messages.ui.main
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -22,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,6 +48,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.quizangomedia.messages.observer.SmsContentObserver
+import com.quizangomedia.messages.util.ThemeManager
 
 class MainActivity : AppCompatActivity() {
     
@@ -60,6 +65,7 @@ class MainActivity : AppCompatActivity() {
     private var allConversations: List<Conversation> = emptyList()
     private var currentSearchQuery: String = ""
     private var smsContentObserver: SmsContentObserver? = null
+    private var themeChangeReceiver: BroadcastReceiver? = null
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -182,13 +188,21 @@ class MainActivity : AppCompatActivity() {
         // Request SMS permission and load conversations
         checkSmsPermissionAndLoad()
         
-        // Set Messages as selected initially
+        // Set Messages as selected initially and apply theme after views are laid out
         binding.bottomNavigationView.post {
             setSelectedNavigationItem(R.id.nav_messages)
+            // Apply theme after bottom nav is fully laid out to ensure colors are applied
+            ThemeManager.applyTheme(this, binding.root)
         }
+        
+        // Also apply theme immediately
+        ThemeManager.applyTheme(this, binding.root)
         
         // Register ContentObserver to detect new SMS messages
         registerSmsContentObserver()
+        
+        // Register receiver for theme changes
+        registerThemeChangeReceiver()
     }
     
     private fun registerSmsContentObserver() {
@@ -233,11 +247,47 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "SMS ContentObserver registered for all SMS URIs")
     }
     
+    private fun registerThemeChangeReceiver() {
+        val receiverFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        } else {
+            0
+        }
+        
+        themeChangeReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                // Re-apply theme when it changes
+                binding.root.post {
+                    ThemeManager.applyTheme(this@MainActivity, binding.root)
+                    // Also update visible fragments
+                    updateVisibleFragments()
+                }
+                // Also apply immediately
+                ThemeManager.applyTheme(this@MainActivity, binding.root)
+                updateVisibleFragments()
+            }
+        }
+        registerReceiver(themeChangeReceiver, IntentFilter("com.quizangomedia.messages.THEME_CHANGED"), receiverFlags)
+    }
+    
+    private fun updateVisibleFragments() {
+        // Update theme for visible fragments
+        val fragmentManager = supportFragmentManager
+        val currentFragment = fragmentManager.findFragmentById(R.id.fragmentContainer)
+        currentFragment?.view?.let { fragmentView ->
+            ThemeManager.applyTheme(this, fragmentView)
+        }
+    }
+    
     override fun onDestroy() {
         super.onDestroy()
         // Unregister ContentObserver to prevent memory leaks
         smsContentObserver?.let {
             contentResolver.unregisterContentObserver(it)
+        }
+        // Unregister theme change receiver
+        themeChangeReceiver?.let {
+            unregisterReceiver(it)
         }
     }
     
@@ -268,14 +318,26 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun selectTab(tab: TextView) {
+        val themeColor = ThemeManager.getThemeColor(this)
+        val themeColorLight = ThemeManager.getThemeColorLight(this)
+        
         // Deselect previous tab
         selectedTab?.let {
-            it.setBackgroundResource(R.drawable.bg_tab_unselected)
+            // Create new drawable with theme light color dynamically
+            val unselectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = 50f * resources.displayMetrics.density
+                setColor(themeColorLight)
+            }
+            it.background = unselectedDrawable
             it.setTextColor(getColor(R.color.black))
         }
         
-        // Select new tab
-        tab.setBackgroundResource(R.drawable.bg_tab_selected)
+        // Select new tab - create new drawable with theme color dynamically
+        val selectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+            cornerRadius = 50f * resources.displayMetrics.density
+            setColor(themeColor)
+        }
+        tab.background = selectedDrawable
         tab.setTextColor(getColor(R.color.white))
         selectedTab = tab
         
@@ -389,6 +451,9 @@ class MainActivity : AppCompatActivity() {
         val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_filter_time, null)
         val bottomSheetDialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
         bottomSheetDialog.setContentView(bottomSheetView)
+        
+        // Apply theme to bottom sheet
+        ThemeManager.applyTheme(this, bottomSheetView)
         
         // Ensure rounded corners are visible
         bottomSheetDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -779,22 +844,68 @@ class MainActivity : AppCompatActivity() {
             
             when (item.itemId) {
                 R.id.nav_messages -> {
-                    // Already on Messages screen
+                    showMessagesContent()
                     true
                 }
                 R.id.nav_contacts -> {
-                    startActivity(Intent(this, ContactsActivity::class.java))
+                    navigateToFragment(com.quizangomedia.messages.ui.contacts.ContactsFragment::class.java)
                     true
                 }
                 R.id.nav_personalize -> {
-                    startActivity(Intent(this, PersonalizeActivity::class.java))
+                    navigateToFragment(com.quizangomedia.messages.ui.personalize.PersonalizeFragment::class.java)
                     true
                 }
                 R.id.nav_settings -> {
-                    startActivity(Intent(this, SettingsActivity::class.java))
+                    navigateToFragment(com.quizangomedia.messages.ui.settings.SettingsFragment::class.java)
                     true
                 }
                 else -> false
+            }
+        }
+    }
+    
+    fun navigateToMessages() {
+        showMessagesContent()
+        setSelectedNavigationItem(R.id.nav_messages)
+    }
+    
+    private fun showMessagesContent() {
+        // Hide fragment container, show messages content
+        binding.fragmentContainer.visibility = View.GONE
+        binding.searchBar.visibility = View.VISIBLE
+        binding.categoryTabs.visibility = View.VISIBLE
+        binding.recyclerViewConversations.visibility = View.VISIBLE
+        binding.fabStartChat.visibility = View.VISIBLE
+        binding.layoutEmptyState.visibility = if (allConversations.isEmpty() && currentSearchQuery.isEmpty()) View.VISIBLE else View.GONE
+    }
+    
+    private fun <T : Fragment> navigateToFragment(fragmentClass: Class<T>) {
+        // Hide messages content, show fragment container
+        binding.searchBar.visibility = View.GONE
+        binding.categoryTabs.visibility = View.GONE
+        binding.recyclerViewConversations.visibility = View.GONE
+        binding.fabStartChat.visibility = View.GONE
+        binding.layoutEmptyState.visibility = View.GONE
+        binding.fragmentContainer.visibility = View.VISIBLE
+        
+        val fragmentManager = supportFragmentManager
+        val currentFragment = fragmentManager.findFragmentById(R.id.fragmentContainer)
+        
+        // Don't replace if already showing this fragment
+        if (currentFragment != null && currentFragment.javaClass == fragmentClass) {
+            return
+        }
+        
+        val fragment = fragmentClass.newInstance()
+        fragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .commit()
+        
+        // Apply theme to fragment after it's added
+        binding.fragmentContainer.post {
+            val fragmentView = fragment.view
+            if (fragmentView != null) {
+                ThemeManager.applyTheme(this, fragmentView)
             }
         }
     }

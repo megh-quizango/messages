@@ -8,6 +8,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivitySecurityQuestionBinding
+import com.quizangomedia.messages.util.ThemeManager
 
 class SecurityQuestionActivity : AppCompatActivity() {
 
@@ -20,6 +21,9 @@ class SecurityQuestionActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivitySecurityQuestionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

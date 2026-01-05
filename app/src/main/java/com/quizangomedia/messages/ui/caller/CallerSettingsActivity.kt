@@ -2,6 +2,7 @@ package com.quizangomedia.messages.ui.caller
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -9,6 +10,7 @@ import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityCallerSettingsBinding
 import com.quizangomedia.messages.databinding.ItemCallerSettingBinding
+import com.quizangomedia.messages.util.ThemeManager
 
 class CallerSettingsActivity : AppCompatActivity() {
 
@@ -31,6 +33,9 @@ class CallerSettingsActivity : AppCompatActivity() {
         binding = ActivityCallerSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
+        
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -51,67 +56,80 @@ class CallerSettingsActivity : AppCompatActivity() {
     }
     
     private fun setupSettings() {
-        // Missed call
-        val missedCallBinding = ItemCallerSettingBinding.bind(binding.itemMissedCall.root)
-        missedCallBinding.textTitle.text = "Missed call"
-        missedCallBinding.textDescription.text = "After a missed call, get details and choose what to do with the contact information."
-        missedCallBinding.switchToggle.isChecked = prefs.getBoolean(KEY_MISSED_CALL, true)
-        missedCallBinding.switchToggle.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean(KEY_MISSED_CALL, isChecked).apply()
-            // TODO: Implement missed call handling logic
+        // Helper function to setup a toggle with theme styling
+        fun setupToggle(binding: ItemCallerSettingBinding, title: String, description: String, key: String, defaultValue: Boolean, showDescription: Boolean = true) {
+            binding.textTitle.text = title
+            if (showDescription) {
+                binding.textDescription.text = description
+                binding.textDescription.visibility = View.VISIBLE
+            } else {
+                binding.textDescription.text = ""
+                binding.textDescription.visibility = View.GONE
+            }
+            binding.switchToggle.visibility = View.VISIBLE
+            binding.switchToggle.isChecked = prefs.getBoolean(key, defaultValue)
+            binding.switchToggle.setOnCheckedChangeListener { _, isChecked ->
+                prefs.edit().putBoolean(key, isChecked).apply()
+            }
+            // Apply theme-based styling using utility function
+            ThemeManager.applyToggleTheme(binding.switchToggle, this)
         }
+        
+        // Missed call
+        setupToggle(
+            ItemCallerSettingBinding.bind(binding.itemMissedCall.root),
+            "Missed call",
+            "After a missed call, get details and choose what to do with the contact information.",
+            KEY_MISSED_CALL,
+            true
+        )
         
         // Completed call
-        val completedCallBinding = ItemCallerSettingBinding.bind(binding.itemCompletedCall.root)
-        completedCallBinding.textTitle.text = "Completed call"
-        completedCallBinding.textDescription.text = "After a call ends, see details and choose what to do with the contact information."
-        completedCallBinding.switchToggle.isChecked = prefs.getBoolean(KEY_COMPLETED_CALL, true)
-        completedCallBinding.switchToggle.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean(KEY_COMPLETED_CALL, isChecked).apply()
-            // TODO: Implement completed call handling logic
-        }
+        setupToggle(
+            ItemCallerSettingBinding.bind(binding.itemCompletedCall.root),
+            "Completed call",
+            "After a call ends, see details and choose what to do with the contact information.",
+            KEY_COMPLETED_CALL,
+            true
+        )
         
         // No answer
-        val noAnswerBinding = ItemCallerSettingBinding.bind(binding.itemNoAnswer.root)
-        noAnswerBinding.textTitle.text = "No answer"
-        noAnswerBinding.textDescription.text = "After a call goes unanswered, see details and choose what to do with the contact information."
-        noAnswerBinding.switchToggle.isChecked = prefs.getBoolean(KEY_NO_ANSWER, true)
-        noAnswerBinding.switchToggle.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean(KEY_NO_ANSWER, isChecked).apply()
-            // TODO: Implement no answer handling logic
-        }
+        setupToggle(
+            ItemCallerSettingBinding.bind(binding.itemNoAnswer.root),
+            "No answer",
+            "After a call goes unanswered, see details and choose what to do with the contact information.",
+            KEY_NO_ANSWER,
+            true
+        )
         
         // Unknown caller
-        val unknownCallerBinding = ItemCallerSettingBinding.bind(binding.itemUnknownCaller.root)
-        unknownCallerBinding.textTitle.text = "Unknown caller"
-        unknownCallerBinding.textDescription.text = "After getting a call from an unknown number, view details and choose how to handle the contact information."
-        unknownCallerBinding.switchToggle.isChecked = prefs.getBoolean(KEY_UNKNOWN_CALLER, true)
-        unknownCallerBinding.switchToggle.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean(KEY_UNKNOWN_CALLER, isChecked).apply()
-            // TODO: Implement unknown caller handling logic
-        }
+        setupToggle(
+            ItemCallerSettingBinding.bind(binding.itemUnknownCaller.root),
+            "Unknown caller",
+            "After getting a call from an unknown number, view details and choose how to handle the contact information.",
+            KEY_UNKNOWN_CALLER,
+            true
+        )
         
         // Show call info for contacts
-        val showCallInfoBinding = ItemCallerSettingBinding.bind(binding.itemShowCallInfo.root)
-        showCallInfoBinding.textTitle.text = "Show call info for contacts"
-        showCallInfoBinding.textDescription.text = ""
-        showCallInfoBinding.textDescription.visibility = android.view.View.GONE
-        showCallInfoBinding.switchToggle.isChecked = prefs.getBoolean(KEY_SHOW_CALL_INFO, false)
-        showCallInfoBinding.switchToggle.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean(KEY_SHOW_CALL_INFO, isChecked).apply()
-            // TODO: Implement show call info logic
-        }
+        setupToggle(
+            ItemCallerSettingBinding.bind(binding.itemShowCallInfo.root),
+            "Show call info for contacts",
+            "",
+            KEY_SHOW_CALL_INFO,
+            false,
+            false
+        )
         
         // Show reminders in notifications
-        val showRemindersBinding = ItemCallerSettingBinding.bind(binding.itemShowReminders.root)
-        showRemindersBinding.textTitle.text = "Show reminders in notifications"
-        showRemindersBinding.textDescription.text = ""
-        showRemindersBinding.textDescription.visibility = android.view.View.GONE
-        showRemindersBinding.switchToggle.isChecked = prefs.getBoolean(KEY_SHOW_REMINDERS, true)
-        showRemindersBinding.switchToggle.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean(KEY_SHOW_REMINDERS, isChecked).apply()
-            // TODO: Implement show reminders logic
-        }
+        setupToggle(
+            ItemCallerSettingBinding.bind(binding.itemShowReminders.root),
+            "Show reminders in notifications",
+            "",
+            KEY_SHOW_REMINDERS,
+            true,
+            false
+        )
     }
     
     private fun setupBannerAd() {

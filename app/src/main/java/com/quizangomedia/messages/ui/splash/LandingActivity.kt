@@ -17,6 +17,7 @@ import com.google.android.gms.ads.MobileAds
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.ui.language.LanguageActivity
 import com.quizangomedia.messages.ui.main.MainActivity
+import com.quizangomedia.messages.util.ThemeManager
 
 class LandingActivity : AppCompatActivity() {
 
@@ -31,6 +32,9 @@ class LandingActivity : AppCompatActivity() {
         }
         
         setContentView(R.layout.activity_landing)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, findViewById(android.R.id.content))
         
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

@@ -20,6 +20,7 @@ import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityNotificationsBinding
 import com.quizangomedia.messages.databinding.DialogButtonActionBinding
 import com.quizangomedia.messages.databinding.DialogNotificationPreviewBinding
+import com.quizangomedia.messages.util.ThemeManager
 
 enum class NotificationPreview(val displayName: String) {
     SHOW_NAME_AND_MESSAGE("Show name and message"),
@@ -58,6 +59,9 @@ class NotificationsActivity : AppCompatActivity() {
         
         binding = ActivityNotificationsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         
@@ -196,8 +200,16 @@ class NotificationsActivity : AppCompatActivity() {
             .setView(dialogView)
             .create()
         
+        // Apply theme to dialog
+        ThemeManager.applyThemeToDialog(this, dialogView)
+
         // Set window background to transparent to show rounded corners
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        // Apply theme after dialog is shown
+        dialog.setOnShowListener {
+            ThemeManager.applyTheme(this, dialogView)
+        }
         
         radioShowNameAndMessage.setOnClickListener {
             saveNotificationPreview(NotificationPreview.SHOW_NAME_AND_MESSAGE)
@@ -232,8 +244,16 @@ class NotificationsActivity : AppCompatActivity() {
             .setView(dialogView)
             .create()
         
+        // Apply theme to dialog
+        ThemeManager.applyThemeToDialog(this, dialogView)
+        
         // Set window background to transparent to show rounded corners
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        // Apply theme after dialog is shown
+        dialog.setOnShowListener {
+            ThemeManager.applyTheme(this, dialogView)
+        }
         
         val actionAdapter = ButtonActionAdapter(actions, selectedAction) { action: ButtonAction ->
             // This is called when action is selected

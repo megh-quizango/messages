@@ -129,8 +129,8 @@ class SwipeHelper(
         
         if (action == SwipeGesturesActivity.SwipeAction.NONE) return
         
-        // Draw background
-        background.color = Color.parseColor("#0C56CF")
+        // Draw background using theme color
+        background.color = com.quizangomedia.messages.util.ThemeManager.getThemeColor(context)
         when {
             dX > 0 -> {
                 background.setBounds(itemView.left, itemView.top, itemView.left + dX.toInt(), itemView.bottom)

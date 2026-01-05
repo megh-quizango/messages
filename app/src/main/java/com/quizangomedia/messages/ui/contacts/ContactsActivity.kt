@@ -28,6 +28,7 @@ import com.quizangomedia.messages.databinding.ActivityContactsBinding
 import com.quizangomedia.messages.ui.main.MainActivity
 import com.quizangomedia.messages.ui.personalize.PersonalizeActivity
 import com.quizangomedia.messages.ui.settings.SettingsActivity
+import com.quizangomedia.messages.util.ThemeManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -59,6 +60,9 @@ class ContactsActivity : AppCompatActivity() {
         
         binding = ActivityContactsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         // Check if opened from FAB
         val fromFab = intent.getBooleanExtra("from_fab", false)

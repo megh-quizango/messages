@@ -2,8 +2,10 @@ package com.quizangomedia.messages.ui.conversation
 
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -19,6 +21,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import com.quizangomedia.messages.observer.SmsContentObserver
+import com.quizangomedia.messages.util.ThemeManager
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -57,6 +60,9 @@ class ConversationDetailActivity : AppCompatActivity() {
     private var scheduledTime: Int? = null // Hour
     private var scheduledMinute: Int? = null
     private var smsContentObserver: SmsContentObserver? = null
+    private var themeChangeReceiver: BroadcastReceiver? = null
+    private var bubbleColorChangeReceiver: BroadcastReceiver? = null
+    private var fontChangeReceiver: BroadcastReceiver? = null
 
     private val requestCallPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -142,6 +148,59 @@ class ConversationDetailActivity : AppCompatActivity() {
         
         // Register ContentObserver to detect new messages in this conversation
         registerSmsContentObserver()
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
+        
+        // Register broadcast receivers for theme/font/bubble changes
+        registerChangeReceivers()
+    }
+    
+    private fun registerChangeReceivers() {
+        // Theme change receiver
+        themeChangeReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                ThemeManager.applyTheme(this@ConversationDetailActivity, binding.root)
+            }
+        }
+        // Use RECEIVER_NOT_EXPORTED for Android 13+ (API 33+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(themeChangeReceiver, IntentFilter("com.quizangomedia.messages.THEME_CHANGED"), android.content.Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(themeChangeReceiver, IntentFilter("com.quizangomedia.messages.THEME_CHANGED"))
+        }
+        
+        // Bubble color change receiver
+        bubbleColorChangeReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                // Refresh adapter to apply new bubble colors
+                adapter.notifyDataSetChanged()
+            }
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(bubbleColorChangeReceiver, IntentFilter("com.quizangomedia.messages.BUBBLE_COLOR_CHANGED"), android.content.Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(bubbleColorChangeReceiver, IntentFilter("com.quizangomedia.messages.BUBBLE_COLOR_CHANGED"))
+        }
+        
+        // Font change receiver
+        fontChangeReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                // Refresh adapter to apply new font size and family
+                adapter.notifyDataSetChanged()
+            }
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(fontChangeReceiver, IntentFilter("com.quizangomedia.messages.FONT_CHANGED"), android.content.Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(fontChangeReceiver, IntentFilter("com.quizangomedia.messages.FONT_CHANGED"))
+        }
+    }
+    
+    private fun unregisterChangeReceivers() {
+        themeChangeReceiver?.let { unregisterReceiver(it) }
+        bubbleColorChangeReceiver?.let { unregisterReceiver(it) }
+        fontChangeReceiver?.let { unregisterReceiver(it) }
     }
     
     private fun registerSmsContentObserver() {
@@ -180,6 +239,8 @@ class ConversationDetailActivity : AppCompatActivity() {
         smsContentObserver?.let {
             contentResolver.unregisterContentObserver(it)
         }
+        // Unregister broadcast receivers
+        unregisterChangeReceivers()
     }
     
     private fun setupToolbar() {
@@ -348,7 +409,10 @@ class ConversationDetailActivity : AppCompatActivity() {
 
     private fun setupTextInput() {
         // Set text selection highlight color
-        binding.editTextMessage.highlightColor = 0x1A0C56CF.toInt() // #0C56CF with 10% opacity
+        // Use theme color for text selection highlight
+        val themeColor = ThemeManager.getThemeColor(this)
+        val alpha = (android.graphics.Color.alpha(themeColor) * 0.1f).toInt()
+        binding.editTextMessage.highlightColor = (alpha shl 24) or (themeColor and 0x00FFFFFF)
         
         // Monitor text changes to enable/disable send button
         binding.editTextMessage.addTextChangedListener(object : TextWatcher {
@@ -419,6 +483,8 @@ class ConversationDetailActivity : AppCompatActivity() {
     }
 
     private fun showDatePicker() {
+        val themeColor = ThemeManager.getThemeColor(this)
+        
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Select Date")
             .build()
@@ -429,10 +495,48 @@ class ConversationDetailActivity : AppCompatActivity() {
         }
 
         datePicker.show(supportFragmentManager, "DATE_PICKER")
+        
+        // Apply theme after picker is shown with multiple attempts to ensure it's applied
+        supportFragmentManager.executePendingTransactions()
+        
+        // Function to apply theme to picker
+        fun applyPickerTheme() {
+            datePicker.dialog?.window?.decorView?.let { view ->
+                // Use aggressive theming for Material pickers
+                ThemeManager.applyThemeToMaterialPicker(this, view)
+                
+                // Also try to access the dialog's content view directly
+                datePicker.dialog?.findViewById<View>(android.R.id.content)?.let { contentView ->
+                    ThemeManager.applyThemeToMaterialPicker(this, contentView)
+                }
+                
+                // Find and replace purple/black colors directly
+                replaceColorsInView(view, themeColor)
+            }
+        }
+        
+        // Apply immediately
+        applyPickerTheme()
+        
+        // Use ViewTreeObserver to catch views as they're added
+        datePicker.dialog?.window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                applyPickerTheme()
+            }
+        })
+        
+        // Additional delayed attempts with longer delays
+        val delays = listOf(50, 100, 200, 300, 500, 800, 1000, 1500, 2000, 3000)
+        delays.forEach { delay ->
+            Handler(Looper.getMainLooper()).postDelayed({
+                applyPickerTheme()
+            }, delay.toLong())
+        }
     }
 
     private fun showTimePicker() {
         val calendar = Calendar.getInstance()
+        val themeColor = ThemeManager.getThemeColor(this)
         val timePicker = MaterialTimePicker.Builder()
             .setTimeFormat(TimeFormat.CLOCK_12H)
             .setHour(calendar.get(Calendar.HOUR_OF_DAY))
@@ -447,6 +551,156 @@ class ConversationDetailActivity : AppCompatActivity() {
         }
 
         timePicker.show(supportFragmentManager, "TIME_PICKER")
+        
+        // Apply theme after picker is shown with multiple attempts to ensure it's applied
+        supportFragmentManager.executePendingTransactions()
+        
+        // Function to apply theme to picker
+        fun applyPickerTheme() {
+            timePicker.dialog?.window?.decorView?.let { view ->
+                // Use aggressive theming for Material pickers
+                ThemeManager.applyThemeToMaterialPicker(this, view)
+                
+                // Also try to access the dialog's content view directly
+                timePicker.dialog?.findViewById<View>(android.R.id.content)?.let { contentView ->
+                    ThemeManager.applyThemeToMaterialPicker(this, contentView)
+                }
+                
+                // Find and replace purple/black colors directly
+                replaceColorsInView(view, themeColor)
+            }
+        }
+        
+        // Apply immediately
+        applyPickerTheme()
+        
+        // Use ViewTreeObserver to catch views as they're added
+        timePicker.dialog?.window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                applyPickerTheme()
+            }
+        })
+        
+        // Additional delayed attempts with longer delays
+        val delays = listOf(50, 100, 200, 300, 500, 800, 1000, 1500, 2000, 3000)
+        delays.forEach { delay ->
+            Handler(Looper.getMainLooper()).postDelayed({
+                applyPickerTheme()
+            }, delay.toLong())
+        }
+    }
+
+    private fun replaceColorsInView(view: View, themeColor: Int) {
+        try {
+            val purpleColors = listOf(
+                android.graphics.Color.parseColor("#6200EE"),
+                android.graphics.Color.parseColor("#6750A4"),
+                android.graphics.Color.parseColor("#6366F1"),
+                android.graphics.Color.parseColor("#7B1FA2"),
+                android.graphics.Color.parseColor("#9C27B0"),
+                android.graphics.Color.parseColor("#0C56CF")
+            )
+            val lightPurpleColors = listOf(
+                android.graphics.Color.parseColor("#E1BEE7"),
+                android.graphics.Color.parseColor("#F3E5F5"),
+                android.graphics.Color.parseColor("#E8EAF6"),
+                android.graphics.Color.parseColor("#C5CAE9")
+            )
+            val blackColor = android.graphics.Color.BLACK
+            
+            // Check for MaterialCardView (time picker containers)
+            if (view is com.google.android.material.card.MaterialCardView) {
+                val cardBgColor = view.cardBackgroundColor.defaultColor
+                if (purpleColors.contains(cardBgColor) || lightPurpleColors.contains(cardBgColor) || 
+                    cardBgColor == blackColor) {
+                    view.setCardBackgroundColor(themeColor)
+                }
+            }
+            
+            // Check background
+            val bg = view.background
+            if (bg is android.graphics.drawable.ColorDrawable) {
+                val bgColor = bg.color
+                if (purpleColors.contains(bgColor) || lightPurpleColors.contains(bgColor) || bgColor == blackColor) {
+                    view.setBackgroundColor(themeColor)
+                    // If this is a TextView with black text, make it white
+                    if (view is android.widget.TextView && view.currentTextColor == blackColor) {
+                        view.setTextColor(android.graphics.Color.WHITE)
+                    }
+                }
+            } else if (bg is android.graphics.drawable.GradientDrawable) {
+                // Check if it's a circular drawable (for date selection circles)
+                try {
+                    val shape = bg.shape
+                    if (shape == android.graphics.drawable.GradientDrawable.OVAL) {
+                        // Try to get color using reflection
+                        val color = try {
+                            val method = android.graphics.drawable.GradientDrawable::class.java.getDeclaredMethod("getColor")
+                            method.isAccessible = true
+                            val colorStateList = method.invoke(bg) as? android.content.res.ColorStateList
+                            colorStateList?.defaultColor
+                        } catch (e: Exception) {
+                            null
+                        }
+                        if (color != null && (purpleColors.contains(color) || lightPurpleColors.contains(color))) {
+                            bg.setColor(themeColor)
+                            view.background = bg
+                            // Make text white if it's black
+                            if (view is android.widget.TextView && view.currentTextColor == blackColor) {
+                                view.setTextColor(android.graphics.Color.WHITE)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Ignore
+                }
+            }
+            
+            // Check background tint
+            val bgTint = view.backgroundTintList
+            if (bgTint != null) {
+                val tintColor = bgTint.defaultColor
+                if (purpleColors.contains(tintColor) || lightPurpleColors.contains(tintColor)) {
+                    view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+                }
+            }
+            
+            // Check text color for buttons and text views
+            if (view is android.widget.TextView) {
+                val textColor = view.currentTextColor
+                // If text is black and parent/self has colored background, make it white
+                if (textColor == blackColor) {
+                    val parentBg = (view.parent as? View)?.background
+                    val viewBg = view.background
+                    val hasColoredBg = (parentBg is android.graphics.drawable.ColorDrawable && 
+                        (purpleColors.contains((parentBg as android.graphics.drawable.ColorDrawable).color) || 
+                        (parentBg as android.graphics.drawable.ColorDrawable).color == themeColor)) ||
+                        (viewBg is android.graphics.drawable.ColorDrawable && 
+                        (purpleColors.contains((viewBg as android.graphics.drawable.ColorDrawable).color) || 
+                        (viewBg as android.graphics.drawable.ColorDrawable).color == themeColor))
+                    if (hasColoredBg) {
+                        view.setTextColor(android.graphics.Color.WHITE)
+                    }
+                }
+            }
+            
+            // Check for ImageView (clock hands, icons)
+            if (view is android.widget.ImageView) {
+                val colorFilter = view.colorFilter
+                if (colorFilter != null) {
+                    view.setColorFilter(themeColor, android.graphics.PorterDuff.Mode.SRC_IN)
+                }
+            }
+            
+            // Recursively check children
+            if (view is android.view.ViewGroup) {
+                for (i in 0 until view.childCount) {
+                    replaceColorsInView(view.getChildAt(i), themeColor)
+                }
+            }
+        } catch (e: Exception) {
+            // Ignore
+        }
     }
 
     private fun showScheduledInfo() {

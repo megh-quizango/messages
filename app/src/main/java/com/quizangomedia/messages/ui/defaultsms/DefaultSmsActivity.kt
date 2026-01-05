@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.quizangomedia.messages.databinding.ActivityDefaultSmsBinding
 import com.quizangomedia.messages.ui.main.MainActivity
+import com.quizangomedia.messages.util.ThemeManager
 
 class DefaultSmsActivity : AppCompatActivity() {
 
@@ -88,6 +89,9 @@ class DefaultSmsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityDefaultSmsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

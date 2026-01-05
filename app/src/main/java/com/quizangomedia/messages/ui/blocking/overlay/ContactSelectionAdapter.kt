@@ -46,9 +46,11 @@ class ContactSelectionAdapter(
                 onItemClick(contact.phoneNumber)
             }
 
-            // Show selection indicator
+            // Show selection indicator with theme light color
+            val themeColorLight = com.quizangomedia.messages.util.ThemeManager.getThemeColorLight(binding.root.context)
             if (isSelected(contact.phoneNumber)) {
-                binding.root.setBackgroundColor(0x1A0C56CF.toInt())
+                // Use theme light color directly as background
+                binding.root.setBackgroundColor(themeColorLight)
             } else {
                 binding.root.setBackgroundColor(android.graphics.Color.TRANSPARENT)
             }

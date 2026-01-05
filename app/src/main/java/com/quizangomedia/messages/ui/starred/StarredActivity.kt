@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityStarredBinding
 import com.quizangomedia.messages.data.model.Message
+import com.quizangomedia.messages.util.ThemeManager
 import com.quizangomedia.messages.data.model.MessageType
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -35,6 +36,9 @@ class StarredActivity : AppCompatActivity() {
         
         binding = ActivityStarredBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         

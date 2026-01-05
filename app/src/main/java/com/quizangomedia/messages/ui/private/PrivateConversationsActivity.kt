@@ -8,6 +8,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.databinding.ActivityPrivateConversationsBinding
+import com.quizangomedia.messages.util.ThemeManager
 
 class PrivateConversationsActivity : AppCompatActivity() {
 
@@ -19,6 +20,9 @@ class PrivateConversationsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityPrivateConversationsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

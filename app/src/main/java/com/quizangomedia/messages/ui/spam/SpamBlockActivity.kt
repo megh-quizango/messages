@@ -11,6 +11,7 @@ import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivitySpamBlockBinding
 import com.quizangomedia.messages.ui.blocking.BlockedConversationsActivity
 import com.quizangomedia.messages.ui.blocking.CustomBlockingActivity
+import com.quizangomedia.messages.util.ThemeManager
 
 class SpamBlockActivity : AppCompatActivity() {
 
@@ -22,6 +23,9 @@ class SpamBlockActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivitySpamBlockBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

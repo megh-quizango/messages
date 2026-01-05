@@ -30,7 +30,7 @@
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/textHeading"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -42,12 +42,15 @@
 
             <!-- Theme Section -->
             <LinearLayout
+                android:id="@+id/layoutThemeSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/bg_section_container"
                 android:padding="16dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -79,67 +82,49 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardTheme1"
+                    <ImageView
+                        android:id="@+id/imageTheme1"
                         android:layout_width="0dp"
                         android:layout_height="200dp"
                         android:layout_weight="1"
                         android:layout_margin="4dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#B3E5FC"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        android:src="@drawable/ts1"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="Theme 1" />
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardTheme2"
+                    <ImageView
+                        android:id="@+id/imageTheme2"
                         android:layout_width="0dp"
                         android:layout_height="200dp"
                         android:layout_weight="1"
                         android:layout_margin="4dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#C5E1A5"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        android:src="@drawable/ts2"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="Theme 2" />
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardTheme3"
+                    <ImageView
+                        android:id="@+id/imageTheme3"
                         android:layout_width="0dp"
                         android:layout_height="200dp"
                         android:layout_weight="1"
                         android:layout_margin="4dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#FFCC80"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
-                    </com.google.android.material.card.MaterialCardView>
+                        android:src="@drawable/ts3"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="Theme 3" />
                 </LinearLayout>
             </LinearLayout>
 
             <!-- Font & Size Section -->
             <LinearLayout
+                android:id="@+id/layoutFontSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/bg_section_container"
                 android:padding="16dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -179,18 +164,32 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#BA68C8"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
-                        <TextView
+                        <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:text="aAbBcCdD\nMessage"
-                            android:textColor="@color/white"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:padding="8dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:layout_alignParentTop="true"
+                                android:text="aAbBcCdD\nMessage"
+                                android:textColor="@color/white"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:layout_alignParentEnd="true"
+                                android:layout_alignParentBottom="true"
+                                android:src="@drawable/fs1"
+                                android:scaleType="fitCenter"
+                                android:contentDescription="Font style 1" />
+                        </RelativeLayout>
                     </com.google.android.material.card.MaterialCardView>
 
                     <com.google.android.material.card.MaterialCardView
@@ -201,30 +200,47 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#0C56CF"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
-                        <TextView
+                        <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:text="aAbBcCdD\nMessage"
-                            android:textColor="@color/white"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:padding="8dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:layout_alignParentTop="true"
+                                android:text="aAbBcCdD\nMessage"
+                                android:textColor="@color/white"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:layout_alignParentEnd="true"
+                                android:layout_alignParentBottom="true"
+                                android:src="@drawable/fs2"
+                                android:scaleType="fitCenter"
+                                android:contentDescription="Font style 2" />
+                        </RelativeLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
             </LinearLayout>
 
             <!-- Bubble Section -->
             <LinearLayout
+                android:id="@+id/layoutBubbleSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/bg_section_container"
                 android:padding="16dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -266,9 +282,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#B3E5FC"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -303,9 +317,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#CE93D8"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -340,9 +352,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#FFCC80"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -377,9 +387,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#C5E1A5"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -414,9 +422,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#FFF59D"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -451,9 +457,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#E0E0E0"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -484,11 +488,14 @@
 
             <!-- Ringtone Section -->
             <LinearLayout
+                android:id="@+id/layoutRingtoneSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/bg_section_container"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:clickable="true"
+                android:focusable="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -530,9 +537,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#F48FB1"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <RelativeLayout
                             android:layout_width="match_parent"
@@ -567,9 +572,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#66BB6A"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <TextView
                             android:layout_width="match_parent"
@@ -590,9 +593,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#BA68C8"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <TextView
                             android:layout_width="match_parent"
@@ -613,9 +614,7 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="12dp"
                         app:cardBackgroundColor="#FFA726"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
+                        app:cardElevation="2dp">
 
                         <TextView
                             android:layout_width="match_parent"

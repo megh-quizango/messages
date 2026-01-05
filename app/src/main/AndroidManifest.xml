@@ -104,6 +104,30 @@
             android:exported="false"
             android:theme="@style/Theme.Messages" />
 
+        <!-- ThemesActivity -->
+        <activity
+            android:name=".ui.personalize.ThemesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- FontSizeActivity -->
+        <activity
+            android:name=".ui.personalize.FontSizeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- BubbleActivity -->
+        <activity
+            android:name=".ui.personalize.BubbleActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <!-- RingtoneActivity -->
+        <activity
+            android:name=".ui.personalize.RingtoneActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
         <!-- ContactsActivity -->
         <activity
             android:name=".ui.contacts.ContactsActivity"

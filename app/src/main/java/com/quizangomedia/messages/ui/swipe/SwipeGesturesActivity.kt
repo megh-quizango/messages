@@ -20,6 +20,7 @@ import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivitySwipeGesturesBinding
 import com.quizangomedia.messages.databinding.DialogSwipeActionSelectionBinding
 import com.quizangomedia.messages.databinding.ItemSwipeActionBinding
+import com.quizangomedia.messages.util.ThemeManager
 
 class SwipeGesturesActivity : AppCompatActivity() {
 
@@ -48,6 +49,9 @@ class SwipeGesturesActivity : AppCompatActivity() {
         binding = ActivitySwipeGesturesBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
+        
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -63,14 +67,15 @@ class SwipeGesturesActivity : AppCompatActivity() {
     }
     
     private fun setupPersonIcons() {
-        // Set background color for person icons
+        // Set background color for person icons using theme light color
+        val lightColor = ThemeManager.getThemeColorLight(this)
         try {
-            binding.imagePersonRight.setCircleBackgroundColor(android.graphics.Color.parseColor("#E6F0FF"))
-            binding.imagePersonLeft.setCircleBackgroundColor(android.graphics.Color.parseColor("#E6F0FF"))
+            binding.imagePersonRight.setCircleBackgroundColor(lightColor)
+            binding.imagePersonLeft.setCircleBackgroundColor(lightColor)
         } catch (e: Exception) {
             // Fallback if method doesn't exist
-            binding.imagePersonRight.setBackgroundColor(android.graphics.Color.parseColor("#E6F0FF"))
-            binding.imagePersonLeft.setBackgroundColor(android.graphics.Color.parseColor("#E6F0FF"))
+            binding.imagePersonRight.setBackgroundColor(lightColor)
+            binding.imagePersonLeft.setBackgroundColor(lightColor)
         }
     }
     
@@ -145,7 +150,15 @@ class SwipeGesturesActivity : AppCompatActivity() {
             .setView(dialogBinding.root)
             .create()
         
+        // Apply theme to dialog
+        ThemeManager.applyThemeToDialog(this, dialogBinding.root)
+        
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        // Apply theme after dialog is shown
+        dialog.setOnShowListener {
+            ThemeManager.applyTheme(this, dialogBinding.root)
+        }
         
         val adapter = SwipeActionAdapter(SwipeAction.values().toList(), currentAction) { selectedAction ->
             if (isRightSwipe) {

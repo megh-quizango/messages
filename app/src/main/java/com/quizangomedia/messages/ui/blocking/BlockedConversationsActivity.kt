@@ -15,6 +15,7 @@ import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.databinding.ActivityBlockedConversationsBinding
 import com.quizangomedia.messages.ui.blocking.overlay.ConversationSelectionActivity
 import com.quizangomedia.messages.ui.main.MainViewModel
+import com.quizangomedia.messages.util.ThemeManager
 
 class BlockedConversationsActivity : AppCompatActivity() {
 
@@ -48,6 +49,9 @@ class BlockedConversationsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityBlockedConversationsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

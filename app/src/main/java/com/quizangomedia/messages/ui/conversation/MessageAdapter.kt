@@ -1,5 +1,8 @@
 package com.quizangomedia.messages.ui.conversation
 
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,9 +10,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.card.MaterialCardView
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.data.model.Message
 import com.quizangomedia.messages.data.model.MessageType
+import com.quizangomedia.messages.util.AppPreferences
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -125,10 +130,49 @@ class MessageAdapter(
         private val textTime: TextView = itemView.findViewById(R.id.textTime)
         private val imageCheck: android.widget.ImageView = itemView.findViewById(R.id.imageCheck)
         private val imageStarBadge: android.widget.ImageView = itemView.findViewById(R.id.imageStarBadge)
+        private val cardMessage: MaterialCardView = itemView.findViewById(R.id.cardMessage)
+        private val context = itemView.context
 
         fun bind(message: Message, isSelectionMode: Boolean) {
             textMessage.text = message.body
             textTime.text = formatTime(message.date)
+            
+            // Apply font size and font family
+            val fontSize = AppPreferences.getFontSize(context)
+            textMessage.textSize = fontSize
+            
+            val fontFamilyIndex = AppPreferences.getFontFamily(context)
+            val fontFamilies = listOf(
+                Typeface.DEFAULT,
+                Typeface.SANS_SERIF,
+                Typeface.SERIF,
+                Typeface.MONOSPACE,
+                Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD),
+                Typeface.create(Typeface.SANS_SERIF, Typeface.ITALIC),
+                Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD_ITALIC),
+                Typeface.create(Typeface.SERIF, Typeface.BOLD),
+                Typeface.create(Typeface.SERIF, Typeface.ITALIC),
+                Typeface.create(Typeface.MONOSPACE, Typeface.BOLD),
+                Typeface.create(Typeface.MONOSPACE, Typeface.ITALIC),
+                Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            )
+            textMessage.typeface = fontFamilies.getOrElse(fontFamilyIndex) { Typeface.DEFAULT }
+            
+            // Set max width to 80% of screen width on the message text
+            val displayMetrics = context.resources.displayMetrics
+            val maxWidth = (displayMetrics.widthPixels * 0.8f).toInt()
+            textMessage.maxWidth = maxWidth
+            
+            // Apply bubble color only to sent messages (not theme color)
+            if (message.type == MessageType.SENT) {
+                val bubbleColor = AppPreferences.getBubbleColor(context)
+                val drawable = GradientDrawable()
+                drawable.shape = GradientDrawable.RECTANGLE
+                val cornerRadius = 16f * context.resources.displayMetrics.density
+                drawable.cornerRadius = cornerRadius
+                drawable.setColor(Color.parseColor(bubbleColor))
+                cardMessage.background = drawable
+            }
             
             // Show/hide checkmark based on selection
             val isSelected = adapter.selectedMessages.contains(message.id)

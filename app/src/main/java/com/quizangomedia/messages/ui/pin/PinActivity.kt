@@ -24,6 +24,7 @@ import com.quizangomedia.messages.databinding.BottomSheetSecurityQuestionBinding
 import com.quizangomedia.messages.databinding.BottomSheetSelectQuestionBinding
 import com.quizangomedia.messages.databinding.ItemSecurityQuestionBinding
 import com.quizangomedia.messages.ui.private.PrivateConversationsActivity
+import com.quizangomedia.messages.util.ThemeManager
 
 class PinActivity : AppCompatActivity() {
 
@@ -51,6 +52,9 @@ class PinActivity : AppCompatActivity() {
         binding = ActivityPinBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
+        
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -64,6 +68,11 @@ class PinActivity : AppCompatActivity() {
         setupKeypad()
         setupBannerAd()
         updateUI()
+        
+        // Apply theme after views are laid out
+        binding.root.post {
+            ThemeManager.applyTheme(this, binding.root)
+        }
     }
 
     private fun setupBackButton() {
@@ -73,6 +82,25 @@ class PinActivity : AppCompatActivity() {
     }
 
     private fun setupKeypad() {
+        // Set backgroundTint to null for all keypad buttons and apply theme light color
+        val themeColorLight = ThemeManager.getThemeColorLight(this)
+        val keypadButtons = listOf(
+            binding.button0, binding.button1, binding.button2, binding.button3,
+            binding.button4, binding.button5, binding.button6, binding.button7,
+            binding.button8, binding.button9
+        )
+        keypadButtons.forEach { button ->
+            button.backgroundTintList = null
+            // Apply theme light color directly using backgroundTintList
+            button.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColorLight)
+            // Also set background drawable
+            val circleDrawable = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.OVAL
+                setColor(themeColorLight)
+            }
+            button.background = circleDrawable
+        }
+        
         binding.button0.setOnClickListener { addDigit("0") }
         binding.button1.setOnClickListener { addDigit("1") }
         binding.button2.setOnClickListener { addDigit("2") }
@@ -141,6 +169,21 @@ class PinActivity : AppCompatActivity() {
         val bottomSheet = BottomSheetDialog(this)
         val sheetBinding = BottomSheetSecurityQuestionBinding.inflate(LayoutInflater.from(this))
         bottomSheet.setContentView(sheetBinding.root)
+        
+        // Apply theme to save button - set backgroundTint to null to allow theme override
+        sheetBinding.buttonSave.backgroundTintList = null
+        
+        // Apply theme to bottom sheet
+        ThemeManager.applyThemeToBottomSheet(this, sheetBinding.root)
+        
+        // Apply theme after bottom sheet is shown
+        bottomSheet.setOnShowListener {
+            ThemeManager.applyTheme(this, sheetBinding.root)
+            // Apply theme to TextInputLayout focus colors
+            val themeColor = ThemeManager.getThemeColor(this)
+            sheetBinding.inputLayoutQuestion.setBoxStrokeColor(themeColor)
+            sheetBinding.inputLayoutAnswer.setBoxStrokeColor(themeColor)
+        }
 
         sheetBinding.editTextQuestion.setOnClickListener {
             showSelectQuestionBottomSheet(sheetBinding)
@@ -190,6 +233,14 @@ class PinActivity : AppCompatActivity() {
         val sheetBinding = BottomSheetSelectQuestionBinding.inflate(LayoutInflater.from(this))
         bottomSheet.setContentView(sheetBinding.root)
         
+        // Apply theme to bottom sheet
+        ThemeManager.applyThemeToBottomSheet(this, sheetBinding.root)
+        
+        // Apply theme after bottom sheet is shown
+        bottomSheet.setOnShowListener {
+            ThemeManager.applyTheme(this, sheetBinding.root)
+        }
+        
         val questions = listOf(
             "What's your favorite color?",
             "What's your pet's name?",
@@ -223,10 +274,20 @@ class PinActivity : AppCompatActivity() {
     }
 
     private fun updatePinDots() {
-        binding.dot1.alpha = if (pinDigits.length > 0) 1f else 0.3f
-        binding.dot2.alpha = if (pinDigits.length > 1) 1f else 0.3f
-        binding.dot3.alpha = if (pinDigits.length > 2) 1f else 0.3f
-        binding.dot4.alpha = if (pinDigits.length > 3) 1f else 0.3f
+        val themeColor = ThemeManager.getThemeColor(this)
+        val themeColorLight = ThemeManager.getThemeColorLight(this)
+        val dots = listOf(binding.dot1, binding.dot2, binding.dot3, binding.dot4)
+        
+        dots.forEachIndexed { index, dot ->
+            val isFilled = pinDigits.length > index
+            // Create new drawable with theme color - empty dots should have theme light color background
+            val dotDrawable = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.OVAL
+                setColor(if (isFilled) themeColor else themeColorLight)
+            }
+            dot.background = dotDrawable
+            dot.alpha = if (isFilled) 1f else 1f // Make empty dots visible with theme light color
+        }
     }
 }
 

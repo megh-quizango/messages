@@ -14,22 +14,26 @@ import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityPersonalizeBinding
 import com.quizangomedia.messages.ui.contacts.ContactsActivity
 import com.quizangomedia.messages.ui.main.MainActivity
+import com.quizangomedia.messages.ui.personalize.BubbleActivity
+import com.quizangomedia.messages.ui.personalize.FontSizeActivity
+import com.quizangomedia.messages.ui.personalize.RingtoneActivity
+import com.quizangomedia.messages.ui.personalize.ThemesActivity
 import com.quizangomedia.messages.ui.settings.SettingsActivity
+import com.quizangomedia.messages.util.ThemeManager
 
 class PersonalizeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPersonalizeBinding
     private var isSettingSelectedItem = false
-    private var selectedTheme: MaterialCardView? = null
-    private var selectedFont: MaterialCardView? = null
-    private var selectedBubble: MaterialCardView? = null
-    private var selectedRingtone: MaterialCardView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         binding = ActivityPersonalizeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, binding.root)
         
         // Handle window insets - same as MainActivity
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -73,12 +77,16 @@ class PersonalizeActivity : AppCompatActivity() {
             }
         })
         
-        setupThemeSelection()
-        setupFontSelection()
-        setupBubbleSelection()
-        setupRingtoneSelection()
+        setupThemeSection()
+        setupFontSection()
+        setupBubbleSection()
+        setupRingtoneSection()
         setupBottomNavigation()
         setupBannerAd()
+        setupThemeMoreButton()
+        setupFontMoreButton()
+        setupBubbleMoreButton()
+        setupRingtoneMoreButton()
         
         // Set Personalize as selected initially
         binding.bottomNavigationView.post {
@@ -86,126 +94,35 @@ class PersonalizeActivity : AppCompatActivity() {
         }
     }
     
-    private fun setupThemeSelection() {
-        val themes = listOf(
-            binding.cardTheme1,
-            binding.cardTheme2,
-            binding.cardTheme3
-        )
-        
-        themes.forEachIndexed { index, card ->
-            card.setOnClickListener {
-                // Remove selection from previous
-                selectedTheme?.strokeWidth = 0
-                selectedTheme?.elevation = 2f
-                
-                // Select new theme
-                card.strokeWidth = 4
-                card.strokeColor = getColor(R.color.button_primary)
-                card.elevation = 8f
-                selectedTheme = card
-                
-                // TODO: Apply theme to chat activity
-                // Save selected theme preference
-            }
-        }
-        
-        // Select first theme by default
-        if (selectedTheme == null) {
-            themes[0].performClick()
+    private fun setupThemeSection() {
+        // Make entire theme section clickable (same as More text)
+        binding.layoutThemeSection.setOnClickListener {
+            val intent = Intent(this, ThemesActivity::class.java)
+            startActivity(intent)
         }
     }
     
-    private fun setupFontSelection() {
-        val fonts = listOf(
-            binding.cardFont1,
-            binding.cardFont2
-        )
-        
-        fonts.forEachIndexed { index, card ->
-            card.setOnClickListener {
-                // Remove selection from previous
-                selectedFont?.strokeWidth = 0
-                selectedFont?.elevation = 2f
-                
-                // Select new font
-                card.strokeWidth = 4
-                card.strokeColor = getColor(R.color.button_primary)
-                card.elevation = 8f
-                selectedFont = card
-                
-                // TODO: Apply font to chat activity
-                // Save selected font preference
-            }
-        }
-        
-        // Select first font by default
-        if (selectedFont == null) {
-            fonts[0].performClick()
+    private fun setupFontSection() {
+        // Make entire font section clickable (same as More text)
+        binding.layoutFontSection.setOnClickListener {
+            val intent = Intent(this, FontSizeActivity::class.java)
+            startActivity(intent)
         }
     }
     
-    private fun setupBubbleSelection() {
-        val bubbles = listOf(
-            binding.cardBubble1,
-            binding.cardBubble2,
-            binding.cardBubble3,
-            binding.cardBubble4,
-            binding.cardBubble5,
-            binding.cardBubble6
-        )
-        
-        bubbles.forEachIndexed { index, card ->
-            card.setOnClickListener {
-                // Remove selection from previous
-                selectedBubble?.strokeWidth = 0
-                selectedBubble?.elevation = 2f
-                
-                // Select new bubble
-                card.strokeWidth = 4
-                card.strokeColor = getColor(R.color.button_primary)
-                card.elevation = 8f
-                selectedBubble = card
-                
-                // TODO: Apply bubble style to chat activity
-                // Save selected bubble preference
-            }
-        }
-        
-        // Select first bubble by default
-        if (selectedBubble == null) {
-            bubbles[0].performClick()
+    private fun setupBubbleSection() {
+        // Make entire bubble section clickable (same as More text)
+        binding.layoutBubbleSection.setOnClickListener {
+            val intent = Intent(this, BubbleActivity::class.java)
+            startActivity(intent)
         }
     }
     
-    private fun setupRingtoneSelection() {
-        val ringtones = listOf(
-            binding.cardRingtone1,
-            binding.cardRingtone2,
-            binding.cardRingtone3,
-            binding.cardRingtone4
-        )
-        
-        ringtones.forEachIndexed { index, card ->
-            card.setOnClickListener {
-                // Remove selection from previous
-                selectedRingtone?.strokeWidth = 0
-                selectedRingtone?.elevation = 2f
-                
-                // Select new ringtone
-                card.strokeWidth = 4
-                card.strokeColor = getColor(R.color.button_primary)
-                card.elevation = 8f
-                selectedRingtone = card
-                
-                // TODO: Apply ringtone for calls and messages
-                // Save selected ringtone preference
-            }
-        }
-        
-        // Select first ringtone by default
-        if (selectedRingtone == null) {
-            ringtones[0].performClick()
+    private fun setupRingtoneSection() {
+        // Make entire ringtone section clickable (same as More text)
+        binding.layoutRingtoneSection.setOnClickListener {
+            val intent = Intent(this, RingtoneActivity::class.java)
+            startActivity(intent)
         }
     }
     
@@ -275,5 +192,33 @@ class PersonalizeActivity : AppCompatActivity() {
     private fun setupBannerAd() {
         val adRequest = AdRequest.Builder().build()
         binding.adViewBanner.loadAd(adRequest)
+    }
+    
+    private fun setupThemeMoreButton() {
+        binding.textThemeMore.setOnClickListener {
+            val intent = Intent(this, ThemesActivity::class.java)
+            startActivity(intent)
+        }
+    }
+    
+    private fun setupFontMoreButton() {
+        binding.textFontMore.setOnClickListener {
+            val intent = Intent(this, FontSizeActivity::class.java)
+            startActivity(intent)
+        }
+    }
+    
+    private fun setupBubbleMoreButton() {
+        binding.textBubbleMore.setOnClickListener {
+            val intent = Intent(this, BubbleActivity::class.java)
+            startActivity(intent)
+        }
+    }
+    
+    private fun setupRingtoneMoreButton() {
+        binding.textRingtoneMore.setOnClickListener {
+            val intent = Intent(this, RingtoneActivity::class.java)
+            startActivity(intent)
+        }
     }
 }
