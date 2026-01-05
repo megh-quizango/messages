@@ -32,11 +32,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/imageCheck"
-        app:layout_constraintEnd_toStartOf="@id/constraintEnd"
         app:layout_goneMarginStart="8dp"
         app:layout_goneMarginEnd="0dp"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintHorizontal_chainStyle="packed">
+        app:layout_constraintHorizontal_bias="0.0">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -82,13 +80,13 @@
 
     </com.google.android.material.card.MaterialCardView>
     
-    <View
-        android:id="@+id/constraintEnd"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintWidth_percent="0.2"/>
+<!--    <View-->
+<!--        android:id="@+id/constraintEnd"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintWidth_percent="0.2"/>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

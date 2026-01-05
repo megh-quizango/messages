@@ -24,15 +24,8 @@ abstract class BaseBottomNavActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Set navigation bar color to white with black icons
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            window.navigationBarColor = getColor(android.R.color.white)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                var flags = window.decorView.systemUiVisibility
-                flags = flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                window.decorView.systemUiVisibility = flags
-            }
-        }
+        // Setup navigation bar with white background and black icons
+        ThemeManager.setupNavigationBar(this)
         
         setupBottomNavPadding()
         setupWindowInsets()

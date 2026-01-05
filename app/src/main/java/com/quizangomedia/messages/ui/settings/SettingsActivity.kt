@@ -46,6 +46,9 @@ class SettingsActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Setup navigation bar with white background and black icons
+        ThemeManager.setupNavigationBar(this)
+        
         // Handle window insets - same as MainActivity
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -285,7 +288,9 @@ class SettingsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // Ensure Settings tab is selected when activity is visible
-        setSelectedNavigationItem(R.id.nav_settings)
+        binding.bottomNavigationView.post {
+            setSelectedNavigationItem(R.id.nav_settings)
+        }
     }
     
     private fun setSelectedNavigationItem(itemId: Int) {

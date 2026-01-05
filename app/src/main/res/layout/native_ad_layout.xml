@@ -20,6 +20,7 @@
 
             <!-- Ad Label -->
             <TextView
+                android:id="@+id/nativeAdLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Ad"
@@ -60,6 +61,7 @@
 
             <!-- Info Icon -->
             <ImageView
+                android:id="@+id/nativeAdInfoIcon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_info_details"

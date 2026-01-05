@@ -116,6 +116,15 @@ class SmsReceiver : BroadcastReceiver() {
                 // Save message to system SMS database so it appears in queries
                 saveMessageToSmsDatabase(context, threadId, address, body, timestamp)
                 
+                // Show notification for new message
+                com.quizangomedia.messages.util.NotificationHelper.showNotification(
+                    context = context,
+                    threadId = threadId,
+                    address = address,
+                    messageBody = body,
+                    timestamp = timestamp
+                )
+                
                 Log.d(TAG, "SMS processing completed for address: $address")
             }
             Log.d(TAG, "All SMS messages processed successfully")

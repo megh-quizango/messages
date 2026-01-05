@@ -29,8 +29,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityMainBinding
@@ -66,6 +69,8 @@ class MainActivity : AppCompatActivity() {
     private var currentSearchQuery: String = ""
     private var smsContentObserver: SmsContentObserver? = null
     private var themeChangeReceiver: BroadcastReceiver? = null
+    private var exitBottomSheet: com.google.android.material.bottomsheet.BottomSheetDialog? = null
+    private var exitNativeAd: NativeAd? = null
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -114,16 +119,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        // Set navigation bar color to white with black icons
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.navigationBarColor = getColor(android.R.color.white)
-            // Set navigation bar icons to dark/black for visibility on white background
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                var flags = window.decorView.systemUiVisibility
-                flags = flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                window.decorView.systemUiVisibility = flags
-            }
-        }
+        // Setup navigation bar with white background and black icons
+        ThemeManager.setupNavigationBar(this)
         // Remove extra padding from internal menu container while preserving outer padding
         binding.bottomNavigationView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
@@ -183,6 +180,7 @@ class MainActivity : AppCompatActivity() {
         setupFab()
         setupBottomNavigation()
         setupBannerAd()
+        setupBackPressHandler()
         observeConversations()
         
         // Request SMS permission and load conversations
@@ -197,6 +195,11 @@ class MainActivity : AppCompatActivity() {
         
         // Also apply theme immediately
         ThemeManager.applyTheme(this, binding.root)
+        
+        // Apply theme to loading state progress indicator
+        binding.root.post {
+            ThemeManager.applyTheme(this, binding.layoutLoadingState)
+        }
         
         // Register ContentObserver to detect new SMS messages
         registerSmsContentObserver()
@@ -289,6 +292,9 @@ class MainActivity : AppCompatActivity() {
         themeChangeReceiver?.let {
             unregisterReceiver(it)
         }
+        super.onDestroy()
+        exitNativeAd?.destroy()
+        exitNativeAd = null
     }
     
     private fun checkSmsPermissionAndLoad() {
@@ -901,6 +907,15 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.fragmentContainer, fragment)
             .commit()
         
+        // Set the correct navigation item based on fragment
+        val selectedItem = when (fragmentClass) {
+            com.quizangomedia.messages.ui.contacts.ContactsFragment::class.java -> R.id.nav_contacts
+            com.quizangomedia.messages.ui.personalize.PersonalizeFragment::class.java -> R.id.nav_personalize
+            com.quizangomedia.messages.ui.settings.SettingsFragment::class.java -> R.id.nav_settings
+            else -> R.id.nav_messages
+        }
+        setSelectedNavigationItem(selectedItem)
+        
         // Apply theme to fragment after it's added
         binding.fragmentContainer.post {
             val fragmentView = fragment.view
@@ -913,7 +928,24 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // Ensure Messages tab is selected when activity is visible
-        setSelectedNavigationItem(R.id.nav_messages)
+        // Only set if we're showing messages content, not a fragment
+        if (binding.fragmentContainer.visibility == View.GONE) {
+            binding.bottomNavigationView.post {
+                setSelectedNavigationItem(R.id.nav_messages)
+            }
+        } else {
+            // If showing a fragment, set the appropriate selection
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+            val selectedItem = when (currentFragment) {
+                is com.quizangomedia.messages.ui.contacts.ContactsFragment -> R.id.nav_contacts
+                is com.quizangomedia.messages.ui.personalize.PersonalizeFragment -> R.id.nav_personalize
+                is com.quizangomedia.messages.ui.settings.SettingsFragment -> R.id.nav_settings
+                else -> R.id.nav_messages
+            }
+            binding.bottomNavigationView.post {
+                setSelectedNavigationItem(selectedItem)
+            }
+        }
     }
     
     private fun setSelectedNavigationItem(itemId: Int) {
@@ -1003,12 +1035,18 @@ class MainActivity : AppCompatActivity() {
         }
         
         viewModel.isLoading.observe(this) { isLoading ->
-            binding.progressIndicator.visibility = if (isLoading) View.VISIBLE else View.GONE
-            // Hide empty state and RecyclerView when loading
             if (isLoading) {
+                // Show loading state
+                binding.layoutLoadingState.visibility = View.VISIBLE
                 binding.layoutEmptyState.visibility = View.GONE
                 binding.recyclerViewConversations.visibility = View.GONE
+                // Hide bottom navigation bar during loading
+                binding.bottomNavigationView.visibility = View.GONE
             } else {
+                // Hide loading state
+                binding.layoutLoadingState.visibility = View.GONE
+                // Show bottom navigation bar after loading
+                binding.bottomNavigationView.visibility = View.VISIBLE
                 // After loading, check if list is empty
                 val currentList = adapter.currentList
                 updateEmptyState(currentList.isEmpty())
@@ -1106,4 +1144,131 @@ class MainActivity : AppCompatActivity() {
         // Combine: conversations with new messages first (sorted by date), then unchanged ones in their original order
         return conversationsToMoveToTop + unchangedConversations
     }
+    
+    private fun setupBackPressHandler() {
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                showExitBottomSheet()
+            }
+        })
+    }
+    
+    private fun showExitBottomSheet() {
+        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_exit, null)
+        val bottomSheet = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        bottomSheet.setContentView(bottomSheetView)
+        
+        // Apply theme
+        ThemeManager.applyTheme(this, bottomSheetView)
+        
+        // Get exit button and apply theme color
+        val exitButton = bottomSheetView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonExit)
+        exitButton?.let {
+            val themeColor = ThemeManager.getThemeColor(this)
+            it.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        }
+        
+        // Set exit button click listener
+        exitButton?.setOnClickListener {
+            finishAffinity()
+        }
+        
+        // Load native ad
+        loadExitNativeAd(bottomSheetView)
+        
+        // Set behavior
+        bottomSheet.behavior.isDraggable = true
+        bottomSheet.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        exitBottomSheet = bottomSheet
+        bottomSheet.show()
+        
+        // Clean up on dismiss
+        bottomSheet.setOnDismissListener {
+            exitNativeAd?.destroy()
+            exitNativeAd = null
+            exitBottomSheet = null
+        }
+    }
+    
+    private fun loadExitNativeAd(bottomSheetView: android.view.View) {
+        val nativeAdFrame = bottomSheetView.findViewById<android.widget.FrameLayout>(R.id.nativeAdFrame)
+        if (nativeAdFrame == null) {
+            Log.w(TAG, "Native ad frame not found in exit bottom sheet")
+            return
+        }
+        
+        val adLoader = AdLoader.Builder(this, "ca-app-pub-3940256099942544/2247696110")
+            .forNativeAd { ad ->
+                exitNativeAd = ad
+                populateExitNativeAdView(ad, nativeAdFrame)
+            }
+            .build()
+        
+        adLoader.loadAd(AdRequest.Builder().build())
+    }
+    
+    private fun populateExitNativeAdView(ad: NativeAd, adFrame: android.widget.FrameLayout) {
+        val adView = layoutInflater.inflate(R.layout.native_ad_layout, adFrame, false) as NativeAdView
+        adFrame.removeAllViews()
+        adFrame.addView(adView)
+        
+        val adBinding = com.quizangomedia.messages.databinding.NativeAdLayoutBinding.bind(adView)
+        
+        // Apply theme colors to native ad
+        val themeColor = ThemeManager.getThemeColor(this)
+        val themeColorLight = ThemeManager.getThemeColorLight(this)
+        
+        // Apply theme to entire ad view (will handle background)
+        ThemeManager.applyTheme(this, adView)
+        
+        // Apply theme to "Ad" label background
+        val adLabel = adView.findViewById<android.widget.TextView>(R.id.nativeAdLabel)
+        adLabel?.setBackgroundColor(themeColor)
+        
+        // Apply theme to info icon
+        val infoIcon = adView.findViewById<android.widget.ImageView>(R.id.nativeAdInfoIcon)
+        infoIcon?.imageTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        
+        // Apply theme to call to action button
+        adBinding.nativeAdCallToAction.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        
+        // Register views with NativeAdView
+        adView.headlineView = adBinding.nativeAdHeadline
+        adView.bodyView = adBinding.nativeAdBody
+        adView.callToActionView = adBinding.nativeAdCallToAction
+        adView.iconView = adBinding.nativeAdIcon
+        
+        // Set ad assets
+        if (ad.headline != null) {
+            adBinding.nativeAdHeadline.text = ad.headline
+        }
+        if (ad.body != null) {
+            adBinding.nativeAdBody.text = ad.body
+        }
+        if (ad.callToAction != null) {
+            adBinding.nativeAdCallToAction.text = ad.callToAction
+        }
+        
+        val icon = ad.icon
+        if (icon != null) {
+            adBinding.nativeAdIcon.setImageDrawable(icon.drawable)
+            adBinding.nativeAdIcon.visibility = android.view.View.VISIBLE
+        } else {
+            adBinding.nativeAdIcon.visibility = android.view.View.GONE
+        }
+        
+        // Handle main image
+        if (ad.images.isNotEmpty() && ad.images[0].drawable != null) {
+            adBinding.nativeAdMedia.setImageDrawable(ad.images[0].drawable)
+            adBinding.nativeAdMedia.visibility = android.view.View.VISIBLE
+        } else {
+            adBinding.nativeAdMedia.visibility = android.view.View.GONE
+        }
+        
+        // Register the view
+        adView.setNativeAd(ad)
+    }
+    
+
 }

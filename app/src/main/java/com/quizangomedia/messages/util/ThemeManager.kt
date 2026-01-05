@@ -26,6 +26,9 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
+import androidx.core.view.WindowInsetsControllerCompat
 import java.lang.reflect.Method
 
 object ThemeManager {
@@ -957,5 +960,27 @@ object ThemeManager {
         switchToggle.requestLayout()
         
         Log.d("ThemeManager", "After applyToggleTheme - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, width: ${switchToggle.width}, height: ${switchToggle.height}, minWidth: ${switchToggle.switchMinWidth}, minHeight: ${switchToggle.minHeight}")
+    }
+    
+    /**
+     * Setup navigation bar with white background and black icons
+     * This should be called from onCreate of all activities
+     */
+    fun setupNavigationBar(activity: AppCompatActivity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            activity.window.navigationBarColor = activity.getColor(android.R.color.white)
+            
+            // Set navigation bar icons to dark/black for visibility on white background
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // Use WindowInsetsController for Android R and above
+                val windowInsetsController = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
+                windowInsetsController.isAppearanceLightNavigationBars = true
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Use systemUiVisibility for Android O to Q
+                var flags = activity.window.decorView.systemUiVisibility
+                flags = flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                activity.window.decorView.systemUiVisibility = flags
+            }
+        }
     }
 }

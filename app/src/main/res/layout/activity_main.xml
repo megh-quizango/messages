@@ -207,20 +207,38 @@
             android:gravity="center"/>
     </LinearLayout>
 
-    <!-- ================= LOADING INDICATOR ================= -->
+    <!-- ================= LOADING STATE ================= -->
 
-    <com.google.android.material.progressindicator.CircularProgressIndicator
-        android:id="@+id/progressIndicator"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:indeterminate="true"
+    <LinearLayout
+        android:id="@+id/layoutLoadingState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
         android:visibility="gone"
-        app:indicatorColor="#0C56CF"
-        app:trackColor="#E6F0FF"
         app:layout_constraintTop_toTopOf="@id/recyclerViewConversations"
         app:layout_constraintBottom_toBottomOf="@id/recyclerViewConversations"
         app:layout_constraintStart_toStartOf="@id/recyclerViewConversations"
-        app:layout_constraintEnd_toEndOf="@id/recyclerViewConversations"/>
+        app:layout_constraintEnd_toEndOf="@id/recyclerViewConversations">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progressIndicator"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:indeterminate="true"
+            app:indicatorColor="#0C56CF"
+            app:trackColor="#E6F0FF"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/textLoadingState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Syncing messages"
+            android:textSize="16sp"
+            android:textColor="#9696A3"
+            android:gravity="center"/>
+    </LinearLayout>
 
     <!-- ================= BOTTOM NAV ================= -->
 

@@ -36,6 +36,9 @@ class LanguageActivity : AppCompatActivity() {
         binding = ActivityLanguageBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Setup navigation bar with white background and black icons
+        ThemeManager.setupNavigationBar(this)
+        
         // Apply theme
         ThemeManager.applyTheme(this, binding.root)
         
@@ -106,6 +109,23 @@ class LanguageActivity : AppCompatActivity() {
         binding.nativeAdFrame.addView(adView)
         
         val adBinding = NativeAdLayoutBinding.bind(adView)
+        
+        // Apply theme colors to native ad
+        val themeColor = ThemeManager.getThemeColor(this)
+        
+        // Apply theme to entire ad view (will handle background)
+        ThemeManager.applyTheme(this, adView)
+        
+        // Apply theme to "Ad" label background
+        val adLabel = adView.findViewById<android.widget.TextView>(R.id.nativeAdLabel)
+        adLabel?.setBackgroundColor(themeColor)
+        
+        // Apply theme to info icon
+        val infoIcon = adView.findViewById<android.widget.ImageView>(R.id.nativeAdInfoIcon)
+        infoIcon?.imageTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        
+        // Apply theme to call to action button
+        adBinding.nativeAdCallToAction.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
         
         // Register views with NativeAdView
         adView.headlineView = adBinding.nativeAdHeadline

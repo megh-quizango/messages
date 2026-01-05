@@ -321,6 +321,11 @@
             android:name=".receiver.ScheduledMessageReceiver"
             android:exported="false" />
 
+        <!-- Notification Action Receiver -->
+        <receiver
+            android:name=".receiver.NotificationActionReceiver"
+            android:exported="false" />
+
         <!-- Headless SMS Send Service - Required for default SMS app -->
         <service
             android:name=".service.HeadlessSmsSendService"

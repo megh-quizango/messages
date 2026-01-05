@@ -33,6 +33,9 @@ class EditQuickResponseActivity : AppCompatActivity() {
         binding = ActivityEditQuickResponseBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Setup navigation bar with white background and black icons
+        ThemeManager.setupNavigationBar(this)
+        
         sharedPreferences = getSharedPreferences("quick_messages", MODE_PRIVATE)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->

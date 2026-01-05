@@ -64,6 +64,9 @@ class ContactsActivity : AppCompatActivity() {
         binding = ActivityContactsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Setup navigation bar with white background and black icons
+        ThemeManager.setupNavigationBar(this)
+        
         // Apply theme
         ThemeManager.applyTheme(this, binding.root)
         
@@ -210,7 +213,11 @@ class ContactsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // Ensure Contacts tab is selected when activity is visible
-        setSelectedNavigationItem(R.id.nav_contacts)
+        if (!intent.getBooleanExtra("from_fab", false)) {
+            binding.bottomNavigationView.post {
+                setSelectedNavigationItem(R.id.nav_contacts)
+            }
+        }
     }
     
     private fun setSelectedNavigationItem(itemId: Int) {

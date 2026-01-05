@@ -90,6 +90,9 @@ class DefaultSmsActivity : AppCompatActivity() {
         binding = ActivityDefaultSmsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Setup navigation bar with white background and black icons
+        ThemeManager.setupNavigationBar(this)
+        
         // Apply theme
         ThemeManager.applyTheme(this, binding.root)
         

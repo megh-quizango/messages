@@ -193,6 +193,9 @@ class ConversationDetailActivity : AppCompatActivity() {
         binding = ActivityConversationDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Setup navigation bar with white background and black icons
+        ThemeManager.setupNavigationBar(this)
+        
         // Configure window to adjust for keyboard
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         
@@ -1044,72 +1047,97 @@ class ConversationDetailActivity : AppCompatActivity() {
     
     // ================= ATTACHMENT FUNCTIONALITY =================
     
+    private var attachmentPopupWindow: android.widget.PopupWindow? = null
+    
     private fun showAttachmentBottomSheet() {
-        val bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_attachments, null)
-        val bottomSheet = BottomSheetDialog(this)
-        bottomSheet.setContentView(bottomSheetView)
+        // Dismiss existing popup if any
+        attachmentPopupWindow?.dismiss()
+        
+        val popupView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_attachments, null)
         
         // Apply theme
-        ThemeManager.applyTheme(this, bottomSheetView)
+        ThemeManager.applyTheme(this, popupView)
         
-        // Set initial behavior properties
-        bottomSheet.behavior.isDraggable = true
-        bottomSheet.behavior.skipCollapsed = true
-        bottomSheet.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        // Create PopupWindow with full screen width (with small margins for rounded corners)
+        val screenWidth = resources.displayMetrics.widthPixels
+        val horizontalMargin = (8 * resources.displayMetrics.density).toInt() // 8dp margin on each side
+        val popupWidth = screenWidth - (horizontalMargin * 2)
         
-        // Calculate position above input area - use post to ensure layout is complete
-        binding.layoutInputRow.post {
-            val screenHeight = resources.displayMetrics.heightPixels
-            val marginAboveInput = (16 * resources.displayMetrics.density).toInt() // 16dp margin
-            
-            // Get input row position relative to window
-            val inputRowLocation = IntArray(2)
-            binding.layoutInputRow.getLocationInWindow(inputRowLocation)
-            val inputRowWindowTop = inputRowLocation[1]
-            
-            // Get window height (accounting for status bar, etc.)
-            val windowHeight = window.decorView.height
-            
-            // Calculate peek height: distance from bottom of window to top of input row + margin
-            // peekHeight is measured from the bottom of the screen/window
-            val peekHeight = windowHeight - inputRowWindowTop + marginAboveInput
-            
-            Log.d(TAG, "Attachment sheet positioning - windowHeight: $windowHeight, inputRowWindowTop: $inputRowWindowTop, peekHeight: $peekHeight")
-            
-            // Set peek height before showing
-            bottomSheet.behavior.peekHeight = peekHeight
-            bottomSheet.behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
-            
-            // Show the sheet after positioning is set
-            bottomSheet.show()
+        val popupWindow = android.widget.PopupWindow(
+            popupView,
+            popupWidth,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            elevation = 8f
+            isOutsideTouchable = true
+            isFocusable = true
+            setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
         
-        bottomSheetView.findViewById<View>(R.id.optionCamera)?.setOnClickListener {
-            bottomSheet.dismiss()
+        attachmentPopupWindow = popupWindow
+        
+        // Set click listeners
+        popupView.findViewById<View>(R.id.optionCamera)?.setOnClickListener {
+            popupWindow.dismiss()
             openCamera()
         }
         
-        bottomSheetView.findViewById<View>(R.id.optionGallery)?.setOnClickListener {
-            bottomSheet.dismiss()
+        popupView.findViewById<View>(R.id.optionGallery)?.setOnClickListener {
+            popupWindow.dismiss()
             openGallery()
         }
         
-        bottomSheetView.findViewById<View>(R.id.optionScheduled)?.setOnClickListener {
-            bottomSheet.dismiss()
+        popupView.findViewById<View>(R.id.optionScheduled)?.setOnClickListener {
+            popupWindow.dismiss()
             openScheduled()
         }
         
-        bottomSheetView.findViewById<View>(R.id.optionContacts)?.setOnClickListener {
-            bottomSheet.dismiss()
+        popupView.findViewById<View>(R.id.optionContacts)?.setOnClickListener {
+            popupWindow.dismiss()
             openContacts()
         }
         
-        bottomSheetView.findViewById<View>(R.id.optionQuickNote)?.setOnClickListener {
-            bottomSheet.dismiss()
+        popupView.findViewById<View>(R.id.optionQuickNote)?.setOnClickListener {
+            popupWindow.dismiss()
             showQuickNoteBottomSheet()
         }
         
-        bottomSheet.show()
+        // Set dismiss listener
+        popupWindow.setOnDismissListener {
+            attachmentPopupWindow = null
+        }
+        
+        // Calculate position above input area
+        binding.layoutInputRow.post {
+            // Measure popup to get actual dimensions
+            popupView.measure(
+                View.MeasureSpec.makeMeasureSpec(popupWidth, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            
+            val inputRowLocation = IntArray(2)
+            binding.layoutInputRow.getLocationInWindow(inputRowLocation)
+            val inputRowY = inputRowLocation[1]
+            
+            val marginAboveInput = (8 * resources.displayMetrics.density).toInt() // 8dp margin
+            
+            // Center popup horizontally with margin
+            val popupX = horizontalMargin
+            
+            // Position above input row
+            val popupY = inputRowY - popupView.measuredHeight - marginAboveInput
+            
+            Log.d(TAG, "Attachment popup positioning - x: $popupX, y: $popupY, width: $popupWidth")
+            
+            // Show popup
+            popupWindow.showAtLocation(
+                binding.root,
+                android.view.Gravity.NO_GRAVITY,
+                popupX,
+                popupY
+            )
+        }
     }
     
     private fun openCamera() {

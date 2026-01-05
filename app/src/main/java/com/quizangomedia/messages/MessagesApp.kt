@@ -20,6 +20,7 @@ class MessagesApp : Application() {
         super.onCreate()
         instance = this
         initRealmSafely()
+        com.quizangomedia.messages.util.NotificationHelper.initialize(this)
     }
     
     private fun initRealmSafely() {
