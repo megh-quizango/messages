@@ -31,12 +31,15 @@ object ThemeChangeHelper {
         
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                // Apply theme immediately and after layout
+                // Apply theme immediately multiple times to ensure all components update
+                ThemeManager.applyTheme(activity, rootView)
                 rootView.post {
                     ThemeManager.applyTheme(activity, rootView)
+                    // Apply again after a short delay to catch any late-rendered views
+                    rootView.postDelayed({
+                        ThemeManager.applyTheme(activity, rootView)
+                    }, 50)
                 }
-                // Also apply immediately
-                ThemeManager.applyTheme(activity, rootView)
             }
         }
         
@@ -65,12 +68,15 @@ object ThemeChangeHelper {
         
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                // Apply theme immediately and after layout
+                // Apply theme immediately multiple times to ensure all components update
+                ThemeManager.applyTheme(fragment.requireContext(), rootView)
                 rootView.post {
                     ThemeManager.applyTheme(fragment.requireContext(), rootView)
+                    // Apply again after a short delay to catch any late-rendered views
+                    rootView.postDelayed({
+                        ThemeManager.applyTheme(fragment.requireContext(), rootView)
+                    }, 50)
                 }
-                // Also apply immediately
-                ThemeManager.applyTheme(fragment.requireContext(), rootView)
             }
         }
         

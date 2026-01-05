@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
@@ -97,6 +98,12 @@
             android:exported="false"
             android:theme="@style/Theme.Messages"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- EditQuickResponseActivity -->
+        <activity
+            android:name=".ui.conversation.EditQuickResponseActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
 
         <!-- PersonalizeActivity -->
         <activity
@@ -329,6 +336,17 @@
                 <data android:scheme="mmsto" />
             </intent-filter>
         </service>
+
+        <!-- FileProvider for sharing files -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

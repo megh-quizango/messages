@@ -13,7 +13,7 @@
         android:id="@+id/imageIcon"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
@@ -47,21 +47,21 @@
         app:layout_constraintEnd_toStartOf="@id/switchToggle"/>
 
     <!-- Toggle Switch -->
-    <Switch
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switchToggle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="invisible"
-        android:thumb="@drawable/toggle_thumb"
-        android:track="@drawable/toggle_track"
-        android:showText="false"
-        android:switchMinWidth="44dp"
+        android:visibility="visible"
+        android:padding="0dp"
+        android:minWidth="36dp"
+        android:minHeight="20dp"
+        android:switchMinWidth="36dp"
         android:thumbTextPadding="0dp"
-        android:thumbTint="@null"
-        android:trackTint="@null"
+        android:showText="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -10,6 +10,8 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.util.ThemeManager
+import com.quizangomedia.messages.util.ThemeChangeHelper
+import android.content.BroadcastReceiver
 
 abstract class BaseBottomNavActivity : AppCompatActivity() {
     
@@ -17,6 +19,7 @@ abstract class BaseBottomNavActivity : AppCompatActivity() {
     protected lateinit var adViewBanner: com.google.android.gms.ads.AdView
     
     private var isSettingSelectedItem = false
+    private var themeChangeReceiver: BroadcastReceiver? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,8 +40,10 @@ abstract class BaseBottomNavActivity : AppCompatActivity() {
         setupBannerAd()
         
         // Apply theme after views are created
-        findViewById<View>(android.R.id.content)?.let {
-            ThemeManager.applyTheme(this, it)
+        findViewById<View>(android.R.id.content)?.let { rootView ->
+            ThemeManager.applyTheme(this, rootView)
+            // Register theme change receiver
+            themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, rootView)
         }
     }
     
@@ -127,6 +132,9 @@ abstract class BaseBottomNavActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         adViewBanner.destroy()
+        themeChangeReceiver?.let {
+            unregisterReceiver(it)
+        }
     }
 }
 

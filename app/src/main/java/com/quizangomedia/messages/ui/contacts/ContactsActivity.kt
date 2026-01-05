@@ -29,6 +29,8 @@ import com.quizangomedia.messages.ui.main.MainActivity
 import com.quizangomedia.messages.ui.personalize.PersonalizeActivity
 import com.quizangomedia.messages.ui.settings.SettingsActivity
 import com.quizangomedia.messages.util.ThemeManager
+import com.quizangomedia.messages.util.ThemeChangeHelper
+import android.content.BroadcastReceiver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,6 +42,7 @@ class ContactsActivity : AppCompatActivity() {
     private lateinit var adapter: ContactAdapter
     private var allContacts: List<ContactListItem> = emptyList()
     private var isSettingSelectedItem = false
+    private var themeChangeReceiver: BroadcastReceiver? = null
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -135,6 +138,9 @@ class ContactsActivity : AppCompatActivity() {
             }
         }
         setupBannerAd()
+        
+        // Register theme change receiver
+        themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
         
         // Request permission and load contacts
         checkContactsPermissionAndLoad()
@@ -354,6 +360,13 @@ class ContactsActivity : AppCompatActivity() {
         }
         
         return result
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        themeChangeReceiver?.let {
+            unregisterReceiver(it)
+        }
     }
 }
 

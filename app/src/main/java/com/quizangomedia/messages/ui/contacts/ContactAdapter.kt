@@ -92,7 +92,7 @@ class ContactAdapter(
                 // Fallback if method doesn't exist
                 imageContact.setBackgroundColor(android.graphics.Color.parseColor(color))
             }
-            imageContact.setImageResource(R.drawable.contact)
+            imageContact.setImageResource(R.drawable.contacts)
             
             itemView.setOnClickListener {
                 onContactClick(contact)

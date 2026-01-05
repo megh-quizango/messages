@@ -453,5 +453,159 @@ class ConversationDetailViewModel : ViewModel() {
         val prefs = MessagesApp.instance.getSharedPreferences("signature", Context.MODE_PRIVATE)
         return prefs.getString("signature_text", "") ?: ""
     }
+    
+    fun sendMMS(threadId: Long, address: String, body: String, imageUri: android.net.Uri) {
+        Log.d(TAG, "sendMMS called - threadId: $threadId, address: $address, body length: ${body.length}")
+        
+        viewModelScope.launch {
+            try {
+                val context = MessagesApp.instance
+                val actualThreadId = if (threadId > 0) {
+                    threadId
+                } else {
+                    Telephony.Threads.getOrCreateThreadId(context, address)
+                }
+                
+                // Get signature
+                val signature = getSignature()
+                val messageBody = if (signature.isNotEmpty() && body.isNotEmpty()) {
+                    "$body\n$signature"
+                } else if (signature.isNotEmpty()) {
+                    signature
+                } else {
+                    body
+                }
+                
+                // Create MMS intent
+                val intent = Intent(Intent.ACTION_SEND)
+                intent.putExtra("address", address)
+                intent.putExtra("sms_body", messageBody)
+                intent.putExtra(Intent.EXTRA_STREAM, imageUri)
+                intent.type = "image/*"
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                
+                // Try to use default SMS app's MMS sending
+                val smsIntent = Intent(Intent.ACTION_SENDTO, android.net.Uri.parse("smsto:$address"))
+                smsIntent.putExtra("sms_body", messageBody)
+                smsIntent.putExtra(Intent.EXTRA_STREAM, imageUri)
+                smsIntent.type = "image/*"
+                
+                // Use system MMS sending
+                try {
+                    val sendIntent = Intent(Intent.ACTION_SEND)
+                    sendIntent.putExtra("address", address)
+                    sendIntent.putExtra("sms_body", messageBody)
+                    sendIntent.putExtra(Intent.EXTRA_STREAM, imageUri)
+                    sendIntent.type = "image/*"
+                    sendIntent.setPackage("com.android.mms")
+                    sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    
+                    context.startActivity(sendIntent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error sending MMS via system", e)
+                    // Fallback: save to SMS database as text with attachment reference
+                    saveMMSToSmsDatabase(context, actualThreadId, address, messageBody, imageUri.toString())
+                }
+                
+                // Reload messages after delay
+                delay(500)
+                loadMessages(actualThreadId, address)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in sendMMS", e)
+                e.printStackTrace()
+            }
+        }
+    }
+    
+    fun sendMMSWithContact(threadId: Long, address: String, body: String, vCardUri: android.net.Uri) {
+        Log.d(TAG, "sendMMSWithContact called - threadId: $threadId, address: $address, body length: ${body.length}")
+        
+        viewModelScope.launch {
+            try {
+                val context = MessagesApp.instance
+                val actualThreadId = if (threadId > 0) {
+                    threadId
+                } else {
+                    Telephony.Threads.getOrCreateThreadId(context, address)
+                }
+                
+                // Get signature
+                val signature = getSignature()
+                val messageBody = if (signature.isNotEmpty() && body.isNotEmpty()) {
+                    "$body\n$signature"
+                } else if (signature.isNotEmpty()) {
+                    signature
+                } else {
+                    body
+                }
+                
+                // Use system MMS sending with vCard file
+                try {
+                    val sendIntent = Intent(Intent.ACTION_SEND)
+                    sendIntent.putExtra("address", address)
+                    sendIntent.putExtra("sms_body", messageBody)
+                    sendIntent.putExtra(Intent.EXTRA_STREAM, vCardUri)
+                    sendIntent.type = "text/x-vcard" // MIME type for vCard
+                    sendIntent.setPackage("com.android.mms")
+                    sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    
+                    context.startActivity(sendIntent)
+                    Log.d(TAG, "MMS with contact card sent via system")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error sending MMS with contact via system", e)
+                    // Fallback: try generic MMS intent
+                    try {
+                        val fallbackIntent = Intent(Intent.ACTION_SEND)
+                        fallbackIntent.putExtra("address", address)
+                        fallbackIntent.putExtra("sms_body", messageBody)
+                        fallbackIntent.putExtra(Intent.EXTRA_STREAM, vCardUri)
+                        fallbackIntent.type = "text/x-vcard"
+                        fallbackIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        fallbackIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        
+                        context.startActivity(Intent.createChooser(fallbackIntent, "Send contact card"))
+                        Log.d(TAG, "MMS with contact card sent via chooser")
+                    } catch (e2: Exception) {
+                        Log.e(TAG, "Error sending MMS with contact via chooser", e2)
+                        // Final fallback: save to SMS database as text with attachment reference
+                        saveMMSToSmsDatabase(context, actualThreadId, address, messageBody, vCardUri.toString())
+                    }
+                }
+                
+                // Reload messages after delay
+                delay(500)
+                loadMessages(actualThreadId, address)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in sendMMSWithContact", e)
+                e.printStackTrace()
+            }
+        }
+    }
+    
+    private fun saveMMSToSmsDatabase(context: Context, threadId: Long, address: String, body: String, attachmentPath: String) {
+        try {
+            Log.d(TAG, "saveMMSToSmsDatabase - threadId: $threadId, address: $address")
+            val values = ContentValues().apply {
+                put(Telephony.Sms.ADDRESS, address)
+                put(Telephony.Sms.BODY, body)
+                put(Telephony.Sms.DATE, System.currentTimeMillis())
+                put(Telephony.Sms.READ, 1)
+                put(Telephony.Sms.TYPE, Telephony.Sms.MESSAGE_TYPE_SENT)
+                put(Telephony.Sms.THREAD_ID, threadId)
+            }
+            
+            val uri = context.contentResolver.insert(Telephony.Sms.Sent.CONTENT_URI, values)
+            if (uri != null) {
+                Log.d(TAG, "MMS saved to SMS database successfully - URI: $uri")
+            } else {
+                Log.e(TAG, "Failed to save MMS to SMS database - insert returned null")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving MMS to SMS database", e)
+            e.printStackTrace()
+        }
+    }
 }
 

@@ -20,11 +20,14 @@ import com.quizangomedia.messages.ui.personalize.RingtoneActivity
 import com.quizangomedia.messages.ui.personalize.ThemesActivity
 import com.quizangomedia.messages.ui.settings.SettingsActivity
 import com.quizangomedia.messages.util.ThemeManager
+import com.quizangomedia.messages.util.ThemeChangeHelper
+import android.content.BroadcastReceiver
 
 class PersonalizeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPersonalizeBinding
     private var isSettingSelectedItem = false
+    private var themeChangeReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,6 +95,9 @@ class PersonalizeActivity : AppCompatActivity() {
         binding.bottomNavigationView.post {
             setSelectedNavigationItem(R.id.nav_personalize)
         }
+        
+        // Register theme change receiver
+        themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
     }
     
     private fun setupThemeSection() {
@@ -219,6 +225,13 @@ class PersonalizeActivity : AppCompatActivity() {
         binding.textRingtoneMore.setOnClickListener {
             val intent = Intent(this, RingtoneActivity::class.java)
             startActivity(intent)
+        }
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        themeChangeReceiver?.let {
+            unregisterReceiver(it)
         }
     }
 }

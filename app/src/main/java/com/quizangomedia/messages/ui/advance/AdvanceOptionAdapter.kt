@@ -1,10 +1,11 @@
 package com.quizangomedia.messages.ui.advance
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Switch
+import com.google.android.material.switchmaterial.SwitchMaterial
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -17,6 +18,10 @@ class AdvanceOptionAdapter(
 ) : ListAdapter<AdvanceOption, AdvanceOptionAdapter.ViewHolder>(DiffCallback()) {
 
     private var onToggleChangedListener: ((AdvanceOptionType, Boolean) -> Unit)? = null
+    
+    companion object {
+        private const val TAG = "AdvanceOptionAdapter"
+    }
 
     fun setOnToggleChangedListener(listener: (AdvanceOptionType, Boolean) -> Unit) {
         onToggleChangedListener = listener
@@ -36,9 +41,10 @@ class AdvanceOptionAdapter(
         private val imageIcon: ImageView = itemView.findViewById(R.id.imageIcon)
         private val textTitle: TextView = itemView.findViewById(R.id.textTitle)
         private val textDetail: TextView = itemView.findViewById(R.id.textDetail)
-        private val switchToggle: Switch? = itemView.findViewById(R.id.switchToggle)
+        private val switchToggle: SwitchMaterial = itemView.findViewById(R.id.switchToggle)
 
         fun bind(option: AdvanceOption) {
+            Log.d(TAG, "Binding option: ${option.title}, hasToggle: ${option.hasToggle}, toggleState: ${option.toggleState}")
             textTitle.text = option.title
 
             // Handle icon
@@ -46,7 +52,7 @@ class AdvanceOptionAdapter(
                 imageIcon.setImageResource(option.iconRes)
                 imageIcon.visibility = View.VISIBLE
             } else {
-                imageIcon.visibility = View.GONE
+                imageIcon.visibility = View.INVISIBLE
             }
 
             // Handle detail
@@ -57,69 +63,31 @@ class AdvanceOptionAdapter(
                 textDetail.visibility = View.GONE
             }
 
-            // Verify Switch is found - if not, try to find it
-            var toggle = switchToggle
-            if (toggle == null) {
-                toggle = findSwitchRecursively(itemView)
-            }
-
-            // Handle toggle visibility and styling
-            if (option.hasToggle && toggle != null) {
-                // Ensure Switch has proper layout params and dimensions
-                val switchLayoutParams = toggle.layoutParams
-                if (switchLayoutParams != null) {
-                    switchLayoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
-                    switchLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                    toggle.layoutParams = switchLayoutParams
-                }
+            // 🚨 FIX 2: ALWAYS reset switch state
+            if (option.hasToggle) {
+                Log.d(TAG, "Setting toggle VISIBLE for: ${option.title}")
+                switchToggle.visibility = View.VISIBLE
+                switchToggle.alpha = 1.0f
+                switchToggle.isChecked = option.toggleState
+                Log.d(TAG, "After setting - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, checked: ${switchToggle.isChecked}, width: ${switchToggle.width}, height: ${switchToggle.height}")
                 
-                // Set minimum dimensions to ensure visibility
-                val density = itemView.context.resources.displayMetrics.density
-                toggle.switchMinWidth = (36 * density).toInt()
-                toggle.minHeight = (20 * density).toInt()
-                
-                // Set visibility immediately
-                toggle.visibility = View.VISIBLE
-                toggle.alpha = 1.0f
-                toggle.isEnabled = true
-                toggle.invalidate()
-                toggle.requestLayout()
-                
-                // Set state and listener
-                toggle.isChecked = option.toggleState
-                toggle.setOnCheckedChangeListener { _, isChecked ->
+                // Remove old listener before setting new one (RecyclerView rule)
+                switchToggle.setOnCheckedChangeListener(null)
+                switchToggle.setOnCheckedChangeListener { _, isChecked ->
                     onToggleChangedListener?.invoke(option.type, isChecked)
                 }
+                // Apply theme once
+                Log.d(TAG, "Applying theme to toggle for: ${option.title}")
+                com.quizangomedia.messages.util.ThemeManager.applyToggleTheme(switchToggle, itemView.context)
+                Log.d(TAG, "After theme - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, width: ${switchToggle.width}, height: ${switchToggle.height}")
                 
-                // Apply theme-based styling using utility function
-                com.quizangomedia.messages.util.ThemeManager.applyToggleTheme(toggle, itemView.context)
-                
-                // CRITICAL: Force visibility multiple times to ensure it sticks
-                // This is important because ThemeManager or layout operations might override it
-                itemView.post {
-                    toggle.visibility = View.VISIBLE
-                    toggle.alpha = 1.0f
-                    com.quizangomedia.messages.util.ThemeManager.applyToggleTheme(toggle, itemView.context)
-                }
-                itemView.postDelayed({
-                    toggle.visibility = View.VISIBLE
-                    toggle.alpha = 1.0f
-                }, 50)
-                itemView.postDelayed({
-                    toggle.visibility = View.VISIBLE
-                    toggle.alpha = 1.0f
-                }, 150)
-                itemView.postDelayed({
-                    toggle.visibility = View.VISIBLE
-                    toggle.alpha = 1.0f
-                }, 300)
-                
-                // Make the whole item clickable but toggle handles its own clicks
+                // Item itself should NOT be clickable
                 itemView.setOnClickListener(null)
             } else {
-                // Hide toggle if it exists
-                toggle?.visibility = View.GONE
-                // Make item clickable
+                Log.d(TAG, "Setting toggle GONE for: ${option.title}")
+                // 🚨 CRITICAL PART OF FIX 2
+                switchToggle.visibility = View.GONE
+                switchToggle.setOnCheckedChangeListener(null)
                 itemView.setOnClickListener {
                     onOptionClick(option)
                 }
@@ -134,25 +102,6 @@ class AdvanceOptionAdapter(
 
         override fun areContentsTheSame(oldItem: AdvanceOption, newItem: AdvanceOption): Boolean {
             return oldItem == newItem
-        }
-    }
-    
-    companion object {
-        // Helper function to recursively find Switch view
-        private fun findSwitchRecursively(view: View): Switch? {
-            if (view is Switch) {
-                return view
-            }
-            if (view is ViewGroup) {
-                for (i in 0 until view.childCount) {
-                    val child = view.getChildAt(i)
-                    val found = findSwitchRecursively(child)
-                    if (found != null) {
-                        return found
-                    }
-                }
-            }
-            return null
         }
     }
 }

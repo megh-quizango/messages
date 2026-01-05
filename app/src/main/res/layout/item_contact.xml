@@ -10,7 +10,7 @@
         android:id="@+id/imageContact"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:src="@drawable/contact"
+        android:src="@drawable/contacts"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

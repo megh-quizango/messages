@@ -11,6 +11,12 @@
         <item name="android:textSize">12sp</item>
         <item name="android:lineSpacingExtra">0dp</item>
     </style>
+    
+    <style name="CustomSwitchStyle" parent="Widget.MaterialComponents.CompoundButton.Switch">
+        <item name="switchMinWidth">44dp</item>
+        <item name="thumbTint">@color/switch_thumb_color</item>
+        <item name="trackTint">@color/switch_track_color</item>
+    </style>
 
 </resources>
 

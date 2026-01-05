@@ -190,6 +190,26 @@
 
         </LinearLayout>
 
+        <!-- Attachments Container -->
+        <HorizontalScrollView
+            android:id="@+id/scrollViewAttachments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp">
+
+            <LinearLayout
+                android:id="@+id/layoutAttachments"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"/>
+
+        </HorizontalScrollView>
+
         <!-- Input Row -->
         <LinearLayout
             android:id="@+id/layoutInputRow"

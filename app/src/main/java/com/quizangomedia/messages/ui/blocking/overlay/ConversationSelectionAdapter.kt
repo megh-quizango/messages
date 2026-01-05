@@ -40,7 +40,7 @@ class ConversationSelectionAdapter(
                     .load(conversation.photoUri)
                     .into(binding.imageContact)
             } else {
-                binding.imageContact.setImageResource(com.quizangomedia.messages.R.drawable.contact)
+                binding.imageContact.setImageResource(com.quizangomedia.messages.R.drawable.contacts)
             }
 
             binding.root.setOnClickListener {

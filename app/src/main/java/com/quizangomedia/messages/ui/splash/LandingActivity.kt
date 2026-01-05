@@ -9,20 +9,24 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
 import android.util.Log
+import android.widget.ProgressBar
+import android.animation.ObjectAnimator
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.MobileAds
 import com.quizangomedia.messages.R
+import com.quizangomedia.messages.databinding.ActivityLandingBinding
 import com.quizangomedia.messages.ui.language.LanguageActivity
 import com.quizangomedia.messages.ui.main.MainActivity
-import com.quizangomedia.messages.util.ThemeManager
 
 class LandingActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityLandingBinding
     private lateinit var sharedPreferences: SharedPreferences
     private val handler = Handler(Looper.getMainLooper())
+    private val splashDuration = 3000L // 2 seconds
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,12 +35,12 @@ class LandingActivity : AppCompatActivity() {
             enableEdgeToEdge()
         }
         
-        setContentView(R.layout.activity_landing)
+        binding = ActivityLandingBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         
-        // Apply theme
-        ThemeManager.applyTheme(this, findViewById(android.R.id.content))
+        // Don't apply theme to splash screen - keep the gradient background
         
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -47,10 +51,20 @@ class LandingActivity : AppCompatActivity() {
         // Initialize AdMob SDK
         initializeMobileAdsSdk()
         
+        // Animate progress bar
+        animateProgressBar()
+        
         // Redirect after delay
         handler.postDelayed({
             redirectToActivity()
-        }, 2000) // 2 second splash
+        }, splashDuration)
+    }
+    
+    private fun animateProgressBar() {
+        val progressBar = binding.progressBar
+        val animator = ObjectAnimator.ofInt(progressBar, "progress", 0, 100)
+        animator.duration = splashDuration
+        animator.start()
     }
     
     private fun initializeMobileAdsSdk() {

@@ -1,13 +1,12 @@
 package com.quizangomedia.messages.ui.settings
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Switch
+import com.google.android.material.switchmaterial.SwitchMaterial
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.RecyclerView
 import com.quizangomedia.messages.R
 
@@ -37,6 +36,10 @@ class SettingsAdapter(
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val textHeader: TextView = itemView.findViewById(R.id.textHeader)
         private val optionsContainer: ViewGroup = itemView.findViewById(R.id.optionsContainer)
+        
+        companion object {
+            private const val TAG = "SettingsAdapter"
+        }
 
         fun bindSection(item: SettingsItem, onOptionClick: (SettingsOption) -> Unit) {
             textHeader.text = item.title
@@ -59,150 +62,86 @@ class SettingsAdapter(
                 
                 val textTitle: TextView = optionView.findViewById(R.id.textTitle)
                 val imageIcon: ImageView = optionView.findViewById(R.id.imageIcon)
+                val switchToggle: SwitchMaterial = optionView.findViewById(R.id.switchToggle)
+                
+                Log.d(TAG, "Binding option: ${option.title}")
                 
                 textTitle.text = option.title
                 
-                // Find Switch BEFORE adding to container - should work with inflated view
-                var switchToggle: Switch? = optionView.findViewById(R.id.switchToggle)
+                // Handle icon and spacing
+                Log.d(TAG, "Option: ${option.title}, iconRes: ${option.iconRes}")
+                val textParams = textTitle.layoutParams as? androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+                val iconParams = imageIcon.layoutParams as? androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
                 
-                // If not found, try finding it recursively
-                if (switchToggle == null) {
-                    switchToggle = findSwitchRecursively(optionView)
-                }
-                
-                // Add view to container first so it can be measured
-                optionsContainer.addView(optionView)
-                
-                // Try finding Switch again AFTER adding to container
-                if (switchToggle == null) {
-                    switchToggle = optionView.findViewById(R.id.switchToggle)
-                }
-                
-                // Last resort: find from container
-                if (switchToggle == null) {
-                    switchToggle = optionsContainer.findViewById(R.id.switchToggle)
-                }
-                
-                // Handle toggle visibility AFTER adding to container
-                // This ensures the view is in the hierarchy before we manipulate it
-                val hasToggle = option.switchState != null
-                
-                if (switchToggle != null) {
-                    // Ensure Switch has proper layout params and dimensions
-                    val switchLayoutParams = switchToggle.layoutParams
-                    if (switchLayoutParams != null) {
-                        switchLayoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
-                        switchLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                        switchToggle.layoutParams = switchLayoutParams
-                    }
-                    
-                    // Set minimum dimensions to ensure visibility
-                    val density = itemView.context.resources.displayMetrics.density
-                    switchToggle.switchMinWidth = (36 * density).toInt()
-                    switchToggle.minHeight = (20 * density).toInt()
-                    
-                    if (hasToggle) {
-                        // Force visibility and ensure it's not overridden
-                        switchToggle.visibility = View.VISIBLE
-                        switchToggle.alpha = 1.0f
-                        switchToggle.isEnabled = true
-                        switchToggle.invalidate()
-                        switchToggle.requestLayout()
-                    } else {
-                        switchToggle.visibility = View.GONE
-                    }
-                }
-                
-                // Now set up icon and constraints using ConstraintSet for proper updates
-                val constraintLayout = optionView as ConstraintLayout
-                val constraintSet = ConstraintSet()
-                constraintSet.clone(constraintLayout)
-                
-                // Convert 16dp to pixels for margin
-                val margin16dp = (16 * itemView.context.resources.displayMetrics.density).toInt()
-                
-                // CRITICAL: Always ensure Switch constraints are preserved
-                // This ensures the Switch stays visible and properly positioned
-                // Only set constraints if switchToggle was found
-                if (switchToggle != null) {
-                    constraintSet.connect(R.id.switchToggle, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END, 0)
-                    constraintSet.connect(R.id.switchToggle, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP, 0)
-                    constraintSet.connect(R.id.switchToggle, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
-                }
+                // Convert 16dp to pixels for marginStart
+                val spacingDp = 16
+                val spacingPx = (spacingDp * itemView.context.resources.displayMetrics.density).toInt()
                 
                 if (option.iconRes != null) {
-                    // Set icon resource first
-                    imageIcon.setImageResource(option.iconRes)
-                    
-                    // Ensure icon constraints are set
-                    constraintSet.connect(R.id.imageIcon, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 0)
-                    constraintSet.connect(R.id.imageIcon, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP, 0)
-                    constraintSet.connect(R.id.imageIcon, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 0)
-                    
-                    // Constrain text to start after icon with explicit margin for spacing
-                    constraintSet.clear(R.id.textTitle, ConstraintSet.START)
-                    constraintSet.connect(R.id.textTitle, ConstraintSet.START, R.id.imageIcon, ConstraintSet.END, margin16dp)
-                    if (switchToggle != null) {
-                        constraintSet.connect(R.id.textTitle, ConstraintSet.END, R.id.switchToggle, ConstraintSet.START, margin16dp)
+                    try {
+                        imageIcon.setImageResource(option.iconRes)
+                        imageIcon.visibility = View.VISIBLE
+                        // Set TextView marginStart to create spacing between icon and text
+                        // This is more reliable than relying on ImageView's marginEnd
+                        textParams?.marginStart = spacingPx
+                        textTitle.layoutParams = textParams
+                        // Force layout update
+                        optionView.requestLayout()
+                        Log.d(TAG, "Icon set successfully for: ${option.title}, resourceId: ${option.iconRes}, text marginStart: ${textParams?.marginStart}px (${spacingDp}dp)")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to set icon for: ${option.title}, resourceId: ${option.iconRes}, error: ${e.message}", e)
+                        imageIcon.visibility = View.GONE
+                        textParams?.marginStart = 0
+                        textTitle.layoutParams = textParams
+                        optionView.requestLayout()
                     }
-                    constraintSet.applyTo(constraintLayout)
-                    
-                    // Make icon visible AFTER constraints are applied
-                    imageIcon.visibility = View.VISIBLE
-                    
-                    // Force layout recalculation
-                    constraintLayout.requestLayout()
                 } else {
-                    // When icon is gone, constrain text to parent start
+                    Log.w(TAG, "No icon resource for: ${option.title}")
                     imageIcon.visibility = View.GONE
-                    constraintSet.clear(R.id.textTitle, ConstraintSet.START)
-                    constraintSet.connect(R.id.textTitle, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, 0)
-                    if (switchToggle != null) {
-                        constraintSet.connect(R.id.textTitle, ConstraintSet.END, R.id.switchToggle, ConstraintSet.START, margin16dp)
-                    }
-                    constraintSet.applyTo(constraintLayout)
-                    constraintLayout.requestLayout()
+                    textParams?.marginStart = 0
+                    textTitle.layoutParams = textParams
+                    optionView.requestLayout()
                 }
                 
-                // Handle toggle state and styling (visibility already set above)
-                if (hasToggle && switchToggle != null) {
-                    // Set state and listener
+                // Log spacing info for debugging
+                Log.d(TAG, "Spacing - Icon visibility: ${imageIcon.visibility}, icon marginEnd: ${iconParams?.marginEnd}, text marginStart: ${textParams?.marginStart}")
+                
+                // Add view to container first
+                optionsContainer.addView(optionView)
+                
+                // 🚨 FIX 2: ALWAYS reset switch state
+                val hasToggle = option.switchState != null
+                Log.d(TAG, "Option: ${option.title}, hasToggle: $hasToggle, switchState: ${option.switchState}")
+                
+                if (hasToggle) {
+                    Log.d(TAG, "Setting toggle VISIBLE for: ${option.title}")
+                    switchToggle.visibility = View.VISIBLE
+                    switchToggle.alpha = 1.0f
                     switchToggle.isChecked = option.switchState ?: false
-                    switchToggle.setOnCheckedChangeListener { _, isChecked ->
+                    Log.d(TAG, "After setting - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, checked: ${switchToggle.isChecked}, width: ${switchToggle.width}, height: ${switchToggle.height}")
+                    
+                    // Remove old listener before setting new one (RecyclerView rule)
+                    switchToggle.setOnCheckedChangeListener(null)
+                    switchToggle.setOnCheckedChangeListener { _, _ ->
                         // Handle toggle state change
                         // TODO: Save preference
                     }
-                    
-                    // Apply theme-based styling using utility function
+                    // Apply theme after view is added to container
+                    Log.d(TAG, "Applying theme to toggle for: ${option.title}")
                     com.quizangomedia.messages.util.ThemeManager.applyToggleTheme(switchToggle, optionView.context)
+                    Log.d(TAG, "After theme - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, width: ${switchToggle.width}, height: ${switchToggle.height}")
                     
-                    // CRITICAL: Force visibility multiple times to ensure it sticks
-                    // This is important because ThemeManager or layout operations might override it
-                    optionView.post {
-                        switchToggle.visibility = View.VISIBLE
-                        switchToggle.alpha = 1.0f
-                        com.quizangomedia.messages.util.ThemeManager.applyToggleTheme(switchToggle, optionView.context)
+                    // Item click toggles the switch
+                    optionView.setOnClickListener {
+                        switchToggle.toggle()
                     }
-                    optionView.postDelayed({
-                        switchToggle.visibility = View.VISIBLE
-                        switchToggle.alpha = 1.0f
-                    }, 50)
-                    optionView.postDelayed({
-                        switchToggle.visibility = View.VISIBLE
-                        switchToggle.alpha = 1.0f
-                    }, 150)
-                    optionView.postDelayed({
-                        switchToggle.visibility = View.VISIBLE
-                        switchToggle.alpha = 1.0f
-                    }, 300)
-                }
-                
-                optionView.setOnClickListener {
-                    if (option.switchState == null) {
+                } else {
+                    Log.d(TAG, "Setting toggle GONE for: ${option.title}")
+                    // 🚨 CRITICAL PART OF FIX 2
+                    switchToggle.visibility = View.GONE
+                    switchToggle.setOnCheckedChangeListener(null)
+                    optionView.setOnClickListener {
                         onOptionClick(option)
-                    } else {
-                        // Toggle the switch when clicking the row
-                        switchToggle?.toggle()
                     }
                 }
             }
@@ -211,22 +150,5 @@ class SettingsAdapter(
 
     companion object {
         private const val TYPE_SECTION = 0
-        
-        // Helper function to recursively find Switch view
-        private fun findSwitchRecursively(view: View): Switch? {
-            if (view is Switch) {
-                return view
-            }
-            if (view is ViewGroup) {
-                for (i in 0 until view.childCount) {
-                    val child = view.getChildAt(i)
-                    val found = findSwitchRecursively(child)
-                    if (found != null) {
-                        return found
-                    }
-                }
-            }
-            return null
-        }
     }
 }

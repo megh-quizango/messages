@@ -17,7 +17,7 @@
             android:id="@+id/imageContact"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/contact"
+            android:src="@drawable/contacts"
             android:elevation="0dp"
             android:outlineProvider="none" />
 

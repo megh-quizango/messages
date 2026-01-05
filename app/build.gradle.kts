@@ -86,6 +86,9 @@ dependencies {
     // Material Components
     implementation("com.google.android.material:material:1.12.0")
     
+    // Google Fonts
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
+    
     // Image Loading
     implementation("com.squareup.picasso:picasso:2.8")
     implementation("de.hdodenhof:circleimageview:3.1.0")

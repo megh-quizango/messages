@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.StateListDrawable
 import android.graphics.drawable.ColorDrawable
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
@@ -15,7 +16,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.SeekBar
-import android.widget.Switch
+import com.google.android.material.switchmaterial.SwitchMaterial
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
@@ -175,7 +176,7 @@ object ThemeManager {
             }
             
             // Handle Switch - only apply theme if custom drawables are not set
-            if (view is Switch) {
+            if (view is SwitchMaterial) {
                 try {
                     // Only apply theme if custom drawables are not already set
                     // Custom drawables are set when thumbDrawable and trackDrawable are StateListDrawable
@@ -912,71 +913,49 @@ object ThemeManager {
      * @param switchToggle The Switch to style
      * @param context The context to get theme colors
      */
-    fun applyToggleTheme(switchToggle: Switch, context: Context) {
+    fun applyToggleTheme(switchToggle: SwitchMaterial, context: Context) {
+        Log.d("ThemeManager", "applyToggleTheme called - switchToggle: $switchToggle, visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}")
         val themeColor = getThemeColor(context)
         val density = context.resources.displayMetrics.density
+        Log.d("ThemeManager", "Theme color: $themeColor, density: $density")
         
-        // Calculate proper dimensions for track and thumb
-        val trackWidth = (36 * density).toInt()
-        val trackHeight = (20 * density).toInt()
-        val thumbSize = (14 * density).toInt()
+        // Use Material Switch's built-in tint system instead of custom drawables
+        // This is more reliable and works better with Material components
+        val thumbColors = android.content.res.ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf()
+            ),
+            intArrayOf(
+                themeColor,  // Checked: theme color
+                Color.parseColor("#9696A3")  // Unchecked: gray
+            )
+        )
         
-        // Create track drawable: white background with theme border when checked, gray when unchecked
-        val checkedTrackDrawable = GradientDrawable().apply {
-            cornerRadius = 10f * density
-            setColor(Color.WHITE)
-            setStroke((2 * density).toInt(), themeColor)
-        }
-        val uncheckedTrackDrawable = GradientDrawable().apply {
-            cornerRadius = 10f * density
-            setColor(Color.parseColor("#E0E0E0"))
-        }
+        val trackColors = android.content.res.ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf()
+            ),
+            intArrayOf(
+                themeColor,  // Checked: theme color (Material will handle opacity)
+                Color.parseColor("#E0E0E0")  // Unchecked: light gray
+            )
+        )
         
-        // Set intrinsic bounds for drawables so they render properly
-        checkedTrackDrawable.setBounds(0, 0, trackWidth, trackHeight)
-        uncheckedTrackDrawable.setBounds(0, 0, trackWidth, trackHeight)
+        // Apply tints - Material Switch handles the styling
+        switchToggle.thumbTintList = thumbColors
+        switchToggle.trackTintList = trackColors
         
-        val trackStateList = StateListDrawable().apply {
-            addState(intArrayOf(android.R.attr.state_checked), checkedTrackDrawable)
-            addState(intArrayOf(), uncheckedTrackDrawable)
-        }
-        trackStateList.setBounds(0, 0, trackWidth, trackHeight)
+        // Don't override dimensions - let Material Switch use its defaults
+        // Material Switch automatically ensures thumb fits inside track
+        // The XML layouts already set switchMinWidth, which is sufficient
+        // Material will calculate thumb size based on track height automatically
         
-        // Create thumb drawable: theme color circle when checked, gray when unchecked
-        val checkedThumbDrawable = GradientDrawable().apply {
-            shape = GradientDrawable.OVAL
-            setColor(themeColor)
-        }
-        val uncheckedThumbDrawable = GradientDrawable().apply {
-            shape = GradientDrawable.OVAL
-            setColor(Color.parseColor("#9696A3"))
-        }
-        
-        // Set intrinsic bounds for thumb drawables
-        checkedThumbDrawable.setBounds(0, 0, thumbSize, thumbSize)
-        uncheckedThumbDrawable.setBounds(0, 0, thumbSize, thumbSize)
-        
-        val thumbStateList = StateListDrawable().apply {
-            addState(intArrayOf(android.R.attr.state_checked), checkedThumbDrawable)
-            addState(intArrayOf(), uncheckedThumbDrawable)
-        }
-        thumbStateList.setBounds(0, 0, thumbSize, thumbSize)
-        
-        // Apply drawables and disable tints to use custom drawables
-        switchToggle.trackDrawable = trackStateList
-        switchToggle.thumbDrawable = thumbStateList
-        switchToggle.thumbTintList = null
-        switchToggle.trackTintList = null
-        switchToggle.thumbTintMode = null
-        switchToggle.trackTintMode = null
-        
-        // Ensure Switch has proper minimum width and height
-        switchToggle.switchMinWidth = trackWidth
-        switchToggle.minHeight = trackHeight
-        switchToggle.switchPadding = (4 * density).toInt()
-        
-        // Force the Switch to redraw with proper dimensions
+        // Force the Switch to redraw
         switchToggle.invalidate()
         switchToggle.requestLayout()
+        
+        Log.d("ThemeManager", "After applyToggleTheme - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, width: ${switchToggle.width}, height: ${switchToggle.height}, minWidth: ${switchToggle.switchMinWidth}, minHeight: ${switchToggle.minHeight}")
     }
 }

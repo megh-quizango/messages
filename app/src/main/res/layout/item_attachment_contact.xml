@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_attachment_container"
+    android:padding="8dp"
+    android:layout_marginEnd="8dp"
+    android:minHeight="48dp"
+    android:maxHeight="56dp">
+
+    <!-- Contact Image/Icon -->
+    <ImageView
+        android:id="@+id/imageContact"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/ic_person"
+        android:contentDescription="Contact"
+        android:background="@drawable/bg_person_icon"
+        android:padding="6dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Contact Name and Number Container -->
+    <LinearLayout
+        android:id="@+id/layoutContactInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:minWidth="100dp"
+        android:maxWidth="200dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imageContact"
+        app:layout_constraintEnd_toStartOf="@+id/buttonRemove">
+
+        <!-- Contact Name -->
+        <TextView
+            android:id="@+id/textContactName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Contact Name"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <!-- Contact Number and Label in same line -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/textContactNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+1234567890"
+                android:textColor="@color/gray_dark"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+
+            <TextView
+                android:id="@+id/textContactCard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="• Contact card"
+                android:textColor="@color/gray_dark"
+                android:textSize="11sp"
+                android:maxLines="1"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Remove Button -->
+    <ImageView
+        android:id="@+id/buttonRemove"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/ic_close"
+        android:background="@drawable/bg_circular_remove_badge"
+        android:contentDescription="Remove"
+        android:scaleType="centerInside"
+        android:padding="4dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

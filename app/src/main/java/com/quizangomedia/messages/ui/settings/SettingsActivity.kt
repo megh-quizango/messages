@@ -30,12 +30,15 @@ import com.quizangomedia.messages.ui.private.PrivateConversationsActivity
 import com.quizangomedia.messages.ui.language.LanguageActivity
 import com.quizangomedia.messages.ui.manageapps.ManageAppsActivity
 import com.quizangomedia.messages.util.ThemeManager
+import com.quizangomedia.messages.util.ThemeChangeHelper
+import android.content.BroadcastReceiver
 
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var adapter: SettingsAdapter
     private var isSettingSelectedItem = false
+    private var themeChangeReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,6 +102,9 @@ class SettingsActivity : AppCompatActivity() {
         
         // Also apply theme immediately
         ThemeManager.applyTheme(this, binding.root)
+        
+        // Register theme change receiver
+        themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
     }
     
     private fun setupBackButton() {
@@ -108,9 +114,81 @@ class SettingsActivity : AppCompatActivity() {
     }
     
     private fun setupRecyclerView() {
+        // Helper function to get icon from drawable/settings folder
+        // Android flattens drawable resources, so files in drawable/settings/ should be accessible by filename
+        fun getIcon(name: String): Int? {
+            android.util.Log.d("SettingsActivity", "=== getIcon($name) ===")
+            
+            return try {
+                // Try multiple approaches to find the resource
+                var resourceId = 0
+                
+                // First try: direct name (for files in main drawable folder or flattened from subfolders)
+                resourceId = resources.getIdentifier(name, "drawable", packageName)
+                android.util.Log.d("SettingsActivity", "getIcon($name): Direct lookup = $resourceId")
+                
+                if (resourceId != 0) {
+                    // Verify the resource actually exists and is valid
+                    try {
+                        val drawable = resources.getDrawable(resourceId, theme)
+                        android.util.Log.d("SettingsActivity", "getIcon($name): SUCCESS - Resource ID = $resourceId, drawable = ${drawable != null}")
+                        return resourceId
+                    } catch (e: Exception) {
+                        android.util.Log.w("SettingsActivity", "getIcon($name): Resource ID found but invalid: ${e.message}")
+                        resourceId = 0
+                    }
+                }
+                
+                // Second try: with settings_ prefix (in case they're named with prefix)
+                if (resourceId == 0) {
+                    resourceId = resources.getIdentifier("settings_$name", "drawable", packageName)
+                    android.util.Log.d("SettingsActivity", "getIcon($name): With 'settings_' prefix = $resourceId")
+                    if (resourceId != 0) {
+                        try {
+                            resources.getDrawable(resourceId, theme)
+                            android.util.Log.d("SettingsActivity", "getIcon($name): SUCCESS with prefix - Resource ID = $resourceId")
+                            return resourceId
+                        } catch (e: Exception) {
+                            android.util.Log.w("SettingsActivity", "getIcon($name): Prefix resource ID invalid: ${e.message}")
+                            resourceId = 0
+                        }
+                    }
+                }
+                
+                // Third try: List all drawable resources to see what's available
+                if (resourceId == 0) {
+                    android.util.Log.w("SettingsActivity", "getIcon($name): Resource not found! Listing available drawables...")
+                    val packageName = packageName
+                    val drawableFields = R.drawable::class.java.fields
+                    val matchingDrawables = drawableFields.filter { 
+                        it.name.contains(name, ignoreCase = true) || 
+                        it.name.contains("settings", ignoreCase = true)
+                    }.take(10)
+                    android.util.Log.d("SettingsActivity", "getIcon($name): Found ${matchingDrawables.size} potentially matching drawables:")
+                    matchingDrawables.forEach { field ->
+                        try {
+                            val id = field.getInt(null)
+                            android.util.Log.d("SettingsActivity", "  - ${field.name} = $id")
+                        } catch (e: Exception) {
+                            // Ignore
+                        }
+                    }
+                }
+                
+                if (resourceId == 0) {
+                    android.util.Log.e("SettingsActivity", "getIcon($name): FAILED - Resource not found in any location!")
+                }
+                
+                if (resourceId != 0) resourceId else null
+            } catch (e: Exception) {
+                android.util.Log.e("SettingsActivity", "getIcon($name): Exception = ${e.message}", e)
+                null
+            }
+        }
+        
         val settingsItems = listOf(
             SettingsItem("General", listOf(
-                SettingsOption("Default SMS apps Messages", null, null, true) { 
+                SettingsOption("Default SMS apps Messages", getIcon("default_sms"), null, true) { 
                     // Check if app is already default SMS app
                     val isDefaultSmsApp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         // Android 10+ - Use RoleManager
@@ -132,35 +210,35 @@ class SettingsActivity : AppCompatActivity() {
                         })
                     }
                 },
-                SettingsOption("Contacts colored icons", null, true, false),
-                SettingsOption("Color SIM card icons", R.drawable.sim, false, false),
-                SettingsOption("Quick access to OTP", R.drawable.otp, true, false)
+                SettingsOption("Contacts colored icons", getIcon("contacts"), true, false),
+                SettingsOption("Color SIM card icons", getIcon("sim"), false, false),
+                SettingsOption("Quick access to OTP", getIcon("otp"), true, false)
             )),
             SettingsItem("Go To", listOf(
-                SettingsOption("Manage Apps", R.drawable.manage, null, false) { startActivity(Intent(this, ManageAppsActivity::class.java)) },
-                SettingsOption("Private Conversations", R.drawable.lock, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.pin.PinActivity::class.java)) },
-                SettingsOption("Spam & Block", R.drawable.spam, null, false) { startActivity(Intent(this, SpamBlockActivity::class.java)) },
-                SettingsOption("Archive", R.drawable.archive, null, false),
-                SettingsOption("Recycle Bin", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.recyclebin.RecycleBinActivity::class.java)) },
-                SettingsOption("Schedule Messages", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.scheduled.ScheduledMessagesActivity::class.java)) },
-                SettingsOption("Caller Settings", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.caller.CallerSettingsActivity::class.java)) },
-                SettingsOption("Starred", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.starred.StarredActivity::class.java)) },
-                SettingsOption("Swipe Gestures", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.swipe.SwipeGesturesActivity::class.java)) },
-                SettingsOption("Add Signature", null, null, false) { showSignatureDialog() },
-                SettingsOption("Notifications", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.notifications.NotificationsActivity::class.java)) },
-                SettingsOption("Language", null, null, false) { 
+                SettingsOption("Manage Apps", getIcon("manage"), null, false) { startActivity(Intent(this, ManageAppsActivity::class.java)) },
+                SettingsOption("Private Conversations", getIcon("private_convo"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.pin.PinActivity::class.java)) },
+                SettingsOption("Spam & Block", getIcon("spam"), null, false) { startActivity(Intent(this, SpamBlockActivity::class.java)) },
+                SettingsOption("Archive", getIcon("archive"), null, false),
+                SettingsOption("Recycle Bin", getIcon("recycle"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.recyclebin.RecycleBinActivity::class.java)) },
+                SettingsOption("Schedule Messages", getIcon("schedule"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.scheduled.ScheduledMessagesActivity::class.java)) },
+                SettingsOption("Caller Settings", getIcon("caller"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.caller.CallerSettingsActivity::class.java)) },
+                SettingsOption("Starred", getIcon("starred"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.starred.StarredActivity::class.java)) },
+                SettingsOption("Swipe Gestures", getIcon("swipe"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.swipe.SwipeGesturesActivity::class.java)) },
+                SettingsOption("Add Signature", getIcon("signature"), null, false) { showSignatureDialog() },
+                SettingsOption("Notifications", getIcon("notifications"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.notifications.NotificationsActivity::class.java)) },
+                SettingsOption("Language", getIcon("language"), null, false) { 
                     startActivity(Intent(this, LanguageActivity::class.java).apply {
                         putExtra("from_settings", true)
                     })
                 },
-                SettingsOption("Advance", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.advance.AdvanceActivity::class.java)) },
-                SettingsOption("Feedback", null, null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.feedback.FeedbackActivity::class.java)) },
-                SettingsOption("Share App!", null, null, false),
-                SettingsOption("Rate Us", null, null, false) { showRateUsBottomSheet() }
+                SettingsOption("Advance", getIcon("advance"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.advance.AdvanceActivity::class.java)) },
+                SettingsOption("Feedback", getIcon("feedback"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.feedback.FeedbackActivity::class.java)) },
+                SettingsOption("Share App!", getIcon("share"), null, false),
+                SettingsOption("Rate Us", getIcon("rate_us"), null, false) { showRateUsBottomSheet() }
             )),
             SettingsItem("Backups", listOf(
-                SettingsOption("Export Messages", null, null, false),
-                SettingsOption("Import Messages", null, null, false)
+                SettingsOption("Export Messages", getIcon("export"), null, false),
+                SettingsOption("Import Messages", getIcon("import_message"), null, false)
             ))
         )
         
@@ -322,6 +400,13 @@ class SettingsActivity : AppCompatActivity() {
         }
         
         bottomSheet.show()
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        themeChangeReceiver?.let {
+            unregisterReceiver(it)
+        }
     }
 }
 

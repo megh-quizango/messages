@@ -87,7 +87,7 @@ class SettingsFragment : Fragment() {
     private fun setupRecyclerView() {
         val settingsItems = listOf(
             SettingsItem("General", listOf(
-                SettingsOption("Default SMS apps Messages", null, null, true) { 
+                SettingsOption("Default SMS apps Messages", com.quizangomedia.messages.R.drawable.default_sms, null, true) {
                     // Check if app is already default SMS app
                     val isDefaultSmsApp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         val roleManager = requireContext().getSystemService(RoleManager::class.java)
@@ -105,7 +105,7 @@ class SettingsFragment : Fragment() {
                         })
                     }
                 },
-                SettingsOption("Contacts colored icons", null, true, false),
+                SettingsOption("Contacts colored icons", com.quizangomedia.messages.R.drawable.contacts, true, false),
                 SettingsOption("Color SIM card icons", com.quizangomedia.messages.R.drawable.sim, false, false),
                 SettingsOption("Quick access to OTP", com.quizangomedia.messages.R.drawable.otp, true, false)
             )),
@@ -120,46 +120,46 @@ class SettingsFragment : Fragment() {
                     startActivity(Intent(requireContext(), SpamBlockActivity::class.java)) 
                 },
                 SettingsOption("Archive", com.quizangomedia.messages.R.drawable.archive, null, false),
-                SettingsOption("Recycle Bin", null, null, false) { 
+                SettingsOption("Recycle Bin", com.quizangomedia.messages.R.drawable.recycle, null, false) {
                     startActivity(Intent(requireContext(), RecycleBinActivity::class.java)) 
                 },
-                SettingsOption("Schedule Messages", null, null, false) { 
+                SettingsOption("Schedule Messages", com.quizangomedia.messages.R.drawable.schedule, null, false) {
                     startActivity(Intent(requireContext(), ScheduledMessagesActivity::class.java)) 
                 },
-                SettingsOption("Caller Settings", null, null, false) { 
+                SettingsOption("Caller Settings", com.quizangomedia.messages.R.drawable.caller, null, false) {
                     startActivity(Intent(requireContext(), CallerSettingsActivity::class.java)) 
                 },
-                SettingsOption("Starred", null, null, false) { 
+                SettingsOption("Starred", com.quizangomedia.messages.R.drawable.starred, null, false) {
                     startActivity(Intent(requireContext(), StarredActivity::class.java)) 
                 },
-                SettingsOption("Swipe Gestures", null, null, false) { 
+                SettingsOption("Swipe Gestures", com.quizangomedia.messages.R.drawable.swipe, null, false) {
                     startActivity(Intent(requireContext(), SwipeGesturesActivity::class.java)) 
                 },
-                SettingsOption("Add Signature", null, null, false) { 
+                SettingsOption("Add Signature", com.quizangomedia.messages.R.drawable.signature, null, false) {
                     showSignatureDialog()
                 },
-                SettingsOption("Notifications", null, null, false) { 
+                SettingsOption("Notifications", com.quizangomedia.messages.R.drawable.notifications, null, false) {
                     startActivity(Intent(requireContext(), NotificationsActivity::class.java)) 
                 },
-                SettingsOption("Language", null, null, false) { 
+                SettingsOption("Language", com.quizangomedia.messages.R.drawable.language, null, false) {
                     startActivity(Intent(requireContext(), LanguageActivity::class.java).apply {
                         putExtra("from_settings", true)
                     })
                 },
-                SettingsOption("Advance", null, null, false) { 
+                SettingsOption("Advance", com.quizangomedia.messages.R.drawable.advance, null, false) {
                     startActivity(Intent(requireContext(), AdvanceActivity::class.java)) 
                 },
-                SettingsOption("Feedback", null, null, false) { 
+                SettingsOption("Feedback", com.quizangomedia.messages.R.drawable.feedback, null, false) {
                     startActivity(Intent(requireContext(), FeedbackActivity::class.java)) 
                 },
-                SettingsOption("Share App!", null, null, false),
-                SettingsOption("Rate Us", null, null, false) { 
+                SettingsOption("Share App!", com.quizangomedia.messages.R.drawable.share, null, false),
+                SettingsOption("Rate Us", com.quizangomedia.messages.R.drawable.rate_us, null, false) {
                     showRateUsBottomSheet()
                 }
             )),
             SettingsItem("Backups", listOf(
-                SettingsOption("Export Messages", null, null, false),
-                SettingsOption("Import Messages", null, null, false)
+                SettingsOption("Export Messages", com.quizangomedia.messages.R.drawable.export, null, false),
+                SettingsOption("Import Messages", com.quizangomedia.messages.R.drawable.import_message, null, false)
             ))
         )
         

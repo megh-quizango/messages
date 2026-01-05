@@ -119,20 +119,27 @@ class ThemesActivity : AppCompatActivity() {
                 AppPreferences.setThemeColor(this, themeColor)
                 AppPreferences.setThemeColorLight(this, AppPreferences.getLighterColor(themeColor))
                 
-                // Apply theme immediately to this activity
+                // Apply theme immediately to this activity (multiple times to ensure it's applied)
+                ThemeManager.applyTheme(this, binding.root)
                 binding.root.post {
                     ThemeManager.applyTheme(this@ThemesActivity, binding.root)
+                    binding.root.post {
+                        ThemeManager.applyTheme(this@ThemesActivity, binding.root)
+                    }
                 }
-                // Also apply immediately
-                ThemeManager.applyTheme(this, binding.root)
                 
                 // Broadcast theme change to update entire app immediately
                 val intent = android.content.Intent("com.quizangomedia.messages.THEME_CHANGED")
                 intent.setPackage(packageName) // Ensure it's sent to this app only
-                sendBroadcast(intent)
                 
-                // Also send ordered broadcast for immediate delivery
+                // Send broadcast multiple ways to ensure delivery
+                sendBroadcast(intent)
                 sendOrderedBroadcast(intent, null)
+                
+                // Also send with a small delay to catch any late listeners
+                binding.root.postDelayed({
+                    sendBroadcast(intent)
+                }, 100)
             }
         }
     }
