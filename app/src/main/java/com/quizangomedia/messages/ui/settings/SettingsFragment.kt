@@ -2,15 +2,22 @@ package com.quizangomedia.messages.ui.settings
 
 import android.app.role.RoleManager
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.Telephony
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.quizangomedia.messages.databinding.FragmentSettingsBinding
 import com.quizangomedia.messages.ui.advance.AdvanceActivity
 import com.quizangomedia.messages.ui.feedback.FeedbackActivity
@@ -26,13 +33,19 @@ import com.quizangomedia.messages.ui.swipe.SwipeGesturesActivity
 import com.quizangomedia.messages.ui.caller.CallerSettingsActivity
 import android.content.BroadcastReceiver
 import com.quizangomedia.messages.ui.defaultsms.DefaultSmsActivity
+import com.quizangomedia.messages.util.MessagesExportImport
 import com.quizangomedia.messages.util.ThemeChangeHelper
 import com.quizangomedia.messages.util.ThemeManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.quizangomedia.messages.ui.archive.ArchiveActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class SettingsFragment : Fragment() {
 
@@ -41,6 +54,19 @@ class SettingsFragment : Fragment() {
     
     private lateinit var adapter: SettingsAdapter
     private var themeChangeReceiver: BroadcastReceiver? = null
+    
+    // Activity result launchers for file picker
+    private val exportFileLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+        uri?.let {
+            handleExportResult(it)
+        }
+    }
+    
+    private val importFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            handleImportResult(it)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -113,13 +139,15 @@ class SettingsFragment : Fragment() {
                 SettingsOption("Manage Apps", com.quizangomedia.messages.R.drawable.manage, null, false) { 
                     startActivity(Intent(requireContext(), ManageAppsActivity::class.java)) 
                 },
-                SettingsOption("Private Conversations", com.quizangomedia.messages.R.drawable.lock, null, false) { 
+                SettingsOption("Private Conversations", com.quizangomedia.messages.R.drawable.private_convo, null, false) {
                     startActivity(Intent(requireContext(), PinActivity::class.java)) 
                 },
                 SettingsOption("Spam & Block", com.quizangomedia.messages.R.drawable.spam, null, false) { 
                     startActivity(Intent(requireContext(), SpamBlockActivity::class.java)) 
                 },
-                SettingsOption("Archive", com.quizangomedia.messages.R.drawable.archive, null, false),
+                SettingsOption("Archive", com.quizangomedia.messages.R.drawable.archive, null, false){
+                    startActivity(Intent(requireContext(), ArchiveActivity::class.java))
+                },
                 SettingsOption("Recycle Bin", com.quizangomedia.messages.R.drawable.recycle, null, false) {
                     startActivity(Intent(requireContext(), RecycleBinActivity::class.java)) 
                 },
@@ -158,8 +186,12 @@ class SettingsFragment : Fragment() {
                 }
             )),
             SettingsItem("Backups", listOf(
-                SettingsOption("Export Messages", com.quizangomedia.messages.R.drawable.export, null, false),
-                SettingsOption("Import Messages", com.quizangomedia.messages.R.drawable.import_message, null, false)
+                SettingsOption("Export Messages", com.quizangomedia.messages.R.drawable.export, null, false) {
+                    exportMessages()
+                },
+                SettingsOption("Import Messages", com.quizangomedia.messages.R.drawable.import_message, null, false) {
+                    importMessages()
+                }
             ))
         )
         
@@ -258,6 +290,125 @@ class SettingsFragment : Fragment() {
         }
         
         bottomSheet.show()
+    }
+    
+    private fun exportMessages() {
+        try {
+            // Generate default filename with timestamp
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val defaultFileName = "messages_backup_$timestamp.zip"
+            
+            // Create intent to open file picker with Downloads folder suggestion
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/zip"
+                putExtra(Intent.EXTRA_TITLE, defaultFileName)
+                
+                // Try to set initial URI to Downloads folder (Android 10+)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    try {
+                        val treeUri = DocumentsContract.buildDocumentUri(
+                            "com.android.externalstorage.documents",
+                            "primary:${Environment.DIRECTORY_DOWNLOADS}"
+                        )
+                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, treeUri)
+                    } catch (e: Exception) {
+                        Log.w("SettingsFragment", "Could not set initial URI to Downloads", e)
+                    }
+                }
+            }
+            
+            exportFileLauncher.launch(defaultFileName)
+        } catch (e: Exception) {
+            Log.e("SettingsFragment", "Error launching export file picker", e)
+            Toast.makeText(requireContext(), "Error opening file picker", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun importMessages() {
+        try {
+            // Create intent to open file picker with Downloads folder suggestion
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/zip"
+                
+                // Try to set initial URI to Downloads folder (Android 10+)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    try {
+                        val treeUri = DocumentsContract.buildDocumentUri(
+                            "com.android.externalstorage.documents",
+                            "primary:${Environment.DIRECTORY_DOWNLOADS}"
+                        )
+                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, treeUri)
+                    } catch (e: Exception) {
+                        Log.w("SettingsFragment", "Could not set initial URI to Downloads", e)
+                    }
+                }
+            }
+            
+            importFileLauncher.launch(arrayOf("application/zip"))
+        } catch (e: Exception) {
+            Log.e("SettingsFragment", "Error launching import file picker", e)
+            Toast.makeText(requireContext(), "Error opening file picker", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun handleExportResult(uri: Uri) {
+        // Show progress dialog
+        val progressDialog = AlertDialog.Builder(requireContext())
+            .setTitle("Exporting Messages")
+            .setMessage("Please wait...")
+            .setCancelable(false)
+            .create()
+        progressDialog.show()
+        
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val success = MessagesExportImport.exportMessages(requireContext(), uri)
+                progressDialog.dismiss()
+                
+                if (success) {
+                    Toast.makeText(requireContext(), "Messages exported successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to export messages", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                progressDialog.dismiss()
+                Log.e("SettingsFragment", "Error exporting messages", e)
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    private fun handleImportResult(uri: Uri) {
+        // Show progress dialog
+        val progressDialog = AlertDialog.Builder(requireContext())
+            .setTitle("Importing Messages")
+            .setMessage("Please wait...")
+            .setCancelable(false)
+            .create()
+        progressDialog.show()
+        
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val importedCount = MessagesExportImport.importMessages(requireContext(), uri)
+                progressDialog.dismiss()
+                
+                if (importedCount > 0) {
+                    Toast.makeText(requireContext(), "Imported $importedCount messages successfully", Toast.LENGTH_SHORT).show()
+                    // Refresh the main activity if it's in the back stack
+                    // The messages will be visible when user navigates back
+                } else if (importedCount == 0) {
+                    Toast.makeText(requireContext(), "No new messages to import (all messages already exist)", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to import messages", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                progressDialog.dismiss()
+                Log.e("SettingsFragment", "Error importing messages", e)
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
 

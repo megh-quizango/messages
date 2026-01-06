@@ -12,6 +12,7 @@ import com.quizangomedia.messages.data.model.Conversation
 import com.quizangomedia.messages.data.model.Message
 import com.quizangomedia.messages.data.model.MessageStatus
 import com.quizangomedia.messages.data.model.MessageType
+import com.quizangomedia.messages.util.OtpHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -97,6 +98,13 @@ class SmsReceiver : BroadcastReceiver() {
                         }
                     }
                     
+                    // Detect and extract OTP from message
+                    val detectedOtp = if (OtpHelper.isOTPMessage(body)) {
+                        OtpHelper.extractOTP(body)
+                    } else {
+                        null
+                    }
+                    
                     // Create message in Realm
                     copyToRealm(Message().apply {
                         this.id = messageId
@@ -109,6 +117,7 @@ class SmsReceiver : BroadcastReceiver() {
                         this.read = false
                         this.starred = false
                         this.messagePartCount = 1
+                        this.otp = detectedOtp
                     })
                     Log.d(TAG, "Message stored successfully in Realm - MessageId: $messageId")
                 }

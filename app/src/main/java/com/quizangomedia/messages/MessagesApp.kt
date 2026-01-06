@@ -21,6 +21,7 @@ class MessagesApp : Application() {
         instance = this
         initRealmSafely()
         com.quizangomedia.messages.util.NotificationHelper.initialize(this)
+        com.quizangomedia.messages.util.AfterCallNotificationHelper.initialize(this)
     }
     
     private fun initRealmSafely() {
@@ -32,7 +33,7 @@ class MessagesApp : Application() {
                     Contact::class
                 )
             )
-                .schemaVersion(14)
+                .schemaVersion(15)
                 .build()
             
             realm = Realm.open(config)

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/loutMain"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="end"
+    android:orientation="vertical"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:background="@android:color/transparent">
+
+    <!-- Overlay content can be customized here -->
+    <!-- This is a minimal overlay window that can be expanded with UI components -->
+    
+</FrameLayout>
+

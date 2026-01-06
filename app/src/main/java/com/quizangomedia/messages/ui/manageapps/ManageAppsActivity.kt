@@ -40,6 +40,9 @@ class ManageAppsActivity : AppCompatActivity() {
         // Apply theme
         ThemeManager.applyTheme(this, binding.root)
         
+        // Ensure loading percentage text is always blue (not theme-based)
+        binding.textLoadingPercentage.setTextColor(android.graphics.Color.parseColor("#0C56CF"))
+        
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -81,6 +84,8 @@ class ManageAppsActivity : AppCompatActivity() {
         // Show loading indicator
         binding.imageLoading.visibility = View.VISIBLE
         binding.textLoadingPercentage.visibility = View.VISIBLE
+        // Ensure loading percentage text is always blue (not theme-based)
+        binding.textLoadingPercentage.setTextColor(android.graphics.Color.parseColor("#0C56CF"))
         binding.imagePhone.visibility = View.GONE
         binding.buttonManage.visibility = View.GONE
         
@@ -102,6 +107,7 @@ class ManageAppsActivity : AppCompatActivity() {
 
     private fun loadAppsWithProgress() {
         var progress = 0
+        val blueColor = android.graphics.Color.parseColor("#0C56CF")
         
         val handler = Handler(Looper.getMainLooper())
         val updateProgress = object : Runnable {
@@ -109,6 +115,8 @@ class ManageAppsActivity : AppCompatActivity() {
                 progress += 2
                 if (progress <= 100) {
                     binding.textLoadingPercentage.text = "$progress%"
+                    // Ensure color stays blue every time text is updated
+                    binding.textLoadingPercentage.setTextColor(blueColor)
                     handler.postDelayed(this, 50) // Update every 50ms
                 } else {
                     // Loading complete
@@ -161,6 +169,8 @@ class ManageAppsActivity : AppCompatActivity() {
         binding.buttonManage.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
         binding.root.post {
             ThemeManager.applyTheme(this, binding.root)
+            // Ensure loading percentage text remains blue after theme is applied
+            binding.textLoadingPercentage.setTextColor(android.graphics.Color.parseColor("#0C56CF"))
         }
         
         // Setup manage button click

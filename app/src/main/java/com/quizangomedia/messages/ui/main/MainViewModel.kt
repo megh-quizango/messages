@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import android.util.Log
 import com.quizangomedia.messages.MessagesApp
 import com.quizangomedia.messages.data.model.Conversation
+import com.quizangomedia.messages.util.CustomFilterStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,6 +57,104 @@ class MainViewModel : ViewModel() {
         }
     }
     
+    fun loadConversationsForCustomFilter(context: android.content.Context, filterId: String) {
+        viewModelScope.launch {
+            try {
+                _isLoading.postValue(true)
+                val conversations = withContext(Dispatchers.IO) {
+                    loadConversationsForCustomFilterFromDevice(context, filterId)
+                }
+                _conversations.postValue(conversations)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _conversations.postValue(emptyList())
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+    
+    private fun loadConversationsForCustomFilterFromDevice(context: android.content.Context, filterId: String): List<Conversation> {
+        Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Starting for filterId: $filterId")
+        val filter = CustomFilterStorage.getFilter(context, filterId)
+        if (filter == null || filter.threadIds.isEmpty()) {
+            Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Filter not found or empty")
+            return emptyList()
+        }
+        
+        val conversationsMap = mutableMapOf<Long, Conversation>()
+        val threadIdSet = filter.threadIds.toSet()
+        
+        // Query SMS from device for specific thread IDs
+        val uri = Telephony.Sms.CONTENT_URI
+        val projection = arrayOf(
+            Telephony.Sms._ID,
+            Telephony.Sms.THREAD_ID,
+            Telephony.Sms.ADDRESS,
+            Telephony.Sms.BODY,
+            Telephony.Sms.DATE,
+            Telephony.Sms.READ,
+            Telephony.Sms.TYPE
+        )
+        
+        val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIdSet.joinToString(",") { "?" }})"
+        val selectionArgs = threadIdSet.map { it.toString() }.toTypedArray()
+        val sortOrder = "${Telephony.Sms.DATE} DESC"
+        
+        Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Querying ${threadIdSet.size} thread IDs")
+        
+        context.contentResolver.query(
+            uri,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder
+        )?.use { cursor ->
+            while (cursor.moveToNext()) {
+                val threadId = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
+                
+                // Only process threads that are in the filter
+                if (!threadIdSet.contains(threadId)) {
+                    continue
+                }
+                
+                val address = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)) ?: ""
+                val body = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.BODY)) ?: ""
+                val date = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.DATE))
+                val read = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
+                val type = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
+                
+                val conversation = conversationsMap.getOrPut(threadId) {
+                    Conversation().apply {
+                        this.threadId = threadId
+                        this.address = address
+                        this.snippet = body
+                        this.date = date
+                        this.unreadCount = 0
+                    }
+                }
+                
+                // Update with latest message
+                if (date > conversation.date) {
+                    conversation.snippet = body
+                    conversation.date = date
+                }
+                
+                // Count unread messages
+                if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                    conversation.unreadCount++
+                }
+            }
+        }
+        
+        // Get contact names in batch
+        loadContactNamesBatch(context, conversationsMap.values)
+        
+        val sortedConversations = conversationsMap.values.sortedByDescending { it.date }
+        Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Returning ${sortedConversations.size} conversations")
+        return sortedConversations
+    }
+    
     fun markAllAsRead() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -91,6 +190,10 @@ class MainViewModel : ViewModel() {
         // Load deleted conversation IDs from recycle bin
         val deletedThreadIds = getDeletedThreadIds(context)
         Log.d(TAG, "loadConversationsFromDevice: Deleted threadIds: ${deletedThreadIds.size}")
+        
+        // Load archived conversation IDs
+        val archivedThreadIds = getArchivedThreadIds(context)
+        Log.d(TAG, "loadConversationsFromDevice: Archived threadIds: ${archivedThreadIds.size}")
         
         // Pre-load contact phone numbers for Personal filter (only if needed)
         val contactPhoneNumbers = if (category == "Personal") {
@@ -174,6 +277,11 @@ class MainViewModel : ViewModel() {
                 
                 // Skip conversations that are in recycle bin
                 if (deletedThreadIds.contains(threadId)) {
+                    continue
+                }
+                
+                // Skip conversations that are archived
+                if (archivedThreadIds.contains(threadId)) {
                     continue
                 }
                 
@@ -488,6 +596,18 @@ class MainViewModel : ViewModel() {
             val type = object : com.google.gson.reflect.TypeToken<List<com.quizangomedia.messages.ui.main.DeletedConversationData>>() {}.type
             val deletedConversations = gson.fromJson<List<com.quizangomedia.messages.ui.main.DeletedConversationData>>(deletedJson, type)
             return deletedConversations.map { it.threadId }.toSet()
+        }
+        return emptySet()
+    }
+    
+    private fun getArchivedThreadIds(context: Context): Set<Long> {
+        val prefs = context.getSharedPreferences("archived_messages", Context.MODE_PRIVATE)
+        val archivedJson = prefs.getString("archived_messages_list", null)
+        if (archivedJson != null) {
+            val gson = com.google.gson.Gson()
+            val type = object : com.google.gson.reflect.TypeToken<List<com.quizangomedia.messages.ui.archive.ArchivedMessageData>>() {}.type
+            val archivedMessages = gson.fromJson<List<com.quizangomedia.messages.ui.archive.ArchivedMessageData>>(archivedJson, type)
+            return archivedMessages.map { it.threadId }.toSet()
         }
         return emptySet()
     }

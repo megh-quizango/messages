@@ -2,8 +2,11 @@ package com.quizangomedia.messages.ui.settings
 
 import android.app.role.RoleManager
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.Telephony
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +16,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -29,9 +33,18 @@ import com.quizangomedia.messages.ui.spam.SpamBlockActivity
 import com.quizangomedia.messages.ui.private.PrivateConversationsActivity
 import com.quizangomedia.messages.ui.language.LanguageActivity
 import com.quizangomedia.messages.ui.manageapps.ManageAppsActivity
+import com.quizangomedia.messages.ui.archive.ArchiveActivity
+import com.quizangomedia.messages.util.MessagesExportImport
 import com.quizangomedia.messages.util.ThemeManager
 import com.quizangomedia.messages.util.ThemeChangeHelper
 import android.content.BroadcastReceiver
+import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -39,6 +52,19 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var adapter: SettingsAdapter
     private var isSettingSelectedItem = false
     private var themeChangeReceiver: BroadcastReceiver? = null
+    
+    // Activity result launchers for file picker
+    private val exportFileLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+        uri?.let {
+            handleExportResult(it)
+        }
+    }
+    
+    private val importFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            handleImportResult(it)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -221,7 +247,7 @@ class SettingsActivity : AppCompatActivity() {
                 SettingsOption("Manage Apps", getIcon("manage"), null, false) { startActivity(Intent(this, ManageAppsActivity::class.java)) },
                 SettingsOption("Private Conversations", getIcon("private_convo"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.pin.PinActivity::class.java)) },
                 SettingsOption("Spam & Block", getIcon("spam"), null, false) { startActivity(Intent(this, SpamBlockActivity::class.java)) },
-                SettingsOption("Archive", getIcon("archive"), null, false),
+                SettingsOption("Archive", getIcon("archive"), null, false) { startActivity(Intent(this, ArchiveActivity::class.java)) },
                 SettingsOption("Recycle Bin", getIcon("recycle"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.recyclebin.RecycleBinActivity::class.java)) },
                 SettingsOption("Schedule Messages", getIcon("schedule"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.scheduled.ScheduledMessagesActivity::class.java)) },
                 SettingsOption("Caller Settings", getIcon("caller"), null, false) { startActivity(Intent(this, com.quizangomedia.messages.ui.caller.CallerSettingsActivity::class.java)) },
@@ -240,8 +266,12 @@ class SettingsActivity : AppCompatActivity() {
                 SettingsOption("Rate Us", getIcon("rate_us"), null, false) { showRateUsBottomSheet() }
             )),
             SettingsItem("Backups", listOf(
-                SettingsOption("Export Messages", getIcon("export"), null, false),
-                SettingsOption("Import Messages", getIcon("import_message"), null, false)
+                SettingsOption("Export Messages", getIcon("export"), null, false) {
+                    exportMessages()
+                },
+                SettingsOption("Import Messages", getIcon("import_message"), null, false) {
+                    importMessages()
+                }
             ))
         )
         
@@ -405,6 +435,126 @@ class SettingsActivity : AppCompatActivity() {
         }
         
         bottomSheet.show()
+    }
+    
+    private fun exportMessages() {
+        try {
+            // Generate default filename with timestamp
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val defaultFileName = "messages_backup_$timestamp.zip"
+            
+            // Create intent to open file picker with Downloads folder suggestion
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/zip"
+                putExtra(Intent.EXTRA_TITLE, defaultFileName)
+                
+                // Try to set initial URI to Downloads folder (Android 10+)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    try {
+                        val downloadsUri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        val treeUri = DocumentsContract.buildDocumentUri(
+                            "com.android.externalstorage.documents",
+                            "primary:${Environment.DIRECTORY_DOWNLOADS}"
+                        )
+                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, treeUri)
+                    } catch (e: Exception) {
+                        Log.w("SettingsActivity", "Could not set initial URI to Downloads", e)
+                    }
+                }
+            }
+            
+            exportFileLauncher.launch(defaultFileName)
+        } catch (e: Exception) {
+            Log.e("SettingsActivity", "Error launching export file picker", e)
+            Toast.makeText(this, "Error opening file picker", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun importMessages() {
+        try {
+            // Create intent to open file picker with Downloads folder suggestion
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/zip"
+                
+                // Try to set initial URI to Downloads folder (Android 10+)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    try {
+                        val treeUri = DocumentsContract.buildDocumentUri(
+                            "com.android.externalstorage.documents",
+                            "primary:${Environment.DIRECTORY_DOWNLOADS}"
+                        )
+                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, treeUri)
+                    } catch (e: Exception) {
+                        Log.w("SettingsActivity", "Could not set initial URI to Downloads", e)
+                    }
+                }
+            }
+            
+            importFileLauncher.launch(arrayOf("application/zip"))
+        } catch (e: Exception) {
+            Log.e("SettingsActivity", "Error launching import file picker", e)
+            Toast.makeText(this, "Error opening file picker", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun handleExportResult(uri: Uri) {
+        // Show progress dialog
+        val progressDialog = AlertDialog.Builder(this)
+            .setTitle("Exporting Messages")
+            .setMessage("Please wait...")
+            .setCancelable(false)
+            .create()
+        progressDialog.show()
+        
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val success = MessagesExportImport.exportMessages(this@SettingsActivity, uri)
+                progressDialog.dismiss()
+                
+                if (success) {
+                    Toast.makeText(this@SettingsActivity, "Messages exported successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@SettingsActivity, "Failed to export messages", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                progressDialog.dismiss()
+                Log.e("SettingsActivity", "Error exporting messages", e)
+                Toast.makeText(this@SettingsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    private fun handleImportResult(uri: Uri) {
+        // Show progress dialog
+        val progressDialog = AlertDialog.Builder(this)
+            .setTitle("Importing Messages")
+            .setMessage("Please wait...")
+            .setCancelable(false)
+            .create()
+        progressDialog.show()
+        
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val importedCount = MessagesExportImport.importMessages(this@SettingsActivity, uri)
+                progressDialog.dismiss()
+                
+                if (importedCount > 0) {
+                    Toast.makeText(this@SettingsActivity, "Imported $importedCount messages successfully", Toast.LENGTH_SHORT).show()
+                    // Refresh the main activity if it's in the back stack
+                    // The messages will be visible when user navigates back
+                } else if (importedCount == 0) {
+                    Toast.makeText(this@SettingsActivity, "No new messages to import (all messages already exist)", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@SettingsActivity, "Failed to import messages", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                progressDialog.dismiss()
+                Log.e("SettingsActivity", "Error importing messages", e)
+                Toast.makeText(this@SettingsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
     
     override fun onDestroy() {

@@ -132,29 +132,25 @@ class ManageAppsDetailActivity : AppCompatActivity() {
     private fun getRunningBackgroundApps(): List<BackgroundApp> {
         val apps = mutableListOf<BackgroundApp>()
         val packageManager = packageManager
-        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         
         try {
-            val runningProcesses = activityManager.runningAppProcesses ?: return emptyList()
-            val runningPackages = runningProcesses.mapNotNull { it.pkgList.firstOrNull() }.toSet()
-            
+            // Get all installed apps on the device
             val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
             
             installedApps.forEach { appInfo ->
-                if (runningPackages.contains(appInfo.packageName)) {
-                    // Skip system apps if needed
-                    if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0 ||
-                        (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
-                        
-                        val appName = packageManager.getApplicationLabel(appInfo).toString()
-                        val icon = packageManager.getApplicationIcon(appInfo)
-                        
-                        apps.add(BackgroundApp(
-                            packageName = appInfo.packageName,
-                            appName = appName,
-                            icon = icon
-                        ))
-                    }
+                // Include all apps (both user-installed and system apps)
+                // Filter out system apps that shouldn't be shown, but keep updated system apps
+                if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0 ||
+                    (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
+                    
+                    val appName = packageManager.getApplicationLabel(appInfo).toString()
+                    val icon = packageManager.getApplicationIcon(appInfo)
+                    
+                    apps.add(BackgroundApp(
+                        packageName = appInfo.packageName,
+                        appName = appName,
+                        icon = icon
+                    ))
                 }
             }
         } catch (e: Exception) {
@@ -182,11 +178,30 @@ class ManageAppsDetailActivity : AppCompatActivity() {
         
         val adBinding = NativeAdLayoutBinding.bind(adView)
         
+        // Apply theme colors to native ad
+        val themeColor = ThemeManager.getThemeColor(this)
+        
+        // Apply theme to entire ad view (will handle background)
+        ThemeManager.applyTheme(this, adView)
+        
+        // Apply theme to "Ad" label background
+        val adLabel = adView.findViewById<android.widget.TextView>(R.id.nativeAdLabel)
+        adLabel?.setBackgroundColor(themeColor)
+        
+        // Apply theme to info icon
+        val infoIcon = adView.findViewById<android.widget.ImageView>(R.id.nativeAdInfoIcon)
+        infoIcon?.imageTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        
+        // Apply theme to call to action button
+        adBinding.nativeAdCallToAction.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        
+        // Register views with NativeAdView
         adView.headlineView = adBinding.nativeAdHeadline
         adView.bodyView = adBinding.nativeAdBody
         adView.callToActionView = adBinding.nativeAdCallToAction
         adView.iconView = adBinding.nativeAdIcon
         
+        // Set ad assets
         if (ad.headline != null) {
             adBinding.nativeAdHeadline.text = ad.headline
         }

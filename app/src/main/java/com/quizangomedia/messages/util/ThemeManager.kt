@@ -104,10 +104,15 @@ object ThemeManager {
             // Handle TextView textColor
             if (view is TextView) {
                 try {
-                    val textColors = view.textColors
-                    val currentTextColor = textColors?.defaultColor
-                    if (currentTextColor == primaryColorInt) {
-                        view.setTextColor(themeColorInt)
+                    // Skip text color change for views tagged to exclude theme text color changes
+                    if (view.tag == "exclude_from_theme_textcolor") {
+                        // Do not change text color for this view
+                    } else {
+                        val textColors = view.textColors
+                        val currentTextColor = textColors?.defaultColor
+                        if (currentTextColor == primaryColorInt) {
+                            view.setTextColor(themeColorInt)
+                        }
                     }
                 } catch (e: Exception) {
                     // Ignore
@@ -551,19 +556,24 @@ object ThemeManager {
                 // Check text color - replace purple/primary with theme, fix black text on colored backgrounds
                 if (view is TextView) {
                     val textColor = view.currentTextColor
-                    if (textColor == primaryColorInt || purpleColors.contains(textColor)) {
-                        view.setTextColor(themeColor)
-                    }
-                    // If text is black and background is theme-colored, make text white
-                    if (textColor == Color.BLACK || textColor == Color.parseColor("#000000")) {
-                        val parentBg = (view.parent as? View)?.background
-                        val viewBg = view.background
-                        val hasColoredBg = (parentBg is ColorDrawable && (purpleColors.contains((parentBg as ColorDrawable).color) || 
-                            (parentBg as ColorDrawable).color == themeColor)) ||
-                            (viewBg is ColorDrawable && (purpleColors.contains((viewBg as ColorDrawable).color) || 
-                            (viewBg as ColorDrawable).color == themeColor))
-                        if (hasColoredBg) {
-                            view.setTextColor(Color.WHITE)
+                    // Skip text color change for views tagged to exclude theme text color changes
+                    if (view.tag == "exclude_from_theme_textcolor") {
+                        // Do not change text color for this view
+                    } else {
+                        if (textColor == primaryColorInt || purpleColors.contains(textColor)) {
+                            view.setTextColor(themeColor)
+                        }
+                        // If text is black and background is theme-colored, make text white
+                        if (textColor == Color.BLACK || textColor == Color.parseColor("#000000")) {
+                            val parentBg = (view.parent as? View)?.background
+                            val viewBg = view.background
+                            val hasColoredBg = (parentBg is ColorDrawable && (purpleColors.contains((parentBg as ColorDrawable).color) || 
+                                (parentBg as ColorDrawable).color == themeColor)) ||
+                                (viewBg is ColorDrawable && (purpleColors.contains((viewBg as ColorDrawable).color) || 
+                                (viewBg as ColorDrawable).color == themeColor))
+                            if (hasColoredBg) {
+                                view.setTextColor(Color.WHITE)
+                            }
                         }
                     }
                 }
@@ -643,9 +653,14 @@ object ThemeManager {
             
             // Check text color - be more aggressive
             if (view is TextView) {
-                val textColor = view.currentTextColor
-                if (textColor == primaryColorInt || view.textColors?.defaultColor == primaryColorInt) {
-                    view.setTextColor(themeColor)
+                // Skip text color change for views tagged to exclude theme text color changes
+                if (view.tag == "exclude_from_theme_textcolor") {
+                    // Do not change text color for this view
+                } else {
+                    val textColor = view.currentTextColor
+                    if (textColor == primaryColorInt || view.textColors?.defaultColor == primaryColorInt) {
+                        view.setTextColor(themeColor)
+                    }
                 }
             }
             
@@ -659,8 +674,10 @@ object ThemeManager {
                     }
                 }
                 // Also check text color
-                if (view.currentTextColor == primaryColorInt || purpleColors.contains(view.currentTextColor)) {
-                    view.setTextColor(themeColor)
+                if (view.tag != "exclude_from_theme_textcolor") {
+                    if (view.currentTextColor == primaryColorInt || purpleColors.contains(view.currentTextColor)) {
+                        view.setTextColor(themeColor)
+                    }
                 }
             }
             
@@ -674,8 +691,10 @@ object ThemeManager {
                     }
                 }
                 // Also check text color
-                if (view.currentTextColor == primaryColorInt || purpleColors.contains(view.currentTextColor)) {
-                    view.setTextColor(themeColor)
+                if (view.tag != "exclude_from_theme_textcolor") {
+                    if (view.currentTextColor == primaryColorInt || purpleColors.contains(view.currentTextColor)) {
+                        view.setTextColor(themeColor)
+                    }
                 }
             }
             
@@ -808,8 +827,10 @@ object ThemeManager {
                                     }
                                 }
                                 // Apply theme color to text if it matches primary
-                                if (child is TextView && (child.currentTextColor == primaryColorInt || purpleColors.contains(child.currentTextColor))) {
-                                    child.setTextColor(themeColor)
+                                if (child is TextView && child.tag != "exclude_from_theme_textcolor") {
+                                    if (child.currentTextColor == primaryColorInt || purpleColors.contains(child.currentTextColor)) {
+                                        child.setTextColor(themeColor)
+                                    }
                                 }
                             }
                         }
@@ -876,9 +897,12 @@ object ThemeManager {
             
             // Check text color
             if (view is TextView) {
-                val textColor = view.currentTextColor
-                if (textColor == targetColor) {
-                    view.setTextColor(replacementColor)
+                // Skip text color change for views tagged to exclude theme text color changes
+                if (view.tag != "exclude_from_theme_textcolor") {
+                    val textColor = view.currentTextColor
+                    if (textColor == targetColor) {
+                        view.setTextColor(replacementColor)
+                    }
                 }
             }
             

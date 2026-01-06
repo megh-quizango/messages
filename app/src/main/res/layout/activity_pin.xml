@@ -112,18 +112,36 @@
 
     </LinearLayout>
 
+    <!-- ================= FORGOT PASSWORD ================= -->
+
+    <TextView
+        android:id="@+id/textForgotPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Forgot Password?"
+        android:textColor="@color/gray_dark"
+        android:textSize="14sp"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/layoutPinDots"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <!-- ================= KEYPAD ================= -->
 
     <GridLayout
         android:id="@+id/gridKeypad"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="30dp"
         android:layout_marginBottom="16dp"
         android:columnCount="3"
         android:rowCount="4"
         android:alignmentMode="alignMargins"
-        app:layout_constraintTop_toBottomOf="@id/layoutPinDots"
+        app:layout_constraintTop_toBottomOf="@id/textForgotPassword"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/adViewBanner">

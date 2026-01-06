@@ -16,4 +16,12 @@
     <string name="enter_pin">Enter Pin</string>
     <string name="create_your_pin">Create Your Pin</string>
     <string name="select_security_question">Select security question</string>
+    <string name="missed_call">Missed Call</string>
+    <string name="no_answer">No Answer</string>
+    <string name="call_ended">Call Ended</string>
+    <string name="unknown_number">Unknown Number</string>
+    <string name="invalid_number">Invalid number</string>
+    <string name="call_failed">Failed to make call</string>
+    <string name="message_failed">Failed to open message</string>
+    <string name="add_contact_failed">Failed to add contact</string>
 </resources>

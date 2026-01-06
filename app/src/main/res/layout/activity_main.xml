@@ -140,6 +140,7 @@
                 android:id="@+id/tabTransactions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
@@ -148,6 +149,29 @@
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:background="@drawable/bg_tab_unselected"/>
+
+            <!-- Container for custom filter tabs (will be populated dynamically) -->
+            <!-- Custom filter tabs will be added here programmatically -->
+
+            <!-- Add Filter Tab (Plus Icon) -->
+            <TextView
+                android:id="@+id/tabAddFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:gravity="center"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:text="+"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_tab_unselected"
+                android:clickable="true"
+                android:focusable="true"/>
         </LinearLayout>
     </HorizontalScrollView>
 

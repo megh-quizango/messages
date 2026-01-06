@@ -17,6 +17,7 @@ class Message : RealmObject {
     var mimeType: String? = null
     var attachmentPath: String? = null
     var messagePartCount: Int = 1
+    var otp: String? = null // Detected OTP from message body
 }
 
 object MessageType {

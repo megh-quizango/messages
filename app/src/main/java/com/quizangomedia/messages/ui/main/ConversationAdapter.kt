@@ -71,6 +71,24 @@ class ConversationAdapter(
         private val buttonStartChat: MaterialButton = itemView.findViewById(R.id.buttonStartChat)
 
         fun bind(conversation: Conversation) {
+            // Handle "Add Conversation" special item
+            if (conversation.threadId == -1L) {
+                textContactName.text = conversation.contactName ?: "Add Conversation"
+                textSnippet.text = conversation.snippet ?: "Tap to add conversations to this filter"
+                textTime.text = ""
+                textUnreadDot.visibility = View.GONE
+                buttonStartChat.visibility = View.GONE
+                imageContact.visibility = View.GONE
+                textAvatarLetter.visibility = View.VISIBLE
+                textAvatarLetter.text = "+"
+                textAvatarLetter.setBackgroundColor(itemView.context.getColor(R.color.blue_primary))
+                textAvatarLetter.setTextColor(itemView.context.getColor(R.color.white))
+                itemView.setOnClickListener {
+                    onConversationClick(conversation)
+                }
+                return
+            }
+            
             Log.d(TAG, "bind: Binding conversation - threadId=${conversation.threadId}, contactName='${conversation.contactName}', address='${conversation.address}', photoUri='${conversation.photoUri}'")
             
             // Reset avatar state first to prevent showing stale data

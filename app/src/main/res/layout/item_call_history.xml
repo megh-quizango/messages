@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <!-- Call Type Icon -->
+    <ImageView
+        android:id="@+id/imageCallType"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_call"
+        android:contentDescription="Call type"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!-- Call Type Text (Incoming/Outgoing/Missed) -->
+    <TextView
+        android:id="@+id/textCallType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Incoming"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toEndOf="@id/imageCallType"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!-- Call Date/Time -->
+    <TextView
+        android:id="@+id/textCallDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Today, 2:30 PM"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toEndOf="@id/imageCallType"
+        app:layout_constraintTop_toBottomOf="@id/textCallType"
+        app:layout_constraintEnd_toStartOf="@id/textCallDuration"/>
+
+    <!-- Call Duration -->
+    <TextView
+        android:id="@+id/textCallDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2m 30s"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

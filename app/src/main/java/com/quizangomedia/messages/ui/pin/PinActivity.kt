@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -22,6 +23,7 @@ import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityPinBinding
 import com.quizangomedia.messages.databinding.BottomSheetSecurityQuestionBinding
 import com.quizangomedia.messages.databinding.BottomSheetSelectQuestionBinding
+import com.quizangomedia.messages.databinding.BottomSheetForgotPasswordBinding
 import com.quizangomedia.messages.databinding.ItemSecurityQuestionBinding
 import com.quizangomedia.messages.ui.private.PrivateConversationsActivity
 import com.quizangomedia.messages.util.ThemeManager
@@ -32,6 +34,7 @@ class PinActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private var pinDigits = StringBuilder()
     private var isCreatingPin = false
+    private var isResettingPin = false
 
     companion object {
         private const val PREFS_NAME = "MessagesPrefs"
@@ -67,6 +70,7 @@ class PinActivity : AppCompatActivity() {
         setupBackButton()
         setupKeypad()
         setupBannerAd()
+        setupForgotPassword()
         updateUI()
         
         // Apply theme after views are laid out
@@ -125,11 +129,19 @@ class PinActivity : AppCompatActivity() {
         binding.adViewBanner.loadAd(adRequest)
     }
 
+    private fun setupForgotPassword() {
+        binding.textForgotPassword.setOnClickListener {
+            showForgotPasswordBottomSheet()
+        }
+    }
+
     private fun updateUI() {
-        if (isCreatingPin) {
+        if (isCreatingPin || isResettingPin) {
             binding.textPinInstruction.text = "Create your PIN"
+            binding.textForgotPassword.visibility = View.GONE
         } else {
             binding.textPinInstruction.text = "Enter Your PIN"
+            binding.textForgotPassword.visibility = View.VISIBLE
         }
         updatePinDots()
     }
@@ -149,6 +161,16 @@ class PinActivity : AppCompatActivity() {
         if (isCreatingPin) {
             // Save PIN and show security question bottom sheet
             showSecurityQuestionBottomSheet()
+        } else if (isResettingPin) {
+            // Save new PIN without updating security question
+            sharedPreferences.edit()
+                .putString(KEY_PIN, pinDigits.toString())
+                .apply()
+            
+            // Clear PIN and show enter PIN screen
+            pinDigits.clear()
+            isResettingPin = false
+            updateUI()
         } else {
             // Validate PIN
             val storedPin = sharedPreferences.getString(KEY_PIN, null)
@@ -264,6 +286,76 @@ class PinActivity : AppCompatActivity() {
         sheetBinding.recyclerViewQuestions.adapter = adapter
 
         bottomSheet.behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+        bottomSheet.show()
+    }
+
+    private fun showForgotPasswordBottomSheet() {
+        val storedQuestion = sharedPreferences.getString(KEY_SECURITY_QUESTION, null)
+        val storedAnswer = sharedPreferences.getString(KEY_SECURITY_ANSWER, null)
+        
+        if (storedQuestion == null || storedAnswer == null) {
+            // No security question set, can't reset
+            return
+        }
+        
+        val bottomSheet = BottomSheetDialog(this)
+        val sheetBinding = BottomSheetForgotPasswordBinding.inflate(LayoutInflater.from(this))
+        bottomSheet.setContentView(sheetBinding.root)
+        
+        // Set the security question (read-only)
+        sheetBinding.editTextQuestion.setText(storedQuestion)
+        
+        // Apply theme to verify button - set backgroundTint to null to allow theme override
+        sheetBinding.buttonVerify.backgroundTintList = null
+        
+        // Apply theme to bottom sheet
+        ThemeManager.applyThemeToBottomSheet(this, sheetBinding.root)
+        
+        // Apply theme after bottom sheet is shown
+        bottomSheet.setOnShowListener {
+            ThemeManager.applyTheme(this, sheetBinding.root)
+            // Apply theme to TextInputLayout focus colors
+            val themeColor = ThemeManager.getThemeColor(this)
+            sheetBinding.inputLayoutQuestion.setBoxStrokeColor(themeColor)
+            sheetBinding.inputLayoutAnswer.setBoxStrokeColor(themeColor)
+        }
+
+        sheetBinding.editTextAnswer.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                // Hide error when user starts typing
+                sheetBinding.textError.visibility = View.GONE
+            }
+        })
+
+        sheetBinding.buttonVerify.setOnClickListener {
+            val answer = sheetBinding.editTextAnswer.text.toString().trim()
+            
+            if (answer.isEmpty()) {
+                sheetBinding.textError.text = "Please enter an answer"
+                sheetBinding.textError.visibility = View.VISIBLE
+                return@setOnClickListener
+            }
+            
+            // Verify answer (case-insensitive comparison)
+            if (answer.equals(storedAnswer, ignoreCase = true)) {
+                // Answer matches, allow PIN reset
+                bottomSheet.dismiss()
+                pinDigits.clear()
+                isResettingPin = true
+                updateUI()
+            } else {
+                // Answer incorrect - show toast
+                Toast.makeText(this, "Incorrect answer. Please try again.", Toast.LENGTH_SHORT).show()
+                sheetBinding.editTextAnswer.text?.clear()
+            }
+        }
+
+        sheetBinding.buttonCancel.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
         bottomSheet.show()
     }
 

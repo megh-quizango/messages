@@ -110,6 +110,7 @@
         android:textSize="40sp"
         android:textStyle="bold"
         android:visibility="visible"
+        android:tag="exclude_from_theme_textcolor"
         app:layout_constraintTop_toTopOf="@id/imageLoading"
         app:layout_constraintBottom_toBottomOf="@id/imageLoading"
         app:layout_constraintStart_toStartOf="@id/imageLoading"

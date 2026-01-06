@@ -15,6 +15,10 @@ import com.quizangomedia.messages.R
 import com.quizangomedia.messages.data.model.Message
 import com.quizangomedia.messages.data.model.MessageType
 import com.quizangomedia.messages.util.AppPreferences
+import com.quizangomedia.messages.util.OtpHelper
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.widget.Toast
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -132,10 +136,37 @@ class MessageAdapter(
         private val imageStarBadge: android.widget.ImageView = itemView.findViewById(R.id.imageStarBadge)
         private val cardMessage: MaterialCardView = itemView.findViewById(R.id.cardMessage)
         private val context = itemView.context
+        
+        // OTP box views - find from included layout
+        private val layoutOtpBox: View? get() = itemView.findViewById(R.id.layoutOtpBox)
+        private val textOtpValue: TextView? get() = itemView.findViewById(R.id.textOtpValue)
+        private val buttonCopyOtp: TextView? get() = itemView.findViewById(R.id.buttonCopyOtp)
+        private val imageDeleteOtp: android.widget.ImageView? get() = itemView.findViewById(R.id.imageDeleteOtp)
 
         fun bind(message: Message, isSelectionMode: Boolean) {
             textMessage.text = message.body
             textTime.text = formatTime(message.date)
+            
+            // Handle OTP display
+            val otp = message.otp ?: OtpHelper.extractOTP(message.body)
+            if (otp != null && OtpHelper.isOTPMessage(message.body)) {
+                // Show OTP box
+                layoutOtpBox?.visibility = View.VISIBLE
+                textOtpValue?.text = otp
+                
+                // Set up copy button
+                buttonCopyOtp?.setOnClickListener {
+                    copyOTPToClipboard(otp)
+                }
+                
+                // Set up delete button (hides OTP box)
+                imageDeleteOtp?.setOnClickListener {
+                    layoutOtpBox?.visibility = View.GONE
+                }
+            } else {
+                // Hide OTP box if no OTP
+                layoutOtpBox?.visibility = View.GONE
+            }
             
             // Apply font size and font family
             val fontSize = AppPreferences.getFontSize(context)
@@ -209,6 +240,17 @@ class MessageAdapter(
             calendar.timeInMillis = timestamp
             val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
             return timeFormat.format(calendar.time)
+        }
+        
+        private fun copyOTPToClipboard(otp: String) {
+            try {
+                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("OTP", otp)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(context, "OTP copied: $otp", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error copying OTP", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

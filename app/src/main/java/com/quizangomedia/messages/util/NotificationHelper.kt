@@ -26,6 +26,7 @@ import com.quizangomedia.messages.receiver.NotificationActionReceiver
 import com.quizangomedia.messages.ui.conversation.ConversationDetailActivity
 import com.quizangomedia.messages.ui.notifications.ButtonAction
 import com.quizangomedia.messages.ui.notifications.NotificationPreview
+import com.quizangomedia.messages.util.OtpHelper
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -135,13 +136,23 @@ object NotificationHelper {
         button2Action: String?,
         button3Action: String?
     ) {
+        // Check if message contains OTP (do this first so we can use it later)
+        val hasOTP = OtpHelper.isOTPMessage(messageBody)
+        val otp = if (hasOTP) OtpHelper.extractOTP(messageBody) else null
+        
         // Determine what to show based on preview mode
         val preview = NotificationPreview.values().find { it.name == previewMode } ?: NotificationPreview.SHOW_NAME_AND_MESSAGE
         val title = contactName
-        val text = when (preview) {
+        var text = when (preview) {
             NotificationPreview.SHOW_NAME_AND_MESSAGE -> messageBody
             NotificationPreview.SHOW_NAME -> ""
             NotificationPreview.HIDE_CONTENTS -> ""
+        }
+        
+        // If OTP is detected and preview shows message, enhance the text to highlight OTP
+        if (hasOTP && otp != null && preview == NotificationPreview.SHOW_NAME_AND_MESSAGE) {
+            // Replace OTP in text with a more prominent version
+            text = messageBody.replace(otp, "🔐 $otp 🔐")
         }
         
         // Create intent to open conversation
@@ -168,11 +179,45 @@ object NotificationHelper {
         }
         
         // Configure action buttons
-        val actions = listOf(
+        var actions = listOf(
             button1Action to 1,
             button2Action to 2,
             button3Action to 3
         ).filter { it.first != null && it.first != ButtonAction.NONE.name }
+        
+        // If OTP is detected, replace one of the existing action buttons with COPY_OTP
+        // Priority: Keep REPLY if present, otherwise replace the last button
+        if (hasOTP && otp != null && !actions.any { it.first == ButtonAction.COPY_OTP.name }) {
+            if (actions.isEmpty()) {
+                // No existing actions, add COPY_OTP as the first action
+                actions = listOf(ButtonAction.COPY_OTP.name to 1)
+            } else {
+                // Replace the last non-REPLY button, or if all are REPLY, replace the last one
+                val replyIndex = actions.indexOfFirst { it.first == ButtonAction.REPLY.name }
+                val indexToReplace = if (replyIndex >= 0 && actions.size > 1) {
+                    // Keep REPLY, replace the last non-REPLY button
+                    val nonReplyActions = actions.filterIndexed { index, _ -> index != replyIndex }
+                    if (nonReplyActions.isNotEmpty()) {
+                        actions.indexOf(nonReplyActions.last())
+                    } else {
+                        actions.size - 1
+                    }
+                } else {
+                    // No REPLY or only REPLY exists, replace the last button
+                    actions.size - 1
+                }
+                
+                // Replace the button at indexToReplace with COPY_OTP
+                actions = actions.mapIndexed { index, action ->
+                    if (index == indexToReplace) {
+                        ButtonAction.COPY_OTP.name to action.second
+                    } else {
+                        action
+                    }
+                }
+            }
+            Log.d(TAG, "Replaced action button with COPY_OTP for OTP: $otp")
+        }
         
         // Build standard notification (no custom view)
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -239,6 +284,37 @@ object NotificationHelper {
                     
                     builder.addAction(replyActionCompat)
                     Log.d(TAG, "Added REPLY as standard action with RemoteInput for inline reply")
+                } else if (action == ButtonAction.COPY_OTP) {
+                    // Handle COPY_OTP action - ensure messageBody is included
+                    val actionIntent = Intent(context, NotificationActionReceiver::class.java).apply {
+                        putExtra("action", ButtonAction.COPY_OTP.name)
+                        putExtra("threadId", threadId)
+                        putExtra("address", address)
+                        putExtra("messageBody", messageBody)
+                        putExtra("contactName", contactName)
+                    }
+                    
+                    val actionPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        PendingIntent.getBroadcast(
+                            context,
+                            (threadId.toInt() * 10 + buttonNumber),
+                            actionIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                        )
+                    } else {
+                        PendingIntent.getBroadcast(
+                            context,
+                            (threadId.toInt() * 10 + buttonNumber),
+                            actionIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                    }
+                    
+                    val iconRes = getActionIcon(action)
+                    val actionTitle = action.displayName
+                    
+                    builder.addAction(iconRes, actionTitle, actionPendingIntent)
+                    Log.d(TAG, "Added COPY_OTP action for OTP: $otp")
                 } else {
                     // Add other actions as standard actions
                     val actionIntent = Intent(context, NotificationActionReceiver::class.java).apply {

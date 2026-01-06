@@ -61,11 +61,6 @@ class ConversationSelectionActivity : AppCompatActivity() {
         setupRecyclerView()
         setupDoneButton()
         
-        // Set backgroundTint to null for done button and apply theme color directly
-        binding.buttonDone.backgroundTintList = null
-        val themeColor = ThemeManager.getThemeColor(this)
-        binding.buttonDone.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
-        
         checkSmsPermissionAndLoad()
         observeConversations()
         
@@ -90,7 +85,7 @@ class ConversationSelectionActivity : AppCompatActivity() {
     }
 
     private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
+        binding.buttonBack.setOnClickListener {
             finish()
         }
     }
@@ -114,7 +109,7 @@ class ConversationSelectionActivity : AppCompatActivity() {
     }
 
     private fun setupDoneButton() {
-        binding.buttonDone.setOnClickListener {
+        binding.buttonSave.setOnClickListener {
             val selectedContacts = adapter.currentList
                 .filter { selectedConversations.contains(it.threadId) }
                 .map { conversation ->

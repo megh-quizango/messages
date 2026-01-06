@@ -44,6 +44,8 @@ import com.quizangomedia.messages.ui.settings.SettingsActivity
 import com.quizangomedia.messages.ui.conversation.ConversationDetailActivity
 import com.quizangomedia.messages.ui.swipe.SwipeGesturesActivity
 import com.quizangomedia.messages.data.model.Conversation
+import com.quizangomedia.messages.data.model.CustomFilter
+import com.quizangomedia.messages.util.CustomFilterStorage
 import android.provider.Telephony
 import android.content.ContentValues
 import android.net.Uri
@@ -52,6 +54,8 @@ import android.os.Looper
 import android.util.Log
 import com.quizangomedia.messages.observer.SmsContentObserver
 import com.quizangomedia.messages.util.ThemeManager
+import java.util.UUID
+import android.widget.EditText
 
 class MainActivity : AppCompatActivity() {
     
@@ -71,6 +75,8 @@ class MainActivity : AppCompatActivity() {
     private var themeChangeReceiver: BroadcastReceiver? = null
     private var exitBottomSheet: com.google.android.material.bottomsheet.BottomSheetDialog? = null
     private var exitNativeAd: NativeAd? = null
+    private var customFilterTabs = mutableMapOf<String, TextView>()
+    private var currentCustomFilterId: String? = null
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -109,6 +115,17 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
             pendingPhoneCall = null
+        }
+    }
+    
+    private val conversationSelectionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK && currentCustomFilterId != null) {
+            // Reload conversations for the current custom filter
+            currentCustomFilterId?.let { filterId ->
+                viewModel.loadConversationsForCustomFilter(this, filterId)
+            }
         }
     }
 
@@ -182,6 +199,7 @@ class MainActivity : AppCompatActivity() {
         setupBannerAd()
         setupBackPressHandler()
         observeConversations()
+        loadCustomFilterTabs()
         
         // Request SMS permission and load conversations
         checkSmsPermissionAndLoad()
@@ -217,17 +235,30 @@ class MainActivity : AppCompatActivity() {
             // Use postDelayed to debounce rapid changes and allow database to commit
             handler.removeCallbacksAndMessages(null)
             handler.postDelayed({
-                val category = when (selectedTab?.id) {
-                    R.id.tabAll -> "All"
-                    R.id.tabPersonal -> "Personal"
-                    R.id.tabOTPs -> "OTPs"
-                    R.id.tabOffers -> "Offers"
-                    R.id.tabTransactions -> "Transactions"
-                    else -> "All"
+                val filterId = selectedTab?.tag as? String
+                val category = if (filterId != null && customFilterTabs.containsKey(filterId)) {
+                    // Custom filter - handled separately
+                    null
+                } else {
+                    when (selectedTab?.id) {
+                        R.id.tabAll -> "All"
+                        R.id.tabPersonal -> "Personal"
+                        R.id.tabOTPs -> "OTPs"
+                        R.id.tabOffers -> "Offers"
+                        R.id.tabTransactions -> "Transactions"
+                        else -> "All"
+                    }
                 }
-                Log.d(TAG, "ContentObserver: Reloading conversations for category: $category (background refresh, no loading indicator)")
-                // Background refresh - don't show loading indicator to avoid hiding RecyclerView
-                viewModel.loadConversations(category, showLoading = false)
+                
+                if (category != null) {
+                    Log.d(TAG, "ContentObserver: Reloading conversations for category: $category (background refresh, no loading indicator)")
+                    viewModel.loadConversations(category, showLoading = false)
+                } else if (filterId != null) {
+                    Log.d(TAG, "ContentObserver: Reloading conversations for custom filter: $filterId (background refresh, no loading indicator)")
+                    viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId)
+                } else {
+                    viewModel.loadConversations("All", showLoading = false)
+                }
             }, 500) // 500ms delay to ensure database is committed
         }
         
@@ -321,6 +352,84 @@ class MainActivity : AppCompatActivity() {
         binding.tabOTPs.setOnClickListener { selectTab(it as TextView) }
         binding.tabOffers.setOnClickListener { selectTab(it as TextView) }
         binding.tabTransactions.setOnClickListener { selectTab(it as TextView) }
+        binding.tabAddFilter.setOnClickListener { showAddFilterDialog() }
+    }
+    
+    private fun loadCustomFilterTabs() {
+        val filters = CustomFilterStorage.loadFilters(this)
+        filters.forEach { filter ->
+            addCustomFilterTab(filter)
+        }
+    }
+    
+    private fun addCustomFilterTab(filter: CustomFilter) {
+        val tab = TextView(this).apply {
+            text = filter.name
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginEnd = (8 * resources.displayMetrics.density).toInt()
+            }
+            setPadding(
+                (20 * resources.displayMetrics.density).toInt(),
+                (10 * resources.displayMetrics.density).toInt(),
+                (20 * resources.displayMetrics.density).toInt(),
+                (10 * resources.displayMetrics.density).toInt()
+            )
+            textSize = 14f
+            setTextColor(getColor(R.color.black))
+            background = getDrawable(R.drawable.bg_tab_unselected)
+            tag = filter.id
+            setOnClickListener { selectCustomFilterTab(it as TextView, filter.id) }
+        }
+        
+        // Insert before the "+" tab
+        val addFilterTabIndex = binding.layoutTabs.indexOfChild(binding.tabAddFilter)
+        binding.layoutTabs.addView(tab, addFilterTabIndex)
+        customFilterTabs[filter.id] = tab
+    }
+    
+    private fun selectCustomFilterTab(tab: TextView, filterId: String) {
+        currentCustomFilterId = filterId
+        selectTab(tab)
+        viewModel.loadConversationsForCustomFilter(this, filterId)
+    }
+    
+    private fun showAddFilterDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_filter, null)
+        val dialog = android.app.AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+        
+        val editTextFilterName = dialogView.findViewById<EditText>(R.id.editTextFilterName)
+        val buttonCancel = dialogView.findViewById<TextView>(R.id.buttonCancel)
+        val buttonOk = dialogView.findViewById<TextView>(R.id.buttonOk)
+        
+        buttonCancel.setOnClickListener { dialog.dismiss() }
+        buttonOk.setOnClickListener {
+            val filterName = editTextFilterName.text.toString().trim()
+            if (filterName.isEmpty()) {
+                Toast.makeText(this, "Please enter a filter name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            // Create new filter
+            val filter = CustomFilter(
+                id = UUID.randomUUID().toString(),
+                name = filterName
+            )
+            CustomFilterStorage.addFilter(this, filter)
+            addCustomFilterTab(filter)
+            dialog.dismiss()
+            
+            // Select the new filter tab
+            customFilterTabs[filter.id]?.let { tab ->
+                selectCustomFilterTab(tab, filter.id)
+            }
+        }
+        
+        dialog.show()
     }
     
     private fun selectTab(tab: TextView) {
@@ -350,6 +459,16 @@ class MainActivity : AppCompatActivity() {
         // Clear search when switching tabs (optional - you can remove this if you want search to persist)
         // binding.editTextSearch.setText("")
         
+        // Check if this is a custom filter tab
+        val filterId = tab.tag as? String
+        if (filterId != null && customFilterTabs.containsKey(filterId)) {
+            // This is handled by selectCustomFilterTab
+            return
+        }
+        
+        // Reset current custom filter if switching to a standard tab
+        currentCustomFilterId = null
+        
         // Filter conversations by category
         val category = when (tab.id) {
             R.id.tabAll -> "All"
@@ -364,6 +483,15 @@ class MainActivity : AppCompatActivity() {
     
     private fun setupRecyclerView() {
         adapter = ConversationAdapter { conversation ->
+            // Handle "Add Conversation" item for custom filters
+            if (conversation.threadId == -1L && currentCustomFilterId != null) {
+                // Open conversation selection activity
+                val intent = Intent(this, ConversationSelectionActivity::class.java)
+                intent.putExtra("filter_id", currentCustomFilterId)
+                conversationSelectionLauncher.launch(intent)
+                return@ConversationAdapter
+            }
+            
             // Mark conversation as read when opened (unless there are new messages)
             if (conversation.unreadCount > 0) {
                 val position = adapter.currentList.indexOfFirst { it.threadId == conversation.threadId }
@@ -634,10 +762,26 @@ class MainActivity : AppCompatActivity() {
     private fun filterConversations() {
         val listToShow = if (currentSearchQuery.isEmpty()) {
             // Show all conversations for current category
-            allConversations
+            // For custom filters, prepend "Add Conversation" item
+            if (currentCustomFilterId != null) {
+                val addConversationItem = Conversation().apply {
+                    threadId = -1L
+                    contactName = "Add Conversation"
+                    snippet = "Tap to add conversations to this filter"
+                    address = ""
+                    date = 0
+                    unreadCount = 0
+                }
+                listOf(addConversationItem) + allConversations
+            } else {
+                allConversations
+            }
         } else {
             val query = currentSearchQuery.lowercase().trim()
-            allConversations.filter { conversation ->
+            val filtered = allConversations.filter { conversation ->
+                // Exclude "Add Conversation" item from search
+                if (conversation.threadId == -1L) return@filter false
+                
                 // Search in contact name
                 val contactName = conversation.contactName?.lowercase() ?: ""
                 // Search in phone number/address
@@ -649,11 +793,28 @@ class MainActivity : AppCompatActivity() {
                 address.contains(query) ||
                 snippet.contains(query)
             }
+            
+            // For custom filters, still show "Add Conversation" item even when searching
+            if (currentCustomFilterId != null) {
+                val addConversationItem = Conversation().apply {
+                    threadId = -1L
+                    contactName = "Add Conversation"
+                    snippet = "Tap to add conversations to this filter"
+                    address = ""
+                    date = 0
+                    unreadCount = 0
+                }
+                listOf(addConversationItem) + filtered
+            } else {
+                filtered
+            }
         }
         
         adapter.submitList(listToShow) {
             // Update empty state after list is submitted
-            updateEmptyState(listToShow.isEmpty())
+            // Don't show empty state if we have the "Add Conversation" item for custom filters
+            val hasRealConversations = listToShow.any { it.threadId != -1L }
+            updateEmptyState(listToShow.isEmpty() || (!hasRealConversations && currentCustomFilterId == null))
         }
     }
     
@@ -676,8 +837,7 @@ class MainActivity : AppCompatActivity() {
                 markConversationAsUnread(conversation.threadId, position)
             }
             SwipeGesturesActivity.SwipeAction.ARCHIVE -> {
-                // TODO: Implement archive functionality
-                Toast.makeText(this, "Archive functionality not yet implemented", Toast.LENGTH_SHORT).show()
+                archiveConversation(conversation, position)
             }
             SwipeGesturesActivity.SwipeAction.DELETE -> {
                 deleteConversation(conversation, position)
@@ -785,6 +945,82 @@ class MainActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+    
+    private fun archiveConversation(conversation: Conversation, position: Int) {
+        try {
+            // Save to archive
+            saveToArchive(conversation)
+            
+            // Remove from adapter immediately
+            val currentList = adapter.currentList.toMutableList()
+            if (position >= 0 && position < currentList.size) {
+                currentList.removeAt(position)
+                
+                // Update allConversations to keep it in sync
+                val allList = allConversations.toMutableList()
+                val allIndex = allList.indexOfFirst { it.threadId == conversation.threadId }
+                if (allIndex >= 0) {
+                    allList.removeAt(allIndex)
+                    allConversations = allList
+                }
+                
+                adapter.submitList(currentList) {
+                    // Reset swipe position after list update
+                    binding.recyclerViewConversations.post {
+                        val viewHolder = binding.recyclerViewConversations.findViewHolderForAdapterPosition(position)
+                        viewHolder?.itemView?.translationX = 0f
+                        viewHolder?.itemView?.alpha = 1f
+                    }
+                    // Update empty state after archiving
+                    updateEmptyState(currentList.isEmpty())
+                }
+            } else {
+                // If position is invalid, refresh the list (which will filter out archived items)
+                val category = when (selectedTab?.id) {
+                    R.id.tabAll -> "All"
+                    R.id.tabPersonal -> "Personal"
+                    R.id.tabOTPs -> "OTPs"
+                    R.id.tabOffers -> "Offers"
+                    R.id.tabTransactions -> "Transactions"
+                    else -> "All"
+                }
+                viewModel.loadConversations(category)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    
+    private fun saveToArchive(conversation: Conversation) {
+        val prefs = getSharedPreferences("archived_messages", MODE_PRIVATE)
+        val gson = com.google.gson.Gson()
+        
+        // Load existing archived items
+        val archivedJson = prefs.getString("archived_messages_list", null)
+        val archivedMessages = if (archivedJson != null) {
+            val type = object : com.google.gson.reflect.TypeToken<MutableList<com.quizangomedia.messages.ui.archive.ArchivedMessageData>>() {}.type
+            gson.fromJson<MutableList<com.quizangomedia.messages.ui.archive.ArchivedMessageData>>(archivedJson, type)
+        } else {
+            mutableListOf()
+        }
+        
+        // Check if already archived
+        if (!archivedMessages.any { it.threadId == conversation.threadId }) {
+            // Add current conversation to archive
+            archivedMessages.add(com.quizangomedia.messages.ui.archive.ArchivedMessageData(
+                threadId = conversation.threadId,
+                address = conversation.address,
+                contactName = conversation.contactName,
+                snippet = conversation.snippet,
+                date = conversation.date,
+                unreadCount = conversation.unreadCount
+            ))
+            
+            // Save back to SharedPreferences
+            val updatedJson = gson.toJson(archivedMessages)
+            prefs.edit().putString("archived_messages_list", updatedJson).apply()
         }
     }
     
@@ -980,33 +1216,74 @@ class MainActivity : AppCompatActivity() {
     
     private fun observeConversations() {
         viewModel.conversations.observe(this) { newConversations ->
-            Log.d(TAG, "observeConversations: Received ${newConversations.size} conversations")
+            Log.d(TAG, "observeConversations: Received ${newConversations.size} conversations, currentCustomFilterId=$currentCustomFilterId")
             // Store all conversations for search filtering
             allConversations = newConversations
+            
+            // For custom filters, prepend "Add Conversation" item
+            val conversationsToShow = if (currentCustomFilterId != null) {
+                Log.d(TAG, "observeConversations: Custom filter active, adding 'Add Conversation' item")
+                // Create a special conversation item for "Add Conversation"
+                val addConversationItem = Conversation().apply {
+                    threadId = -1L // Special ID to identify this item
+                    contactName = "Add Conversation"
+                    snippet = "Tap to add conversations to this filter"
+                    address = ""
+                    date = 0
+                    unreadCount = 0
+                }
+                val result = listOf(addConversationItem) + newConversations
+                Log.d(TAG, "observeConversations: Final list size with 'Add Conversation': ${result.size}")
+                result
+            } else {
+                newConversations
+            }
+            
             // Apply search filter if there's an active search query
             if (currentSearchQuery.isNotEmpty()) {
                 Log.d(TAG, "Applying search filter with query: $currentSearchQuery")
+                allConversations = conversationsToShow.filter { it.threadId != -1L }
                 filterConversations()
             } else {
                 // Get current list from adapter
                 val currentList = adapter.currentList.toMutableList()
-                Log.d(TAG, "Current adapter list size: ${currentList.size}, New list size: ${newConversations.size}")
+                Log.d(TAG, "Current adapter list size: ${currentList.size}, New list size: ${conversationsToShow.size}")
                 
                 // If current list is empty, just submit the new list
                 if (currentList.isEmpty()) {
                     Log.d(TAG, "Current list is empty, submitting new list directly")
-                    adapter.submitList(newConversations) {
-                        updateEmptyState(newConversations.isEmpty())
+                    adapter.submitList(conversationsToShow) {
+                        // Don't show empty state if we have the "Add Conversation" item
+                        val hasRealConversations = conversationsToShow.any { it.threadId != -1L }
+                        updateEmptyState(conversationsToShow.isEmpty() || (!hasRealConversations && currentCustomFilterId == null))
                     }
                 } else {
                     // Intelligently merge: add new conversations and move updated ones to top
                     Log.d(TAG, "Merging conversation lists")
-                    val mergedList = mergeConversationLists(currentList, newConversations)
-                    Log.d(TAG, "Merged list size: ${mergedList.size}")
+                    val filteredCurrent = currentList.filter { it.threadId != -1L }
+                    val filteredNew = conversationsToShow.filter { it.threadId != -1L }
+                    val mergedList = mergeConversationLists(filteredCurrent, filteredNew)
+                    
+                    // Prepend "Add Conversation" item if it's a custom filter
+                    val finalList = if (currentCustomFilterId != null) {
+                        val addConversationItem = Conversation().apply {
+                            threadId = -1L
+                            contactName = "Add Conversation"
+                            snippet = "Tap to add conversations to this filter"
+                            address = ""
+                            date = 0
+                            unreadCount = 0
+                        }
+                        listOf(addConversationItem) + mergedList
+                    } else {
+                        mergedList
+                    }
+                    
+                    Log.d(TAG, "Merged list size: ${finalList.size}")
                     
                     // Check if the merged list is actually different from current list
-                    val isDifferent = mergedList.size != currentList.size || 
-                                     mergedList.zip(currentList).any { (new, old) -> 
+                    val isDifferent = finalList.size != currentList.size || 
+                                     finalList.zip(currentList).any { (new, old) -> 
                                          new.threadId != old.threadId || 
                                          new.date != old.date || 
                                          new.snippet != old.snippet || 
@@ -1015,12 +1292,15 @@ class MainActivity : AppCompatActivity() {
                     
                     if (isDifferent) {
                         // Check if we have new messages that require moving items to top
-                        val hasNewMessages = mergedList.isNotEmpty() && currentList.isNotEmpty() && 
-                                            mergedList.first().threadId != currentList.first().threadId
+                        val currentNonAdd = currentList.filter { it.threadId != -1L }
+                        val hasNewMessages = mergedList.isNotEmpty() && currentNonAdd.isNotEmpty() && 
+                                            mergedList.first().threadId != currentNonAdd.first().threadId
                         
                         Log.d(TAG, "List has changes, submitting merged list. Has new messages: $hasNewMessages")
-                        adapter.submitList(mergedList) {
-                            updateEmptyState(mergedList.isEmpty())
+                        adapter.submitList(finalList) {
+                            // Don't show empty state if we have the "Add Conversation" item
+                            val hasRealConversations = finalList.any { it.threadId != -1L }
+                            updateEmptyState(finalList.isEmpty() || (!hasRealConversations && currentCustomFilterId == null))
                             // Only scroll to top if a conversation was actually moved there
                             if (hasNewMessages) {
                                 Log.d(TAG, "Conversation moved to top, scrolling to position 0")
@@ -1049,7 +1329,8 @@ class MainActivity : AppCompatActivity() {
                 binding.bottomNavigationView.visibility = View.VISIBLE
                 // After loading, check if list is empty
                 val currentList = adapter.currentList
-                updateEmptyState(currentList.isEmpty())
+                val hasRealConversations = currentList.any { it.threadId != -1L }
+                updateEmptyState(currentList.isEmpty() || (!hasRealConversations && currentCustomFilterId == null))
             }
         }
     }
@@ -1058,7 +1339,8 @@ class MainActivity : AppCompatActivity() {
         // Only show empty state if not loading
         val isLoading = viewModel.isLoading.value ?: false
         if (!isLoading) {
-            if (isEmpty) {
+            // For custom filters, always show recycler view (even if empty) because "Add Conversation" item should be visible
+            if (isEmpty && currentCustomFilterId == null) {
                 binding.layoutEmptyState.visibility = View.VISIBLE
                 binding.recyclerViewConversations.visibility = View.GONE
             } else {

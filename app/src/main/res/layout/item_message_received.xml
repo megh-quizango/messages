@@ -50,6 +50,14 @@
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
+            <!-- OTP Box (shown when OTP is detected) -->
+            <include
+                android:id="@+id/layoutOtpBox"
+                layout="@layout/layout_otp_box"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
             <!-- Time / Star -->
             <LinearLayout
                 android:layout_width="wrap_content"
