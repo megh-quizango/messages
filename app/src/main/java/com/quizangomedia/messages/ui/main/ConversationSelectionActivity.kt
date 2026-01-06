@@ -14,6 +14,7 @@ import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityConversationSelectionBinding
 import com.quizangomedia.messages.data.model.Conversation
 import com.quizangomedia.messages.util.CustomFilterStorage
+import com.quizangomedia.messages.util.PrivateConversationStorage
 import com.quizangomedia.messages.util.ThemeManager
 
 class ConversationSelectionActivity : AppCompatActivity() {
@@ -22,13 +23,16 @@ class ConversationSelectionActivity : AppCompatActivity() {
     private lateinit var viewModel: MainViewModel
     private lateinit var adapter: ConversationSelectionAdapter
     private var filterId: String = ""
+    private var isPrivate: Boolean = false
     private val selectedThreadIds = mutableSetOf<Long>()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         filterId = intent.getStringExtra("filter_id") ?: ""
-        if (filterId.isEmpty()) {
+        isPrivate = intent.getBooleanExtra("is_private", false)
+        
+        if (!isPrivate && filterId.isEmpty()) {
             Toast.makeText(this, "Invalid filter", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -38,9 +42,17 @@ class ConversationSelectionActivity : AppCompatActivity() {
         enableEdgeToEdge()
         
         // Load already selected conversations
-        val filter = CustomFilterStorage.getFilter(this, filterId)
-        filter?.threadIds?.forEach { threadId ->
-            selectedThreadIds.add(threadId)
+        if (isPrivate) {
+            // Load private conversation thread IDs
+            PrivateConversationStorage.getThreadIds(this).forEach { threadId ->
+                selectedThreadIds.add(threadId)
+            }
+        } else {
+            // Load custom filter thread IDs
+            val filter = CustomFilterStorage.getFilter(this, filterId)
+            filter?.threadIds?.forEach { threadId ->
+                selectedThreadIds.add(threadId)
+            }
         }
         
         binding = ActivityConversationSelectionBinding.inflate(layoutInflater)
@@ -143,15 +155,34 @@ class ConversationSelectionActivity : AppCompatActivity() {
     
     private fun setupSaveButton() {
         binding.buttonSave.setOnClickListener {
-            // Save selected conversations to filter
-            val filter = CustomFilterStorage.getFilter(this, filterId)
-            if (filter != null) {
-                filter.threadIds.clear()
-                filter.threadIds.addAll(selectedThreadIds)
-                CustomFilterStorage.updateFilter(this, filter)
-                Toast.makeText(this, "Conversations added to filter", Toast.LENGTH_SHORT).show()
+            if (isPrivate) {
+                // Save selected conversations as private
+                val currentPrivateThreadIds = PrivateConversationStorage.getThreadIds(this).toMutableSet()
+                
+                // Remove all current private conversations
+                currentPrivateThreadIds.forEach { threadId ->
+                    PrivateConversationStorage.removeThreadId(this, threadId)
+                }
+                
+                // Add selected conversations as private
+                selectedThreadIds.forEach { threadId ->
+                    PrivateConversationStorage.addThreadId(this, threadId)
+                }
+                
+                Toast.makeText(this, "Conversations added to private", Toast.LENGTH_SHORT).show()
                 setResult(RESULT_OK)
                 finish()
+            } else {
+                // Save selected conversations to filter
+                val filter = CustomFilterStorage.getFilter(this, filterId)
+                if (filter != null) {
+                    filter.threadIds.clear()
+                    filter.threadIds.addAll(selectedThreadIds)
+                    CustomFilterStorage.updateFilter(this, filter)
+                    Toast.makeText(this, "Conversations added to filter", Toast.LENGTH_SHORT).show()
+                    setResult(RESULT_OK)
+                    finish()
+                }
             }
         }
     }

@@ -13,7 +13,11 @@ import androidx.lifecycle.viewModelScope
 import android.util.Log
 import com.quizangomedia.messages.MessagesApp
 import com.quizangomedia.messages.data.model.Conversation
+import com.quizangomedia.messages.data.model.Message
+import com.quizangomedia.messages.data.model.MessageType
 import com.quizangomedia.messages.util.CustomFilterStorage
+import com.quizangomedia.messages.util.PrivateConversationStorage
+import com.quizangomedia.messages.util.BlockedConversationStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -72,6 +76,202 @@ class MainViewModel : ViewModel() {
                 _isLoading.postValue(false)
             }
         }
+    }
+    
+    fun loadPrivateConversations(context: android.content.Context) {
+        viewModelScope.launch {
+            try {
+                _isLoading.postValue(true)
+                val conversations = withContext(Dispatchers.IO) {
+                    loadPrivateConversationsFromDevice(context)
+                }
+                _conversations.postValue(conversations)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _conversations.postValue(emptyList())
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+    
+    fun loadBlockedConversations(context: android.content.Context) {
+        viewModelScope.launch {
+            try {
+                _isLoading.postValue(true)
+                val conversations = withContext(Dispatchers.IO) {
+                    loadBlockedConversationsFromDevice(context)
+                }
+                _conversations.postValue(conversations)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _conversations.postValue(emptyList())
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+    
+    private fun loadBlockedConversationsFromDevice(context: android.content.Context): List<Conversation> {
+        Log.d(TAG, "loadBlockedConversationsFromDevice: Starting")
+        val blockedThreadIds = BlockedConversationStorage.getThreadIds(context)
+        if (blockedThreadIds.isEmpty()) {
+            Log.d(TAG, "loadBlockedConversationsFromDevice: No blocked conversations")
+            return emptyList()
+        }
+        
+        val conversationsMap = mutableMapOf<Long, Conversation>()
+        val threadIdSet = blockedThreadIds.toSet()
+        
+        // Query SMS from device for specific thread IDs
+        val uri = Telephony.Sms.CONTENT_URI
+        val projection = arrayOf(
+            Telephony.Sms._ID,
+            Telephony.Sms.THREAD_ID,
+            Telephony.Sms.ADDRESS,
+            Telephony.Sms.BODY,
+            Telephony.Sms.DATE,
+            Telephony.Sms.READ,
+            Telephony.Sms.TYPE
+        )
+        
+        val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIdSet.joinToString(",") { "?" }})"
+        val selectionArgs = threadIdSet.map { it.toString() }.toTypedArray()
+        val sortOrder = "${Telephony.Sms.DATE} DESC"
+        
+        Log.d(TAG, "loadBlockedConversationsFromDevice: Querying ${threadIdSet.size} thread IDs")
+        
+        context.contentResolver.query(
+            uri,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder
+        )?.use { cursor ->
+            while (cursor.moveToNext()) {
+                val threadId = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
+                
+                // Only process threads that are in blocked list
+                if (!threadIdSet.contains(threadId)) {
+                    continue
+                }
+                
+                val address = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)) ?: ""
+                val body = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.BODY)) ?: ""
+                val date = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.DATE))
+                val read = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
+                val type = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
+                
+                val conversation = conversationsMap.getOrPut(threadId) {
+                    Conversation().apply {
+                        this.threadId = threadId
+                        this.address = address
+                        this.snippet = body
+                        this.date = date
+                        this.unreadCount = 0
+                    }
+                }
+                
+                // Update with latest message
+                if (date > conversation.date) {
+                    conversation.snippet = body
+                    conversation.date = date
+                }
+                
+                // Count unread messages
+                if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                    conversation.unreadCount++
+                }
+            }
+        }
+        
+        // Get contact names in batch
+        loadContactNamesBatch(context, conversationsMap.values)
+        
+        val sortedConversations = conversationsMap.values.sortedByDescending { it.date }
+        Log.d(TAG, "loadBlockedConversationsFromDevice: Returning ${sortedConversations.size} conversations")
+        return sortedConversations
+    }
+    
+    private fun loadPrivateConversationsFromDevice(context: android.content.Context): List<Conversation> {
+        Log.d(TAG, "loadPrivateConversationsFromDevice: Starting")
+        val privateThreadIds = PrivateConversationStorage.getThreadIds(context)
+        if (privateThreadIds.isEmpty()) {
+            Log.d(TAG, "loadPrivateConversationsFromDevice: No private conversations")
+            return emptyList()
+        }
+        
+        val conversationsMap = mutableMapOf<Long, Conversation>()
+        val threadIdSet = privateThreadIds.toSet()
+        
+        // Query SMS from device for specific thread IDs
+        val uri = Telephony.Sms.CONTENT_URI
+        val projection = arrayOf(
+            Telephony.Sms._ID,
+            Telephony.Sms.THREAD_ID,
+            Telephony.Sms.ADDRESS,
+            Telephony.Sms.BODY,
+            Telephony.Sms.DATE,
+            Telephony.Sms.READ,
+            Telephony.Sms.TYPE
+        )
+        
+        val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIdSet.joinToString(",") { "?" }})"
+        val selectionArgs = threadIdSet.map { it.toString() }.toTypedArray()
+        val sortOrder = "${Telephony.Sms.DATE} DESC"
+        
+        Log.d(TAG, "loadPrivateConversationsFromDevice: Querying ${threadIdSet.size} thread IDs")
+        
+        context.contentResolver.query(
+            uri,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder
+        )?.use { cursor ->
+            while (cursor.moveToNext()) {
+                val threadId = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
+                
+                // Only process threads that are in private list
+                if (!threadIdSet.contains(threadId)) {
+                    continue
+                }
+                
+                val address = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)) ?: ""
+                val body = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.BODY)) ?: ""
+                val date = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.DATE))
+                val read = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
+                val type = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
+                
+                val conversation = conversationsMap.getOrPut(threadId) {
+                    Conversation().apply {
+                        this.threadId = threadId
+                        this.address = address
+                        this.snippet = body
+                        this.date = date
+                        this.unreadCount = 0
+                    }
+                }
+                
+                // Update with latest message
+                if (date > conversation.date) {
+                    conversation.snippet = body
+                    conversation.date = date
+                }
+                
+                // Count unread messages
+                if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                    conversation.unreadCount++
+                }
+            }
+        }
+        
+        // Get contact names in batch
+        loadContactNamesBatch(context, conversationsMap.values)
+        
+        val sortedConversations = conversationsMap.values.sortedByDescending { it.date }
+        Log.d(TAG, "loadPrivateConversationsFromDevice: Returning ${sortedConversations.size} conversations")
+        return sortedConversations
     }
     
     private fun loadConversationsForCustomFilterFromDevice(context: android.content.Context, filterId: String): List<Conversation> {
@@ -195,6 +395,14 @@ class MainViewModel : ViewModel() {
         val archivedThreadIds = getArchivedThreadIds(context)
         Log.d(TAG, "loadConversationsFromDevice: Archived threadIds: ${archivedThreadIds.size}")
         
+        // Load private conversation IDs (exclude from main activity)
+        val privateThreadIds = PrivateConversationStorage.getThreadIds(context)
+        Log.d(TAG, "loadConversationsFromDevice: Private threadIds: ${privateThreadIds.size}")
+        
+        // Load blocked conversation IDs (exclude from main activity)
+        val blockedThreadIds = BlockedConversationStorage.getThreadIds(context)
+        Log.d(TAG, "loadConversationsFromDevice: Blocked threadIds: ${blockedThreadIds.size}")
+        
         // Pre-load contact phone numbers for Personal filter (only if needed)
         val contactPhoneNumbers = if (category == "Personal") {
             loadContactPhoneNumbers(context)
@@ -285,6 +493,16 @@ class MainViewModel : ViewModel() {
                     continue
                 }
                 
+                // Skip conversations that are private
+                if (privateThreadIds.contains(threadId)) {
+                    continue
+                }
+                
+                // Skip conversations that are blocked
+                if (blockedThreadIds.contains(threadId)) {
+                    continue
+                }
+                
                 val address = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)) ?: ""
                 val body = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.BODY)) ?: ""
                 val date = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.DATE))
@@ -342,12 +560,93 @@ class MainViewModel : ViewModel() {
             Log.d(TAG, "loadConversationsFromDevice: Conversation 132 NOT FOUND in conversationsMap!")
         }
         
+        // Also load MMS messages from Realm and merge with SMS conversations
+        loadMmsConversationsFromRealm(conversationsMap, category, contactPhoneNumbers, deletedThreadIds, archivedThreadIds, privateThreadIds, blockedThreadIds)
+        
         // Get contact names in batch for better performance
         loadContactNamesBatch(context, conversationsMap.values)
         
         val sortedConversations = conversationsMap.values.sortedByDescending { it.date }
         Log.d(TAG, "loadConversationsFromDevice: Returning ${sortedConversations.size} conversations")
         return sortedConversations
+    }
+    
+    private fun loadMmsConversationsFromRealm(
+        conversationsMap: MutableMap<Long, Conversation>,
+        category: String,
+        contactPhoneNumbers: Set<String>?,
+        deletedThreadIds: Set<Long>,
+        archivedThreadIds: Set<Long>,
+        privateThreadIds: Set<Long> = emptySet(),
+        blockedThreadIds: Set<Long> = emptySet()
+    ) {
+        try {
+            val realm = MessagesApp.realm
+            realm.writeBlocking {
+                // Query MMS messages from Realm (messages with attachments)
+                val mmsMessages = query(com.quizangomedia.messages.data.model.Message::class, "(mimeType != null OR attachmentPath != null)").find()
+                
+                Log.d(TAG, "loadMmsConversationsFromRealm: Found ${mmsMessages.size} MMS messages in Realm")
+                
+                mmsMessages.forEach { message ->
+                    val msg = findLatest(message)
+                    if (msg == null) return@forEach
+                    
+                    val threadId = msg.threadId
+                    
+                    // Skip deleted, archived, private, or blocked conversations
+                    if (deletedThreadIds.contains(threadId) || archivedThreadIds.contains(threadId) || privateThreadIds.contains(threadId) || blockedThreadIds.contains(threadId)) {
+                        return@forEach
+                    }
+                    
+                    // Filter by category
+                    val body = msg.body
+                    if (!matchesCategory(body, category, msg.address, contactPhoneNumbers)) {
+                        return@forEach
+                    }
+                    
+                    // Determine snippet based on attachment type
+                    val snippet = when {
+                        msg.mimeType?.startsWith("image/") == true || msg.mimeType == "image/*" -> {
+                            if (body.isNotEmpty() && !body.contains("BEGIN:VCARD")) body else "Photo"
+                        }
+                        msg.mimeType == "text/x-vCard" || msg.attachmentPath?.contains(".vcf", ignoreCase = true) == true -> {
+                            // Extract contact name from vCard if available
+                            val nameMatch = Regex("FN:([^\\r\\n]+)").find(body)
+                            val contactName = nameMatch?.groupValues?.get(1) ?: ""
+                            if (contactName.isNotEmpty()) "Contact: $contactName" else "Contact card"
+                        }
+                        body.isNotEmpty() && !body.contains("BEGIN:VCARD") -> body
+                        else -> "MMS"
+                    }
+                    
+                    val conversation = conversationsMap.getOrPut(threadId) {
+                        Conversation().apply {
+                            this.threadId = threadId
+                            this.address = msg.address
+                            this.snippet = snippet
+                            this.date = msg.date
+                            this.unreadCount = 0
+                        }
+                    }
+                    
+                    // Update with latest message if this MMS is newer
+                    if (msg.date > conversation.date) {
+                        conversation.snippet = snippet
+                        conversation.date = msg.date
+                    }
+                    
+                    // Count unread messages
+                    if (!msg.read && msg.type == com.quizangomedia.messages.data.model.MessageType.INBOX) {
+                        conversation.unreadCount++
+                    }
+                }
+            }
+            Log.d(TAG, "loadMmsConversationsFromRealm: Processed MMS messages, total conversations: ${conversationsMap.size}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading MMS conversations from Realm", e)
+            e.printStackTrace()
+        }
     }
     
     private fun matchesCategory(messageBody: String, category: String, address: String, contactPhoneNumbers: Set<String>?): Boolean {

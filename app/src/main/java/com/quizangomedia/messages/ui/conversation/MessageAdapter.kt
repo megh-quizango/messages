@@ -1,11 +1,17 @@
 package com.quizangomedia.messages.ui.conversation
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -13,12 +19,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.data.model.Message
+import com.quizangomedia.messages.data.model.MessageStatus
 import com.quizangomedia.messages.data.model.MessageType
 import com.quizangomedia.messages.util.AppPreferences
 import com.quizangomedia.messages.util.OtpHelper
+import com.squareup.picasso.Picasso
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.widget.Toast
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -31,6 +40,7 @@ sealed class MessageListItem {
 class MessageAdapter(
     private val onMessageLongClick: ((Message) -> Unit)? = null,
     private val onMessageClick: ((Message) -> Unit)? = null,
+    private val onFailedMessageClick: ((Message) -> Unit)? = null,
     private val onSelectionChanged: (() -> Unit)? = null
 ) : ListAdapter<MessageListItem, RecyclerView.ViewHolder>(MessageDiffCallback()) {
 
@@ -132,20 +142,87 @@ class MessageAdapter(
     ) : RecyclerView.ViewHolder(itemView) {
         private val textMessage: TextView = itemView.findViewById(R.id.textMessage)
         private val textTime: TextView = itemView.findViewById(R.id.textTime)
-        private val imageCheck: android.widget.ImageView = itemView.findViewById(R.id.imageCheck)
-        private val imageStarBadge: android.widget.ImageView = itemView.findViewById(R.id.imageStarBadge)
+        private val textTimeForAttachment: TextView? = itemView.findViewById(R.id.textTimeForAttachment)
+        private val textTimeForContactCard: TextView? = itemView.findViewById(R.id.textTimeForContactCard)
+        private val layoutTimeForAttachment: LinearLayout? = itemView.findViewById(R.id.layoutTimeForAttachment)
+        private val layoutTimeForContactCard: LinearLayout? = itemView.findViewById(R.id.layoutTimeForContactCard)
+        private val imageCheck: ImageView = itemView.findViewById(R.id.imageCheck)
+        private val imageStarBadge: ImageView = itemView.findViewById(R.id.imageStarBadge)
         private val cardMessage: MaterialCardView = itemView.findViewById(R.id.cardMessage)
         private val context = itemView.context
+        
+        // Attachment views
+        private val imageAttachment: ImageView? = itemView.findViewById(R.id.imageAttachment)
+        private val imageAttachmentFailed: ImageView? = itemView.findViewById(R.id.imageAttachmentFailed)
+        private val layoutContactCard: LinearLayout? = itemView.findViewById(R.id.layoutContactCard)
+        private val imageContactCardFailed: ImageView? = itemView.findViewById(R.id.imageContactCardFailed)
+        private val textContactName: TextView? = itemView.findViewById(R.id.textContactName)
+        private val textContactNumber: TextView? = itemView.findViewById(R.id.textContactNumber)
+        private val imageContactIcon: ImageView? = itemView.findViewById(R.id.imageContactIcon)
         
         // OTP box views - find from included layout
         private val layoutOtpBox: View? get() = itemView.findViewById(R.id.layoutOtpBox)
         private val textOtpValue: TextView? get() = itemView.findViewById(R.id.textOtpValue)
         private val buttonCopyOtp: TextView? get() = itemView.findViewById(R.id.buttonCopyOtp)
-        private val imageDeleteOtp: android.widget.ImageView? get() = itemView.findViewById(R.id.imageDeleteOtp)
+        private val imageDeleteOtp: ImageView? get() = itemView.findViewById(R.id.imageDeleteOtp)
 
         fun bind(message: Message, isSelectionMode: Boolean) {
             textMessage.text = message.body
-            textTime.text = formatTime(message.date)
+            val timeText = formatTime(message.date)
+            textTime.text = timeText
+            
+            // Handle attachments (images and contact cards)
+            val hasVisibleAttachment = handleAttachments(message)
+            
+            // Show/hide failed status indicator
+            val isFailed = message.status == MessageStatus.FAILED && message.type == MessageType.SENT
+            
+            // Show error icon only on the specific attachment that's visible
+            if (isFailed && hasVisibleAttachment) {
+                // Show error icon only on the attachment that's actually visible
+                if (imageAttachment?.visibility == View.VISIBLE) {
+                    imageAttachmentFailed?.visibility = View.VISIBLE
+                    imageContactCardFailed?.visibility = View.GONE
+                } else if (layoutContactCard?.visibility == View.VISIBLE) {
+                    imageAttachmentFailed?.visibility = View.GONE
+                    imageContactCardFailed?.visibility = View.VISIBLE
+                } else {
+                    imageAttachmentFailed?.visibility = View.GONE
+                    imageContactCardFailed?.visibility = View.GONE
+                }
+            } else {
+                // Hide error icons on attachments
+                imageAttachmentFailed?.visibility = View.GONE
+                imageContactCardFailed?.visibility = View.GONE
+            }
+            
+            // Handle time display - show highlighted time for attachments, regular time for text-only
+            if (hasVisibleAttachment) {
+                // Hide regular time, show highlighted time for attachments
+                textTime.visibility = View.GONE
+                
+                // Show time for image attachment
+                if (imageAttachment?.visibility == View.VISIBLE) {
+                    layoutTimeForAttachment?.visibility = View.VISIBLE
+                    textTimeForAttachment?.text = timeText
+                } else {
+                    layoutTimeForAttachment?.visibility = View.GONE
+                }
+                
+                // Show time for contact card
+                if (layoutContactCard?.visibility == View.VISIBLE) {
+                    layoutTimeForContactCard?.visibility = View.VISIBLE
+                    textTimeForContactCard?.text = timeText
+                } else {
+                    layoutTimeForContactCard?.visibility = View.GONE
+                }
+            } else {
+                // Show regular time for text-only messages (no background)
+                textTime.visibility = View.VISIBLE
+                textTime.background = null
+                layoutTimeForAttachment?.visibility = View.GONE
+                layoutTimeForContactCard?.visibility = View.GONE
+            }
             
             // Handle OTP display
             val otp = message.otp ?: OtpHelper.extractOTP(message.body)
@@ -195,14 +272,32 @@ class MessageAdapter(
             textMessage.maxWidth = maxWidth
             
             // Apply bubble color only to sent messages (not theme color)
+            // Make bubble transparent if it has a visible attachment
             if (message.type == MessageType.SENT) {
-                val bubbleColor = AppPreferences.getBubbleColor(context)
                 val drawable = GradientDrawable()
                 drawable.shape = GradientDrawable.RECTANGLE
                 val cornerRadius = 16f * context.resources.displayMetrics.density
                 drawable.cornerRadius = cornerRadius
-                drawable.setColor(Color.parseColor(bubbleColor))
+                
+                if (hasVisibleAttachment) {
+                    // Transparent background for messages with attachments
+                    drawable.setColor(Color.TRANSPARENT)
+                } else {
+                    // Normal bubble color for text-only messages
+                    val bubbleColor = AppPreferences.getBubbleColor(context)
+                    drawable.setColor(Color.parseColor(bubbleColor))
+                }
                 cardMessage.background = drawable
+            } else {
+                // For received messages, also make transparent if has visible attachment
+                if (hasVisibleAttachment) {
+                    val drawable = GradientDrawable()
+                    drawable.shape = GradientDrawable.RECTANGLE
+                    val cornerRadius = 16f * context.resources.displayMetrics.density
+                    drawable.cornerRadius = cornerRadius
+                    drawable.setColor(Color.TRANSPARENT)
+                    cardMessage.background = drawable
+                }
             }
             
             // Show/hide checkmark based on selection
@@ -225,7 +320,12 @@ class MessageAdapter(
                     adapter.toggleSelection(message.id)
                     bind(message, isSelectionMode) // Refresh view
                 } else {
-                    adapter.onMessageClick?.invoke(message)
+                    // If message is failed and has attachment, show preview dialog
+                    if (isFailed && (message.attachmentPath != null || message.mimeType != null)) {
+                        adapter.onFailedMessageClick?.invoke(message)
+                    } else {
+                        adapter.onMessageClick?.invoke(message)
+                    }
                 }
             }
             
@@ -250,6 +350,148 @@ class MessageAdapter(
                 Toast.makeText(context, "OTP copied: $otp", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Toast.makeText(context, "Error copying OTP", Toast.LENGTH_SHORT).show()
+            }
+        }
+        
+        private fun handleAttachments(message: Message): Boolean {
+            // Hide all attachment views first
+            imageAttachment?.visibility = View.GONE
+            layoutContactCard?.visibility = View.GONE
+            
+            // Check if message has attachment
+            val attachmentPath = message.attachmentPath
+            val mimeType = message.mimeType
+            var hasAttachment = false
+            
+            if (!attachmentPath.isNullOrEmpty()) {
+                hasAttachment = true
+                try {
+                    val uri = Uri.parse(attachmentPath)
+                    
+                    // Check if it's an image
+                    if (mimeType?.startsWith("image/") == true || 
+                        mimeType == "image/*" ||
+                        attachmentPath.contains(".jpg", ignoreCase = true) ||
+                        attachmentPath.contains(".jpeg", ignoreCase = true) ||
+                        attachmentPath.contains(".png", ignoreCase = true) ||
+                        attachmentPath.contains(".gif", ignoreCase = true)) {
+                        // Display image
+                        imageAttachment?.visibility = View.VISIBLE
+                        try {
+                            // Try loading with Picasso first
+                            Picasso.get()
+                                .load(uri)
+                                .placeholder(R.drawable.ic_gallery)
+                                .error(R.drawable.ic_gallery)
+                                .resize(400, 400)
+                                .centerCrop()
+                                .into(imageAttachment)
+                        } catch (e: Exception) {
+                            Log.e("MessageAdapter", "Error loading image with Picasso: ${e.message}")
+                            // Fallback: try to load from file or content URI
+                            try {
+                                if (uri.scheme == "content" || uri.scheme == "file") {
+                                    val inputStream = context.contentResolver.openInputStream(uri)
+                                    if (inputStream != null) {
+                                        val bitmap = BitmapFactory.decodeStream(inputStream)
+                                        inputStream.close()
+                                        if (bitmap != null) {
+                                            imageAttachment?.setImageBitmap(bitmap)
+                                        } else {
+                                            imageAttachment?.visibility = View.GONE
+                                        }
+                                    } else {
+                                        // Try file path
+                                        val file = File(uri.path ?: "")
+                                        if (file.exists()) {
+                                            val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                                            imageAttachment?.setImageBitmap(bitmap)
+                                        } else {
+                                            imageAttachment?.visibility = View.GONE
+                                        }
+                                    }
+                                } else {
+                                    // Try file path
+                                    val file = File(uri.path ?: "")
+                                    if (file.exists()) {
+                                        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                                        imageAttachment?.setImageBitmap(bitmap)
+                                    } else {
+                                        imageAttachment?.visibility = View.GONE
+                                    }
+                                }
+                            } catch (ex: Exception) {
+                                Log.e("MessageAdapter", "Error loading image fallback: ${ex.message}")
+                                // If all fails, hide the image view
+                                imageAttachment?.visibility = View.GONE
+                            }
+                        }
+                    } 
+                    // Check if it's a contact card
+                    else if (mimeType == "text/x-vCard" || 
+                             attachmentPath.contains(".vcf", ignoreCase = true)) {
+                        // Display contact card
+                        layoutContactCard?.visibility = View.VISIBLE
+                        // Try to parse contact info from message body or attachment
+                        parseContactCard(message)
+                    }
+                } catch (e: Exception) {
+                    Log.e("MessageAdapter", "Error handling attachment: ${e.message}")
+                    // Error loading attachment, but still consider it has attachment for transparent bubble
+                    // Hide views but keep hasAttachment = true
+                    imageAttachment?.visibility = View.GONE
+                    layoutContactCard?.visibility = View.GONE
+                }
+            }
+            
+            return hasAttachment
+        }
+        
+        private fun parseContactCard(message: Message) {
+            var contactName = ""
+            var contactNumber = ""
+            
+            // First, try to extract from message body (vCard format)
+            val body = message.body
+            if (body.contains("BEGIN:VCARD")) {
+                val nameMatch = Regex("FN:([^\\r\\n]+)").find(body)
+                val telMatch = Regex("TEL:([^\\r\\n]+)").find(body)
+                
+                contactName = nameMatch?.groupValues?.get(1) ?: ""
+                contactNumber = telMatch?.groupValues?.get(1) ?: ""
+            }
+            
+            // If not found in body, try reading from attachment file
+            if (contactName.isEmpty() && contactNumber.isEmpty()) {
+                val attachmentPath = message.attachmentPath
+                if (!attachmentPath.isNullOrEmpty()) {
+                    try {
+                        val uri = Uri.parse(attachmentPath)
+                        val vCardContent = context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                            inputStream.bufferedReader().use { it.readText() }
+                        }
+                        
+                        if (vCardContent != null && vCardContent.contains("BEGIN:VCARD")) {
+                            val nameMatch = Regex("FN:([^\\r\\n]+)").find(vCardContent)
+                            val telMatch = Regex("TEL:([^\\r\\n]+)").find(vCardContent)
+                            
+                            contactName = nameMatch?.groupValues?.get(1) ?: ""
+                            contactNumber = telMatch?.groupValues?.get(1) ?: ""
+                        }
+                    } catch (e: Exception) {
+                        Log.e("MessageAdapter", "Error reading vCard file: ${e.message}")
+                    }
+                }
+            }
+            
+            // Display contact info
+            if (contactName.isNotEmpty() || contactNumber.isNotEmpty()) {
+                textContactName?.text = contactName.ifEmpty { "Contact" }
+                textContactNumber?.text = contactNumber
+            } else {
+                // Fallback: show generic contact card
+                textContactName?.text = "Contact card"
+                textContactNumber?.text = ""
             }
         }
     }

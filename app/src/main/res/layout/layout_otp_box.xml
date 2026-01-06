@@ -5,9 +5,9 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/bg_rounded_white"
-    android:padding="12dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="4dp">
+    android:padding="8dp"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="2dp">
 
     <!-- OTP Label -->
     <TextView
@@ -15,21 +15,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="*** OTP"
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:textColor="@color/gray_dark"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="4dp" />
 
     <!-- OTP Value -->
     <TextView
         android:id="@+id/textOtpValue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="28sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/black"
         android:fontFamily="sans-serif-medium"
         android:gravity="center"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="8dp"
         android:singleLine="true"
         android:ellipsize="none"
         android:maxLines="1"
@@ -48,13 +48,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Copy OTP"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:textColor="@color/black"
             android:background="@drawable/button_copy_otp_background"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center" />

@@ -43,6 +43,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -55,6 +56,7 @@ import com.google.android.gms.ads.AdRequest
 import com.quizangomedia.messages.data.model.Message
 import com.quizangomedia.messages.databinding.ActivityConversationDetailBinding
 import com.quizangomedia.messages.receiver.ScheduledMessageReceiver
+import com.squareup.picasso.Picasso
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -140,6 +142,7 @@ class ConversationDetailActivity : AppCompatActivity() {
                 selectedContactName = name
                 selectedContactNumber = number
                 showContactAttachment(name, number)
+                updateSendButtonState()
             } else {
                 Log.e(TAG, "Contact data is empty! name='$name', number='$number'")
             }
@@ -362,7 +365,12 @@ class ConversationDetailActivity : AppCompatActivity() {
             makePhoneCall()
         }
         binding.imageInfo.setOnClickListener {
-            // TODO: Implement contact info functionality
+            // Open conversation details screen
+            val intent = Intent(this, ConversationDetailsActivity::class.java)
+            intent.putExtra("thread_id", threadId)
+            intent.putExtra("address", address)
+            intent.putExtra("contact_name", contactName)
+            startActivity(intent)
         }
         binding.imageAttachment.setOnClickListener {
             showAttachmentBottomSheet()
@@ -384,6 +392,9 @@ class ConversationDetailActivity : AppCompatActivity() {
                 if (isSelectionMode) {
                     adapter.toggleSelection(message.id)
                 }
+            },
+            onFailedMessageClick = { message ->
+                showFailedMessageDialog(message)
             },
             onSelectionChanged = {
                 updateSelectionUI()
@@ -519,16 +530,21 @@ class ConversationDetailActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                val hasText = s?.toString()?.isNotEmpty() == true
-                updateSendButtonState(hasText)
+                updateSendButtonState()
             }
         })
         
-        // Initial state - disabled
-        updateSendButtonState(false)
+        // Initial state - check for attachments
+        updateSendButtonState()
     }
     
-    private fun updateSendButtonState(enabled: Boolean) {
+    private fun updateSendButtonState() {
+        val messageText = binding.editTextMessage.text.toString()
+        val hasText = messageText.isNotEmpty()
+        val hasImage = selectedImageUri != null
+        val hasContact = selectedContactName != null && selectedContactNumber != null
+        val enabled = hasText || hasImage || hasContact
+        
         if (enabled) {
             binding.buttonSend.setImageResource(R.drawable.ic_send)
             binding.buttonSend.isEnabled = true
@@ -579,6 +595,7 @@ class ConversationDetailActivity : AppCompatActivity() {
                     selectedContactNumber = null
                     binding.layoutAttachments.removeAllViews()
                     binding.scrollViewAttachments.visibility = View.GONE
+                    updateSendButtonState()
                 }
             }
         }
@@ -633,13 +650,20 @@ class ConversationDetailActivity : AppCompatActivity() {
             }
         }
         
+        // Observe error messages
+        viewModel.errorMessage.observe(this) { errorMessage ->
+            errorMessage?.let {
+                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
+                // Clear error message after showing
+                viewModel.clearErrorMessage()
+            }
+        }
+        
         // Load messages from device SMS for this contact
         viewModel.loadMessages(threadId, address)
     }
 
     private fun showDatePicker() {
-        val themeColor = ThemeManager.getThemeColor(this)
-        
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Select Date")
             .build()
@@ -649,39 +673,50 @@ class ConversationDetailActivity : AppCompatActivity() {
             showTimePicker()
         }
 
-        datePicker.show(supportFragmentManager, "DATE_PICKER")
-        
-        // Apply theme after picker is shown with multiple attempts to ensure it's applied
-        supportFragmentManager.executePendingTransactions()
-        
-        // Function to apply theme to picker
+        // Function to apply theme to picker - apply to both decor view and content view
         fun applyPickerTheme() {
-            datePicker.dialog?.window?.decorView?.let { view ->
-                // Use aggressive theming for Material pickers
-                ThemeManager.applyThemeToMaterialPicker(this, view)
+            datePicker.dialog?.let { dialog ->
+                // Apply to decor view (entire dialog window)
+                dialog.window?.decorView?.let { decorView ->
+                    ThemeManager.applyThemeToMaterialPicker(this, decorView)
+                }
                 
-                // Also try to access the dialog's content view directly
-                datePicker.dialog?.findViewById<View>(android.R.id.content)?.let { contentView ->
+                // Also apply to content view (dialog content)
+                dialog.findViewById<View>(android.R.id.content)?.let { contentView ->
                     ThemeManager.applyThemeToMaterialPicker(this, contentView)
                 }
                 
-                // Find and replace purple/black colors directly
-                replaceColorsInView(view, themeColor)
+                // Also apply to dialog view directly
+                dialog.window?.decorView?.rootView?.let { rootView ->
+                    ThemeManager.applyThemeToMaterialPicker(this, rootView)
+                }
             }
         }
+
+        datePicker.show(supportFragmentManager, "DATE_PICKER")
         
-        // Apply immediately
-        applyPickerTheme()
+        // Apply theme after picker is shown with multiple attempts
+        supportFragmentManager.executePendingTransactions()
+        
+        // Apply immediately after showing
+        Handler(Looper.getMainLooper()).post {
+            applyPickerTheme()
+        }
         
         // Use ViewTreeObserver to catch views as they're added
-        datePicker.dialog?.window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                applyPickerTheme()
+        datePicker.dialog?.window?.decorView?.let { decorView ->
+            var layoutListener: android.view.ViewTreeObserver.OnGlobalLayoutListener? = null
+            layoutListener = object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    applyPickerTheme()
+                    // Keep listening for layout changes
+                }
             }
-        })
+            decorView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+        }
         
-        // Additional delayed attempts with longer delays
-        val delays = listOf(50, 100, 200, 300, 500, 800, 1000, 1500, 2000, 3000)
+        // Additional delayed attempts to ensure theme is applied
+        val delays = listOf(50, 100, 200, 300, 500, 800, 1000, 1500, 2000)
         delays.forEach { delay ->
             Handler(Looper.getMainLooper()).postDelayed({
                 applyPickerTheme()
@@ -691,7 +726,6 @@ class ConversationDetailActivity : AppCompatActivity() {
 
     private fun showTimePicker() {
         val calendar = Calendar.getInstance()
-        val themeColor = ThemeManager.getThemeColor(this)
         val timePicker = MaterialTimePicker.Builder()
             .setTimeFormat(TimeFormat.CLOCK_12H)
             .setHour(calendar.get(Calendar.HOUR_OF_DAY))
@@ -705,158 +739,69 @@ class ConversationDetailActivity : AppCompatActivity() {
             showScheduledInfo()
         }
 
-        timePicker.show(supportFragmentManager, "TIME_PICKER")
-        
-        // Apply theme after picker is shown with multiple attempts to ensure it's applied
-        supportFragmentManager.executePendingTransactions()
-        
-        // Function to apply theme to picker
+        // Function to apply theme to picker - apply to both decor view and content view
         fun applyPickerTheme() {
-            timePicker.dialog?.window?.decorView?.let { view ->
-                // Use aggressive theming for Material pickers
-                ThemeManager.applyThemeToMaterialPicker(this, view)
+            timePicker.dialog?.let { dialog ->
+                // Apply to decor view (entire dialog window)
+                dialog.window?.decorView?.let { decorView ->
+                    ThemeManager.applyThemeToMaterialPicker(this, decorView)
+                }
                 
-                // Also try to access the dialog's content view directly
-                timePicker.dialog?.findViewById<View>(android.R.id.content)?.let { contentView ->
+                // Also apply to content view (dialog content)
+                dialog.findViewById<View>(android.R.id.content)?.let { contentView ->
                     ThemeManager.applyThemeToMaterialPicker(this, contentView)
                 }
                 
-                // Find and replace purple/black colors directly
-                replaceColorsInView(view, themeColor)
+                // Also apply to dialog view directly
+                dialog.window?.decorView?.rootView?.let { rootView ->
+                    ThemeManager.applyThemeToMaterialPicker(this, rootView)
+                }
             }
         }
+
+        timePicker.show(supportFragmentManager, "TIME_PICKER")
         
-        // Apply immediately
-        applyPickerTheme()
+        // Apply theme after picker is shown with multiple attempts
+        supportFragmentManager.executePendingTransactions()
         
-        // Use ViewTreeObserver to catch views as they're added
-        timePicker.dialog?.window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                applyPickerTheme()
+        // Apply immediately after showing
+        Handler(Looper.getMainLooper()).post {
+            applyPickerTheme()
+        }
+        
+        // Use ViewTreeObserver to catch views as they're added and when user interacts
+        timePicker.dialog?.window?.decorView?.let { decorView ->
+            var layoutListener: android.view.ViewTreeObserver.OnGlobalLayoutListener? = null
+            layoutListener = object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    applyPickerTheme()
+                    // Keep listening for layout changes (e.g., when user changes hour/minute)
+                }
             }
-        })
+            decorView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+        }
         
-        // Additional delayed attempts with longer delays
-        val delays = listOf(50, 100, 200, 300, 500, 800, 1000, 1500, 2000, 3000)
+        // Additional delayed attempts to ensure theme is applied
+        val delays = listOf(50, 100, 200, 300, 500, 800, 1000, 1500, 2000)
         delays.forEach { delay ->
             Handler(Looper.getMainLooper()).postDelayed({
                 applyPickerTheme()
             }, delay.toLong())
         }
+        
+        // Continuously reapply theme while dialog is visible (catches user interactions)
+        val themeRunnable = object : Runnable {
+            override fun run() {
+                if (timePicker.dialog?.isShowing == true) {
+                    applyPickerTheme()
+                    // Reapply every 200ms while dialog is visible
+                    Handler(Looper.getMainLooper()).postDelayed(this, 200)
+                }
+            }
+        }
+        Handler(Looper.getMainLooper()).postDelayed(themeRunnable, 100)
     }
 
-    private fun replaceColorsInView(view: View, themeColor: Int) {
-        try {
-            val purpleColors = listOf(
-                android.graphics.Color.parseColor("#6200EE"),
-                android.graphics.Color.parseColor("#6750A4"),
-                android.graphics.Color.parseColor("#6366F1"),
-                android.graphics.Color.parseColor("#7B1FA2"),
-                android.graphics.Color.parseColor("#9C27B0"),
-                android.graphics.Color.parseColor("#0C56CF")
-            )
-            val lightPurpleColors = listOf(
-                android.graphics.Color.parseColor("#E1BEE7"),
-                android.graphics.Color.parseColor("#F3E5F5"),
-                android.graphics.Color.parseColor("#E8EAF6"),
-                android.graphics.Color.parseColor("#C5CAE9")
-            )
-            val blackColor = android.graphics.Color.BLACK
-            
-            // Check for MaterialCardView (time picker containers)
-            if (view is com.google.android.material.card.MaterialCardView) {
-                val cardBgColor = view.cardBackgroundColor.defaultColor
-                if (purpleColors.contains(cardBgColor) || lightPurpleColors.contains(cardBgColor) || 
-                    cardBgColor == blackColor) {
-                    view.setCardBackgroundColor(themeColor)
-                }
-            }
-            
-            // Check background
-            val bg = view.background
-            if (bg is android.graphics.drawable.ColorDrawable) {
-                val bgColor = bg.color
-                if (purpleColors.contains(bgColor) || lightPurpleColors.contains(bgColor) || bgColor == blackColor) {
-                    view.setBackgroundColor(themeColor)
-                    // If this is a TextView with black text, make it white
-                    if (view is android.widget.TextView && view.currentTextColor == blackColor) {
-                        view.setTextColor(android.graphics.Color.WHITE)
-                    }
-                }
-            } else if (bg is android.graphics.drawable.GradientDrawable) {
-                // Check if it's a circular drawable (for date selection circles)
-                try {
-                    val shape = bg.shape
-                    if (shape == android.graphics.drawable.GradientDrawable.OVAL) {
-                        // Try to get color using reflection
-                        val color = try {
-                            val method = android.graphics.drawable.GradientDrawable::class.java.getDeclaredMethod("getColor")
-                            method.isAccessible = true
-                            val colorStateList = method.invoke(bg) as? android.content.res.ColorStateList
-                            colorStateList?.defaultColor
-                        } catch (e: Exception) {
-                            null
-                        }
-                        if (color != null && (purpleColors.contains(color) || lightPurpleColors.contains(color))) {
-                            bg.setColor(themeColor)
-                            view.background = bg
-                            // Make text white if it's black
-                            if (view is android.widget.TextView && view.currentTextColor == blackColor) {
-                                view.setTextColor(android.graphics.Color.WHITE)
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    // Ignore
-                }
-            }
-            
-            // Check background tint
-            val bgTint = view.backgroundTintList
-            if (bgTint != null) {
-                val tintColor = bgTint.defaultColor
-                if (purpleColors.contains(tintColor) || lightPurpleColors.contains(tintColor)) {
-                    view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
-                }
-            }
-            
-            // Check text color for buttons and text views
-            if (view is android.widget.TextView) {
-                val textColor = view.currentTextColor
-                // If text is black and parent/self has colored background, make it white
-                if (textColor == blackColor) {
-                    val parentBg = (view.parent as? View)?.background
-                    val viewBg = view.background
-                    val hasColoredBg = (parentBg is android.graphics.drawable.ColorDrawable && 
-                        (purpleColors.contains((parentBg as android.graphics.drawable.ColorDrawable).color) || 
-                        (parentBg as android.graphics.drawable.ColorDrawable).color == themeColor)) ||
-                        (viewBg is android.graphics.drawable.ColorDrawable && 
-                        (purpleColors.contains((viewBg as android.graphics.drawable.ColorDrawable).color) || 
-                        (viewBg as android.graphics.drawable.ColorDrawable).color == themeColor))
-                    if (hasColoredBg) {
-                        view.setTextColor(android.graphics.Color.WHITE)
-                    }
-                }
-            }
-            
-            // Check for ImageView (clock hands, icons)
-            if (view is android.widget.ImageView) {
-                val colorFilter = view.colorFilter
-                if (colorFilter != null) {
-                    view.setColorFilter(themeColor, android.graphics.PorterDuff.Mode.SRC_IN)
-                }
-            }
-            
-            // Recursively check children
-            if (view is android.view.ViewGroup) {
-                for (i in 0 until view.childCount) {
-                    replaceColorsInView(view.getChildAt(i), themeColor)
-                }
-            }
-        } catch (e: Exception) {
-            // Ignore
-        }
-    }
 
     private fun showScheduledInfo() {
         scheduledDate?.let { date ->
@@ -1262,9 +1207,11 @@ class ConversationDetailActivity : AppCompatActivity() {
             if (binding.layoutAttachments.childCount == 0) {
                 binding.scrollViewAttachments.visibility = View.GONE
             }
+            updateSendButtonState()
         }
         
         binding.layoutAttachments.addView(attachmentView)
+        updateSendButtonState()
     }
     
     private fun createCircularBitmap(bitmap: Bitmap): Bitmap {
@@ -1361,6 +1308,7 @@ class ConversationDetailActivity : AppCompatActivity() {
             if (binding.layoutAttachments.childCount == 0) {
                 binding.scrollViewAttachments.visibility = View.GONE
             }
+            updateSendButtonState()
         }
         
         // Try to load contact photo in background
@@ -1461,6 +1409,136 @@ class ConversationDetailActivity : AppCompatActivity() {
             "I'll let you know a bit.",
             "No problem. I missed your call."
         )
+    }
+    
+    private fun showFailedMessageDialog(message: Message) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_failed_message_preview, null)
+        val imagePreview: ImageView = dialogView.findViewById(R.id.imagePreview)
+        val layoutContactPreview: LinearLayout = dialogView.findViewById(R.id.layoutContactPreview)
+        val textContactName: TextView = dialogView.findViewById(R.id.textContactName)
+        val textContactNumber: TextView = dialogView.findViewById(R.id.textContactNumber)
+        val buttonResend: MaterialButton = dialogView.findViewById(R.id.buttonResend)
+        val buttonDelete: MaterialButton = dialogView.findViewById(R.id.buttonDelete)
+        
+        // Hide both previews initially
+        imagePreview.visibility = View.GONE
+        layoutContactPreview.visibility = View.GONE
+        
+        // Show appropriate preview based on attachment type
+        val attachmentPath = message.attachmentPath
+        val mimeType = message.mimeType
+        
+        if (!attachmentPath.isNullOrEmpty()) {
+            try {
+                val uri = Uri.parse(attachmentPath)
+                
+                // Check if it's an image
+                if (mimeType?.startsWith("image/") == true || 
+                    attachmentPath.contains(".jpg", ignoreCase = true) ||
+                    attachmentPath.contains(".jpeg", ignoreCase = true) ||
+                    attachmentPath.contains(".png", ignoreCase = true) ||
+                    attachmentPath.contains(".gif", ignoreCase = true)) {
+                    // Show image preview
+                    imagePreview.visibility = View.VISIBLE
+                    try {
+                        Picasso.get()
+                            .load(uri)
+                            .placeholder(R.drawable.ic_gallery)
+                            .error(R.drawable.ic_gallery)
+                            .into(imagePreview)
+                    } catch (e: Exception) {
+                        // Fallback: try to load from file
+                        try {
+                            val file = File(uri.path ?: "")
+                            if (file.exists()) {
+                                val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                                imagePreview.setImageBitmap(bitmap)
+                            }
+                        } catch (ex: Exception) {
+                            Log.e(TAG, "Error loading image preview", ex)
+                        }
+                    }
+                } 
+                // Check if it's a contact card
+                else if (mimeType == "text/x-vCard" || 
+                         attachmentPath.contains(".vcf", ignoreCase = true)) {
+                    // Show contact card preview
+                    layoutContactPreview.visibility = View.VISIBLE
+                    // Parse contact info from message body
+                    val body = message.body
+                    if (body.contains("BEGIN:VCARD")) {
+                        val nameMatch = Regex("FN:([^\\r\\n]+)").find(body)
+                        val telMatch = Regex("TEL:([^\\r\\n]+)").find(body)
+                        
+                        val name = nameMatch?.groupValues?.get(1) ?: "Contact"
+                        val number = telMatch?.groupValues?.get(1) ?: ""
+                        
+                        textContactName.text = name
+                        textContactNumber.text = number
+                    } else {
+                        textContactName.text = "Contact card"
+                        textContactNumber.text = ""
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error showing preview", e)
+            }
+        }
+        
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setTitle("Failed Message")
+            .create()
+        
+        buttonResend.setOnClickListener {
+            dialog.dismiss()
+            resendFailedMessage(message)
+        }
+        
+        buttonDelete.setOnClickListener {
+            dialog.dismiss()
+            deleteFailedMessage(message)
+        }
+        
+        dialog.show()
+    }
+    
+    private fun resendFailedMessage(message: Message) {
+        val attachmentPath = message.attachmentPath
+        val mimeType = message.mimeType
+        
+        if (!attachmentPath.isNullOrEmpty()) {
+            try {
+                val uri = Uri.parse(attachmentPath)
+                
+                // Check if it's an image
+                if (mimeType?.startsWith("image/") == true || 
+                    attachmentPath.contains(".jpg", ignoreCase = true) ||
+                    attachmentPath.contains(".jpeg", ignoreCase = true) ||
+                    attachmentPath.contains(".png", ignoreCase = true) ||
+                    attachmentPath.contains(".gif", ignoreCase = true)) {
+                    // Resend as image MMS
+                    viewModel.sendMMS(threadId, address, message.body, uri)
+                } 
+                // Check if it's a contact card
+                else if (mimeType == "text/x-vCard" || 
+                         attachmentPath.contains(".vcf", ignoreCase = true)) {
+                    // Resend as contact card MMS
+                    viewModel.sendMMSWithContact(threadId, address, message.body, uri)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error resending message", e)
+                Toast.makeText(this, "Error resending message", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            // No attachment, resend as regular SMS
+            viewModel.sendMessage(threadId, address, message.body)
+        }
+    }
+    
+    private fun deleteFailedMessage(message: Message) {
+        viewModel.deleteMessage(message.id)
+        Toast.makeText(this, "Message deleted", Toast.LENGTH_SHORT).show()
     }
 }
 

@@ -26,7 +26,9 @@ import com.quizangomedia.messages.receiver.NotificationActionReceiver
 import com.quizangomedia.messages.ui.conversation.ConversationDetailActivity
 import com.quizangomedia.messages.ui.notifications.ButtonAction
 import com.quizangomedia.messages.ui.notifications.NotificationPreview
+import com.quizangomedia.messages.ui.pin.PinActivity
 import com.quizangomedia.messages.util.OtpHelper
+import com.quizangomedia.messages.util.PrivateConversationStorage
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -140,13 +142,20 @@ object NotificationHelper {
         val hasOTP = OtpHelper.isOTPMessage(messageBody)
         val otp = if (hasOTP) OtpHelper.extractOTP(messageBody) else null
         
+        // Check if this is a private conversation
+        val isPrivate = PrivateConversationStorage.isPrivateConversation(context, threadId)
+        
         // Determine what to show based on preview mode
         val preview = NotificationPreview.values().find { it.name == previewMode } ?: NotificationPreview.SHOW_NAME_AND_MESSAGE
         val title = contactName
-        var text = when (preview) {
-            NotificationPreview.SHOW_NAME_AND_MESSAGE -> messageBody
-            NotificationPreview.SHOW_NAME -> ""
-            NotificationPreview.HIDE_CONTENTS -> ""
+        var text = when {
+            // Private conversations always show only name (no message)
+            isPrivate -> ""
+            // Otherwise use preview mode
+            preview == NotificationPreview.SHOW_NAME_AND_MESSAGE -> messageBody
+            preview == NotificationPreview.SHOW_NAME -> ""
+            preview == NotificationPreview.HIDE_CONTENTS -> ""
+            else -> messageBody
         }
         
         // If OTP is detected and preview shows message, enhance the text to highlight OTP
@@ -155,12 +164,22 @@ object NotificationHelper {
             text = messageBody.replace(otp, "🔐 $otp 🔐")
         }
         
-        // Create intent to open conversation
-        val intent = Intent(context, ConversationDetailActivity::class.java).apply {
-            putExtra("threadId", threadId)
-            putExtra("address", address)
-            putExtra("contactName", contactName)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        // Create intent to open conversation or pin activity for private conversations
+        val intent = if (isPrivate) {
+            // For private conversations, redirect to PinActivity
+            Intent(context, PinActivity::class.java).apply {
+                putExtra("from_notification", true)
+                putExtra("threadId", threadId)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+        } else {
+            // For regular conversations, open ConversationDetailActivity
+            Intent(context, ConversationDetailActivity::class.java).apply {
+                putExtra("threadId", threadId)
+                putExtra("address", address)
+                putExtra("contactName", contactName)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
         }
         
         val pendingIntent = PendingIntent.getActivity(

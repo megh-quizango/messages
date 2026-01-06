@@ -207,6 +207,10 @@ class NotificationActionReceiver : BroadcastReceiver() {
     private fun handleBlock(context: Context, threadId: Long, address: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                // Save to blocked conversations storage
+                com.quizangomedia.messages.util.BlockedConversationStorage.addThreadId(context, threadId)
+                
+                // Update Realm conversation as blocked
                 val realm = MessagesApp.realm
                 realm.writeBlocking {
                     val conversation = query(Conversation::class, "threadId == $threadId").first().find()

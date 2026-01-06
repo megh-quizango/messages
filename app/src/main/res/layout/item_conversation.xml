@@ -76,9 +76,29 @@
         android:text="Message snippet..."
         android:textColor="@color/gray_dark"
         android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@+id/textUnreadDot"
+        app:layout_constraintEnd_toStartOf="@+id/buttonCopyOtpList"
         app:layout_constraintStart_toStartOf="@+id/textContactName"
         app:layout_constraintTop_toBottomOf="@+id/textContactName" />
+
+    <TextView
+        android:id="@+id/buttonCopyOtpList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Copy OTP"
+        android:textSize="12sp"
+        android:textColor="@color/black"
+        android:background="@drawable/button_copy_otp_background"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/textUnreadDot"
+        app:layout_constraintTop_toTopOf="@+id/textSnippet"
+        app:layout_constraintBottom_toBottomOf="@+id/textSnippet" />
 
     <View
         android:id="@+id/textUnreadDot"

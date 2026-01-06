@@ -16,6 +16,7 @@ import com.quizangomedia.messages.databinding.ActivityBlockedConversationsBindin
 import com.quizangomedia.messages.ui.blocking.overlay.ConversationSelectionActivity
 import com.quizangomedia.messages.ui.main.MainViewModel
 import com.quizangomedia.messages.util.ThemeManager
+import com.quizangomedia.messages.util.BlockedConversationStorage
 
 class BlockedConversationsActivity : AppCompatActivity() {
 
@@ -26,21 +27,7 @@ class BlockedConversationsActivity : AppCompatActivity() {
     private val blockedConversations = mutableSetOf<Long>()
 
     companion object {
-        private const val PREFS_NAME = "MessagesPrefs"
-        private const val KEY_BLOCKED_CONVERSATIONS = "blocked_conversations"
         private const val REQUEST_CODE_SELECT_CONVERSATIONS = 2001
-        
-        fun getBlockedConversations(context: Context): Set<Long> {
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val blockedSet = prefs.getStringSet(KEY_BLOCKED_CONVERSATIONS, emptySet()) ?: emptySet()
-            return blockedSet.mapNotNull { it.toLongOrNull() }.toSet()
-        }
-        
-        fun saveBlockedConversations(context: Context, threadIds: Set<Long>) {
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val stringSet = threadIds.map { it.toString() }.toSet()
-            prefs.edit().putStringSet(KEY_BLOCKED_CONVERSATIONS, stringSet).apply()
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,18 +46,19 @@ class BlockedConversationsActivity : AppCompatActivity() {
             insets
         }
 
-        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        sharedPreferences = getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         
-        // Load blocked conversations from SharedPreferences
-        blockedConversations.addAll(getBlockedConversations(this))
+        // Load blocked conversations from storage
+        blockedConversations.addAll(BlockedConversationStorage.getThreadIds(this))
         
         setupBackButton()
         setupAddButton()
         setupRecyclerView()
         setupBannerAd()
         
-        viewModel.loadConversations("All")
+        // Load blocked conversations specifically
+        viewModel.loadBlockedConversations(this)
         observeConversations()
     }
 
@@ -93,7 +81,7 @@ class BlockedConversationsActivity : AppCompatActivity() {
         adapter = BlockedConversationsAdapter(
             onUnblockClick = { threadId ->
                 blockedConversations.remove(threadId)
-                saveBlockedConversations(this, blockedConversations)
+                BlockedConversationStorage.removeThreadId(this, threadId)
                 updateUI()
             }
         )
@@ -113,7 +101,12 @@ class BlockedConversationsActivity : AppCompatActivity() {
     }
 
     private fun updateUI(conversations: List<com.quizangomedia.messages.data.model.Conversation>? = null) {
+        // Reload blocked conversations from storage to ensure we have the latest list
+        blockedConversations.clear()
+        blockedConversations.addAll(BlockedConversationStorage.getThreadIds(this))
+        
         val allConversations = conversations ?: viewModel.conversations.value ?: emptyList()
+        // Filter to only show conversations that are in the blocked list
         val blocked = allConversations.filter { blockedConversations.contains(it.threadId) }
         if (blocked.isEmpty()) {
             binding.layoutEmpty.visibility = View.VISIBLE
@@ -133,10 +126,9 @@ class BlockedConversationsActivity : AppCompatActivity() {
                 // Find conversation by phone number and add to blocked list
                 viewModel.conversations.value?.firstOrNull { it.address == contact.phoneNumber }?.let {
                     blockedConversations.add(it.threadId)
+                    BlockedConversationStorage.addThreadId(this, it.threadId)
                 }
             }
-            // Save to SharedPreferences
-            saveBlockedConversations(this, blockedConversations)
             updateUI()
         }
     }

@@ -36,8 +36,20 @@ class ConversationDetailViewModel : ViewModel() {
     private val _messages = MutableLiveData<List<MessageListItem>>()
     val messages: LiveData<List<MessageListItem>> = _messages
     
+    private val _errorMessage = MutableLiveData<String?>()
+    val errorMessage: LiveData<String?> = _errorMessage
+    
+    private var currentThreadId: Long = -1
+    private var currentAddress: String = ""
+    
+    fun clearErrorMessage() {
+        _errorMessage.value = null
+    }
+    
     fun loadMessages(threadId: Long, address: String? = null) {
         Log.d(TAG, "loadMessages called - threadId: $threadId, address: $address")
+        currentThreadId = threadId
+        currentAddress = address ?: ""
         viewModelScope.launch {
             try {
                 val messageList = withContext(Dispatchers.IO) {
@@ -51,9 +63,17 @@ class ConversationDetailViewModel : ViewModel() {
                         -1L
                     }
                     Log.d(TAG, "Loading messages - actualThreadId: $actualThreadId")
-                    val messages = loadMessagesFromDevice(actualThreadId, address)
-                    Log.d(TAG, "Loaded ${messages.size} messages from device")
-                    messages
+                    val smsMessages = loadMessagesFromDevice(actualThreadId, address)
+                    Log.d(TAG, "Loaded ${smsMessages.size} SMS messages from device")
+                    
+                    // Also load MMS messages from Realm (they have attachments)
+                    val mmsMessages = loadMmsMessagesFromRealm(actualThreadId, address)
+                    Log.d(TAG, "Loaded ${mmsMessages.size} MMS messages from Realm")
+                    
+                    // Merge and sort by date
+                    val allMessages = (smsMessages + mmsMessages).sortedBy { it.date }
+                    Log.d(TAG, "Total messages: ${allMessages.size}")
+                    allMessages
                 }
                 val itemsWithDates = addDateHeaders(messageList)
                 Log.d(TAG, "Posting ${itemsWithDates.size} message items to UI")
@@ -64,6 +84,66 @@ class ConversationDetailViewModel : ViewModel() {
                 _messages.postValue(emptyList())
             }
         }
+    }
+    
+    private fun loadMmsMessagesFromRealm(threadId: Long, address: String?): List<Message> {
+        val messagesList = mutableListOf<Message>()
+        try {
+            val realm = MessagesApp.realm
+            realm.writeBlocking {
+                val query = if (threadId > 0) {
+                    query(Message::class, "threadId == $threadId AND (mimeType != null OR attachmentPath != null)")
+                } else if (!address.isNullOrEmpty()) {
+                    val normalizedAddress = normalizePhoneNumber(address)
+                    query(Message::class, "(mimeType != null OR attachmentPath != null)")
+                } else {
+                    query(Message::class, "(mimeType != null OR attachmentPath != null)")
+                }
+                
+                val results = query.find()
+                Log.d(TAG, "Found ${results.size} MMS messages in Realm")
+                
+                results.forEach { message ->
+                    val msg = findLatest(message)
+                    if (msg != null) {
+                        // Filter by address if threadId is not available
+                        if (threadId <= 0 && !address.isNullOrEmpty()) {
+                            val normalizedMsgAddress = normalizePhoneNumber(msg.address)
+                            val normalizedTargetAddress = normalizePhoneNumber(address)
+                            val addressesMatch = normalizedMsgAddress == normalizedTargetAddress ||
+                                normalizedMsgAddress.endsWith(normalizedTargetAddress) ||
+                                normalizedTargetAddress.endsWith(normalizedMsgAddress) ||
+                                (normalizedMsgAddress.length >= 10 && normalizedTargetAddress.length >= 10 &&
+                                 normalizedMsgAddress.takeLast(10) == normalizedTargetAddress.takeLast(10))
+                            
+                            if (!addressesMatch) {
+                                return@forEach
+                            }
+                        }
+                        
+                        messagesList.add(Message().apply {
+                            this.id = msg.id
+                            this.threadId = msg.threadId
+                            this.address = msg.address
+                            this.body = msg.body
+                            this.date = msg.date
+                            this.type = msg.type
+                            this.status = msg.status
+                            this.read = msg.read
+                            this.starred = msg.starred
+                            this.mimeType = msg.mimeType
+                            this.attachmentPath = msg.attachmentPath
+                            this.messagePartCount = msg.messagePartCount
+                            this.otp = msg.otp
+                        })
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading MMS messages from Realm", e)
+            e.printStackTrace()
+        }
+        return messagesList
     }
     
     private fun addDateHeaders(messages: List<Message>): List<MessageListItem> {
@@ -232,6 +312,44 @@ class ConversationDetailViewModel : ViewModel() {
     private fun normalizePhoneNumber(phoneNumber: String): String {
         // Remove common formatting characters for better matching
         return phoneNumber.replace(Regex("[\\s\\-\\(\\)\\+]"), "")
+    }
+    
+    private fun copyImageToPermanentStorage(context: Context, sourceUri: android.net.Uri, messageId: Long): android.net.Uri? {
+        return try {
+            // Use app's private external files directory (persists across app restarts)
+            val imagesDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
+            if (imagesDir == null || !imagesDir.exists()) {
+                imagesDir?.mkdirs()
+                if (imagesDir == null || !imagesDir.exists()) {
+                    Log.e(TAG, "Failed to create images directory")
+                    return null
+                }
+            }
+            
+            val fileName = "mms_image_${messageId}.jpg"
+            val destFile = java.io.File(imagesDir, fileName)
+            
+            // Copy the image
+            context.contentResolver.openInputStream(sourceUri)?.use { inputStream ->
+                java.io.FileOutputStream(destFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            } ?: run {
+                Log.e(TAG, "Failed to open input stream from source URI")
+                return null
+            }
+            
+            // Return FileProvider URI for secure access
+            androidx.core.content.FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                destFile
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error copying image to permanent storage", e)
+            e.printStackTrace()
+            null
+        }
     }
     
     fun sendMessage(threadId: Long, address: String, body: String) {
@@ -458,6 +576,8 @@ class ConversationDetailViewModel : ViewModel() {
         Log.d(TAG, "sendMMS called - threadId: $threadId, address: $address, body length: ${body.length}")
         
         viewModelScope.launch {
+            val messageId = System.currentTimeMillis()
+            
             try {
                 val context = MessagesApp.instance
                 val actualThreadId = if (threadId > 0) {
@@ -466,54 +586,125 @@ class ConversationDetailViewModel : ViewModel() {
                     Telephony.Threads.getOrCreateThreadId(context, address)
                 }
                 
-                // Get signature
+                // Check MMS availability
+                val mmsHelper = com.quizangomedia.messages.util.MmsHelper
+                if (!mmsHelper.isMmsServiceAvailable(context)) {
+                    Log.e(TAG, "MMS service is not available")
+                    _errorMessage.postValue("MMS service is not available. Please check your device settings and ensure MMS is enabled.")
+                    return@launch
+                }
+                
+                // Copy image to permanent storage location
+                val permanentImageUri = copyImageToPermanentStorage(context, imageUri, messageId)
+                if (permanentImageUri == null) {
+                    Log.e(TAG, "Failed to copy image to permanent storage")
+                    _errorMessage.postValue("Failed to save image. Please try again.")
+                    return@launch
+                }
+                
+                // Get signature (only if body is not empty)
                 val signature = getSignature()
-                val messageBody = if (signature.isNotEmpty() && body.isNotEmpty()) {
-                    "$body\n$signature"
-                } else if (signature.isNotEmpty()) {
-                    signature
+                val messageBody = if (body.isNotEmpty()) {
+                    if (signature.isNotEmpty()) {
+                        "$body\n$signature"
+                    } else {
+                        body
+                    }
                 } else {
-                    body
+                    // Allow empty body for attachment-only MMS
+                    if (signature.isNotEmpty()) {
+                        signature
+                    } else {
+                        ""
+                    }
                 }
                 
-                // Create MMS intent
-                val intent = Intent(Intent.ACTION_SEND)
-                intent.putExtra("address", address)
-                intent.putExtra("sms_body", messageBody)
-                intent.putExtra(Intent.EXTRA_STREAM, imageUri)
-                intent.type = "image/*"
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                // Store message in Realm with PENDING status
+                val realm = MessagesApp.realm
+                val timestamp = System.currentTimeMillis()
                 
-                // Try to use default SMS app's MMS sending
-                val smsIntent = Intent(Intent.ACTION_SENDTO, android.net.Uri.parse("smsto:$address"))
-                smsIntent.putExtra("sms_body", messageBody)
-                smsIntent.putExtra(Intent.EXTRA_STREAM, imageUri)
-                smsIntent.type = "image/*"
-                
-                // Use system MMS sending
-                try {
-                    val sendIntent = Intent(Intent.ACTION_SEND)
-                    sendIntent.putExtra("address", address)
-                    sendIntent.putExtra("sms_body", messageBody)
-                    sendIntent.putExtra(Intent.EXTRA_STREAM, imageUri)
-                    sendIntent.type = "image/*"
-                    sendIntent.setPackage("com.android.mms")
-                    sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                realm.writeBlocking {
+                    // Create or update conversation
+                    val existingConversation = query(Conversation::class, "threadId == $actualThreadId").first().find()
                     
-                    context.startActivity(sendIntent)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error sending MMS via system", e)
-                    // Fallback: save to SMS database as text with attachment reference
-                    saveMMSToSmsDatabase(context, actualThreadId, address, messageBody, imageUri.toString())
+                    if (existingConversation == null) {
+                        copyToRealm(Conversation().apply {
+                            this.threadId = actualThreadId
+                            this.address = address
+                            this.snippet = messageBody.ifEmpty { "Photo" }
+                            this.date = timestamp
+                            this.unreadCount = 0
+                        })
+                    } else {
+                        findLatest(existingConversation)?.apply {
+                            this.snippet = messageBody.ifEmpty { "Photo" }
+                            this.date = timestamp
+                        }
+                    }
+                    
+                    // Create message in Realm with PENDING status
+                    copyToRealm(Message().apply {
+                        this.id = messageId
+                        this.threadId = actualThreadId
+                        this.address = address
+                        this.body = messageBody
+                        this.date = timestamp
+                        this.type = MessageType.SENT
+                        this.status = MessageStatus.PENDING
+                        this.read = true
+                        this.mimeType = "image/*"
+                        this.attachmentPath = permanentImageUri.toString()
+                        this.messagePartCount = 1
+                    })
+                    Log.d(TAG, "Message stored in Realm with PENDING status - MessageId: $messageId")
                 }
                 
-                // Reload messages after delay
-                delay(500)
-                loadMessages(actualThreadId, address)
+                // Send MMS using MmsSender service (use original URI for sending, permanent URI is stored in DB)
+                val result = com.quizangomedia.messages.service.MmsSender.sendMms(
+                    subscriptionId = -1,
+                    messageId = messageId,
+                    addresses = listOf(address),
+                    attachments = listOf(imageUri), // Use original URI for sending
+                    subject = null,
+                    body = messageBody
+                )
+                
+                result.fold(
+                    onSuccess = { mmsUri ->
+                        Log.d(TAG, "MMS send request submitted successfully - URI: $mmsUri")
+                        // Notify main activity to refresh conversation list
+                        val refreshIntent = Intent("com.quizangomedia.messages.MMS_SENT_REFRESH")
+                        context.sendBroadcast(refreshIntent)
+                        // Reload messages after delay
+                        delay(500)
+                        loadMessages(actualThreadId, address)
+                    },
+                    onFailure = { error ->
+                        Log.e(TAG, "Error sending MMS", error)
+                        // Update message status to FAILED
+                        realm.writeBlocking {
+                            val message = query(Message::class, "id == $messageId").first().find()
+                            if (message != null) {
+                                findLatest(message)?.status = MessageStatus.FAILED
+                            }
+                        }
+                    }
+                )
             } catch (e: Exception) {
                 Log.e(TAG, "Error in sendMMS", e)
                 e.printStackTrace()
+                // Update message status to FAILED
+                try {
+                    val realm = MessagesApp.realm
+                    realm.writeBlocking {
+                        val message = query(Message::class, "id == $messageId").first().find()
+                        if (message != null) {
+                            findLatest(message)?.status = MessageStatus.FAILED
+                        }
+                    }
+                } catch (ex: Exception) {
+                    Log.e(TAG, "Error updating message status to FAILED", ex)
+                }
             }
         }
     }
@@ -522,6 +713,8 @@ class ConversationDetailViewModel : ViewModel() {
         Log.d(TAG, "sendMMSWithContact called - threadId: $threadId, address: $address, body length: ${body.length}")
         
         viewModelScope.launch {
+            val messageId = System.currentTimeMillis()
+            
             try {
                 val context = MessagesApp.instance
                 val actualThreadId = if (threadId > 0) {
@@ -530,81 +723,167 @@ class ConversationDetailViewModel : ViewModel() {
                     Telephony.Threads.getOrCreateThreadId(context, address)
                 }
                 
-                // Get signature
-                val signature = getSignature()
-                val messageBody = if (signature.isNotEmpty() && body.isNotEmpty()) {
-                    "$body\n$signature"
-                } else if (signature.isNotEmpty()) {
-                    signature
-                } else {
-                    body
+                // Check MMS availability
+                val mmsHelper = com.quizangomedia.messages.util.MmsHelper
+                if (!mmsHelper.isMmsServiceAvailable(context)) {
+                    Log.e(TAG, "MMS service is not available")
+                    _errorMessage.postValue("MMS service is not available. Please check your device settings and ensure MMS is enabled.")
+                    return@launch
                 }
                 
-                // Use system MMS sending with vCard file
+                // Read contact info from vCard file to include in message body
+                var contactName = ""
+                var contactNumber = ""
                 try {
-                    val sendIntent = Intent(Intent.ACTION_SEND)
-                    sendIntent.putExtra("address", address)
-                    sendIntent.putExtra("sms_body", messageBody)
-                    sendIntent.putExtra(Intent.EXTRA_STREAM, vCardUri)
-                    sendIntent.type = "text/x-vcard" // MIME type for vCard
-                    sendIntent.setPackage("com.android.mms")
-                    sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    
-                    context.startActivity(sendIntent)
-                    Log.d(TAG, "MMS with contact card sent via system")
+                    val vCardContent = context.contentResolver.openInputStream(vCardUri)?.use { inputStream ->
+                        inputStream.bufferedReader().use { it.readText() }
+                    }
+                    if (vCardContent != null) {
+                        val nameMatch = Regex("FN:([^\\r\\n]+)").find(vCardContent)
+                        val telMatch = Regex("TEL:([^\\r\\n]+)").find(vCardContent)
+                        contactName = nameMatch?.groupValues?.get(1) ?: ""
+                        contactNumber = telMatch?.groupValues?.get(1) ?: ""
+                    }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error sending MMS with contact via system", e)
-                    // Fallback: try generic MMS intent
-                    try {
-                        val fallbackIntent = Intent(Intent.ACTION_SEND)
-                        fallbackIntent.putExtra("address", address)
-                        fallbackIntent.putExtra("sms_body", messageBody)
-                        fallbackIntent.putExtra(Intent.EXTRA_STREAM, vCardUri)
-                        fallbackIntent.type = "text/x-vcard"
-                        fallbackIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        fallbackIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        
-                        context.startActivity(Intent.createChooser(fallbackIntent, "Send contact card"))
-                        Log.d(TAG, "MMS with contact card sent via chooser")
-                    } catch (e2: Exception) {
-                        Log.e(TAG, "Error sending MMS with contact via chooser", e2)
-                        // Final fallback: save to SMS database as text with attachment reference
-                        saveMMSToSmsDatabase(context, actualThreadId, address, messageBody, vCardUri.toString())
+                    Log.e(TAG, "Error reading vCard file", e)
+                }
+                
+                // Get signature (only if body is not empty)
+                val signature = getSignature()
+                val messageBody = if (body.isNotEmpty()) {
+                    if (signature.isNotEmpty()) {
+                        "$body\n$signature"
+                    } else {
+                        body
+                    }
+                } else {
+                    // For contact card-only MMS, include vCard content in body for display
+                    val vCardText = if (contactName.isNotEmpty() || contactNumber.isNotEmpty()) {
+                        "BEGIN:VCARD\nVERSION:3.0\nFN:$contactName\nTEL:$contactNumber\nEND:VCARD"
+                    } else {
+                        ""
+                    }
+                    if (signature.isNotEmpty() && vCardText.isNotEmpty()) {
+                        "$vCardText\n$signature"
+                    } else if (vCardText.isNotEmpty()) {
+                        vCardText
+                    } else if (signature.isNotEmpty()) {
+                        signature
+                    } else {
+                        ""
                     }
                 }
                 
-                // Reload messages after delay
-                delay(500)
-                loadMessages(actualThreadId, address)
+                // Store message in Realm with PENDING status
+                val realm = MessagesApp.realm
+                val timestamp = System.currentTimeMillis()
+                
+                realm.writeBlocking {
+                    // Create or update conversation
+                    val existingConversation = query(Conversation::class, "threadId == $actualThreadId").first().find()
+                    
+                    if (existingConversation == null) {
+                        copyToRealm(Conversation().apply {
+                            this.threadId = actualThreadId
+                            this.address = address
+                            this.snippet = messageBody.ifEmpty { "Contact card" }
+                            this.date = timestamp
+                            this.unreadCount = 0
+                        })
+                    } else {
+                        findLatest(existingConversation)?.apply {
+                            this.snippet = messageBody.ifEmpty { "Contact card" }
+                            this.date = timestamp
+                        }
+                    }
+                    
+                    // Create message in Realm with PENDING status
+                    copyToRealm(Message().apply {
+                        this.id = messageId
+                        this.threadId = actualThreadId
+                        this.address = address
+                        this.body = messageBody
+                        this.date = timestamp
+                        this.type = MessageType.SENT
+                        this.status = MessageStatus.PENDING
+                        this.read = true
+                        this.mimeType = "text/x-vCard"
+                        this.attachmentPath = vCardUri.toString()
+                        this.messagePartCount = 1
+                    })
+                    Log.d(TAG, "Message stored in Realm with PENDING status - MessageId: $messageId")
+                }
+                
+                // Send MMS using MmsSender service
+                val result = com.quizangomedia.messages.service.MmsSender.sendMms(
+                    subscriptionId = -1,
+                    messageId = messageId,
+                    addresses = listOf(address),
+                    attachments = listOf(vCardUri),
+                    subject = null,
+                    body = messageBody
+                )
+                
+                result.fold(
+                    onSuccess = { mmsUri ->
+                        Log.d(TAG, "MMS send request submitted successfully - URI: $mmsUri")
+                        // Notify main activity to refresh conversation list
+                        val refreshIntent = Intent("com.quizangomedia.messages.MMS_SENT_REFRESH")
+                        context.sendBroadcast(refreshIntent)
+                        // Reload messages after delay
+                        delay(500)
+                        loadMessages(actualThreadId, address)
+                    },
+                    onFailure = { error ->
+                        Log.e(TAG, "Error sending MMS", error)
+                        // Update message status to FAILED
+                        realm.writeBlocking {
+                            val message = query(Message::class, "id == $messageId").first().find()
+                            if (message != null) {
+                                findLatest(message)?.status = MessageStatus.FAILED
+                            }
+                        }
+                    }
+                )
             } catch (e: Exception) {
                 Log.e(TAG, "Error in sendMMSWithContact", e)
                 e.printStackTrace()
+                // Update message status to FAILED
+                try {
+                    val realm = MessagesApp.realm
+                    realm.writeBlocking {
+                        val message = query(Message::class, "id == $messageId").first().find()
+                        if (message != null) {
+                            findLatest(message)?.status = MessageStatus.FAILED
+                        }
+                    }
+                } catch (ex: Exception) {
+                    Log.e(TAG, "Error updating message status to FAILED", ex)
+                }
             }
         }
     }
     
-    private fun saveMMSToSmsDatabase(context: Context, threadId: Long, address: String, body: String, attachmentPath: String) {
-        try {
-            Log.d(TAG, "saveMMSToSmsDatabase - threadId: $threadId, address: $address")
-            val values = ContentValues().apply {
-                put(Telephony.Sms.ADDRESS, address)
-                put(Telephony.Sms.BODY, body)
-                put(Telephony.Sms.DATE, System.currentTimeMillis())
-                put(Telephony.Sms.READ, 1)
-                put(Telephony.Sms.TYPE, Telephony.Sms.MESSAGE_TYPE_SENT)
-                put(Telephony.Sms.THREAD_ID, threadId)
+    fun deleteMessage(messageId: Long) {
+        viewModelScope.launch {
+            try {
+                val realm = MessagesApp.realm
+                realm.writeBlocking {
+                    val message = query(Message::class, "id == $messageId").first().find()
+                    if (message != null) {
+                        findLatest(message)?.let {
+                            delete(it)
+                            Log.d(TAG, "Message deleted - messageId: $messageId")
+                        }
+                    }
+                }
+                // Reload messages after deletion
+                if (currentThreadId > 0) {
+                    loadMessages(currentThreadId, currentAddress.takeIf { it.isNotEmpty() })
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting message", e)
             }
-            
-            val uri = context.contentResolver.insert(Telephony.Sms.Sent.CONTENT_URI, values)
-            if (uri != null) {
-                Log.d(TAG, "MMS saved to SMS database successfully - URI: $uri")
-            } else {
-                Log.e(TAG, "Failed to save MMS to SMS database - insert returned null")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error saving MMS to SMS database", e)
-            e.printStackTrace()
         }
     }
 }

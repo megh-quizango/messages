@@ -1,0 +1,111 @@
+package com.quizangomedia.messages.util
+
+import android.app.Activity
+import android.app.Application
+import android.util.Log
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.appopen.AppOpenAd
+
+class AppOpenAdManager(private val application: Application) {
+
+    private var appOpenAd: AppOpenAd? = null
+    private var isLoadingAd = false
+    private var isShowingAd = false
+    private var adUnitId: String? = null
+    private var onAdDismissedListener: (() -> Unit)? = null
+
+    companion object {
+        private const val TAG = "AppOpenAdManager"
+    }
+
+    fun loadAd(adUnitId: String) {
+        this.adUnitId = adUnitId
+        
+        // Don't load if already loading, showing, or ad is available
+        if (isLoadingAd || isShowingAd || isAdAvailable()) {
+            return
+        }
+
+        isLoadingAd = true
+        val request = AdRequest.Builder().build()
+        
+        AppOpenAd.load(
+            application,
+            adUnitId,
+            request,
+            AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT,
+            object : AppOpenAd.AppOpenAdLoadCallback() {
+                override fun onAdLoaded(ad: AppOpenAd) {
+                    Log.d(TAG, "App open ad loaded")
+                    appOpenAd = ad
+                    isLoadingAd = false
+                    ad.setOnPaidEventListener { adValue ->
+                        Log.d(TAG, "App open ad paid event: ${adValue.valueMicros}")
+                    }
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Log.e(TAG, "App open ad failed to load: ${loadAdError.message}")
+                    isLoadingAd = false
+                    appOpenAd = null
+                }
+            }
+        )
+    }
+
+    fun showAdIfAvailable(activity: Activity, onAdDismissed: (() -> Unit)? = null) {
+        onAdDismissedListener = onAdDismissed
+        
+        if (isShowingAd) {
+            Log.d(TAG, "Ad is already showing")
+            onAdDismissed?.invoke()
+            return
+        }
+
+        if (!isAdAvailable()) {
+            Log.d(TAG, "Ad not available")
+            onAdDismissed?.invoke()
+            loadAd(adUnitId ?: return)
+            return
+        }
+
+        appOpenAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "App open ad dismissed")
+                appOpenAd = null
+                isShowingAd = false
+                onAdDismissedListener?.invoke()
+                loadAd(adUnitId ?: return)
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                Log.e(TAG, "App open ad failed to show: ${adError.message}")
+                appOpenAd = null
+                isShowingAd = false
+                onAdDismissedListener?.invoke()
+                loadAd(adUnitId ?: return)
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "App open ad showed")
+                isShowingAd = true
+            }
+        }
+
+        appOpenAd?.show(activity)
+    }
+
+    private fun isAdAvailable(): Boolean {
+        return appOpenAd != null && wasLoadTimeLessThanNHoursAgo()
+    }
+
+    private fun wasLoadTimeLessThanNHoursAgo(): Boolean {
+        // For simplicity, we'll consider the ad valid if it exists
+        // In production, you might want to track load time
+        return true
+    }
+}
+

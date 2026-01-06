@@ -506,6 +506,16 @@ object ThemeManager {
         // Ultra-aggressive theming: find and replace ALL views with primary/purple colors
         fun aggressiveTheme(view: View) {
             try {
+                // Check background tint FIRST - set to null if purple/primary to allow direct background theming
+                val bgTint = view.backgroundTintList
+                if (bgTint != null) {
+                    val tintColor = bgTint.defaultColor
+                    if (tintColor == primaryColorInt || purpleColors.contains(tintColor) || lightPurpleColors.contains(tintColor)) {
+                        // Set tint to null first to allow background drawable to be themed directly
+                        view.backgroundTintList = null
+                    }
+                }
+                
                 // Check background color - replace any purple or primary color
                 val bg = view.background
                 if (bg is ColorDrawable) {
@@ -524,12 +534,28 @@ object ThemeManager {
                     }
                 }
                 
-                // Check background tint
-                val bgTint = view.backgroundTintList
-                if (bgTint != null) {
-                    val tintColor = bgTint.defaultColor
-                    if (tintColor == primaryColorInt || purpleColors.contains(tintColor)) {
-                        view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+                // If background appears purple but we couldn't detect it, try clearing tint anyway
+                // This helps with views where tint is interfering with background theming
+                if (bgTint != null && (bg is ColorDrawable || bg is GradientDrawable)) {
+                    // Check if the actual displayed color might be purple (tint + background combination)
+                    // If so, clear the tint to allow direct background theming
+                    try {
+                        val displayedColor = if (bg is ColorDrawable) {
+                            bg.color
+                        } else {
+                            getGradientDrawableColor(bg as GradientDrawable)
+                        }
+                        if (displayedColor != null && (purpleColors.contains(displayedColor) || lightPurpleColors.contains(displayedColor))) {
+                            view.backgroundTintList = null
+                            if (bg is ColorDrawable) {
+                                view.setBackgroundColor(themeColor)
+                            } else if (bg is GradientDrawable) {
+                                (bg as GradientDrawable).setColor(themeColor)
+                                view.background = bg
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Ignore
                     }
                 }
                 
@@ -543,12 +569,19 @@ object ThemeManager {
                             view.setBackgroundColor(themeColor)
                         }
                     }
-                    // Also update background tint if it matches
+                    // Also update background tint if it matches - set to null to allow direct theming
                     val btnBgTint = view.backgroundTintList
                     if (btnBgTint != null) {
                         val tintColor = btnBgTint.defaultColor
                         if (tintColor == primaryColorInt || purpleColors.contains(tintColor) || lightPurpleColors.contains(tintColor)) {
-                            view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+                            // Set tint to null first to allow background drawable to be themed directly
+                            view.backgroundTintList = null
+                            // Then apply theme color directly to background
+                            if (view.background is ColorDrawable) {
+                                view.setBackgroundColor(themeColor)
+                            } else if (view.background is GradientDrawable) {
+                                (view.background as GradientDrawable).setColor(themeColor)
+                            }
                         }
                     }
                 }
@@ -642,12 +675,19 @@ object ThemeManager {
                 }
             }
             
-            // Check background tint
+            // Check background tint - set to null if purple/primary to allow direct background theming
             val backgroundTint = view.backgroundTintList
             if (backgroundTint != null) {
                 val tintColor = backgroundTint.defaultColor
-                if (tintColor == primaryColorInt) {
-                    view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+                if (tintColor == primaryColorInt || purpleColors.contains(tintColor) || lightPurpleColors.contains(tintColor)) {
+                    // Set tint to null first to allow background drawable to be themed directly
+                    view.backgroundTintList = null
+                    // Then apply theme color directly to background
+                    if (view.background is ColorDrawable) {
+                        view.setBackgroundColor(themeColor)
+                    } else if (view.background is GradientDrawable) {
+                        (view.background as GradientDrawable).setColor(themeColor)
+                    }
                 }
             }
             
@@ -670,7 +710,14 @@ object ThemeManager {
                 if (bgTint != null) {
                     val tintColor = bgTint.defaultColor
                     if (tintColor == primaryColorInt || purpleColors.contains(tintColor) || lightPurpleColors.contains(tintColor)) {
-                        view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+                        // Set tint to null first to allow background drawable to be themed directly
+                        view.backgroundTintList = null
+                        // Then apply theme color directly to background
+                        if (view.background is ColorDrawable) {
+                            view.setBackgroundColor(themeColor)
+                        } else if (view.background is GradientDrawable) {
+                            (view.background as GradientDrawable).setColor(themeColor)
+                        }
                     }
                 }
                 // Also check text color
@@ -687,7 +734,14 @@ object ThemeManager {
                 if (bgTint != null) {
                     val tintColor = bgTint.defaultColor
                     if (tintColor == primaryColorInt || purpleColors.contains(tintColor) || lightPurpleColors.contains(tintColor)) {
-                        view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+                        // Set tint to null first to allow background drawable to be themed directly
+                        view.backgroundTintList = null
+                        // Then apply theme color directly to background
+                        if (view.background is ColorDrawable) {
+                            view.setBackgroundColor(themeColor)
+                        } else if (view.background is GradientDrawable) {
+                            (view.background as GradientDrawable).setColor(themeColor)
+                        }
                     }
                 }
                 // Also check text color
@@ -886,12 +940,19 @@ object ThemeManager {
                 }
             }
             
-            // Check background tint
+            // Check background tint - set to null if matches target to allow direct background theming
             val bgTint = view.backgroundTintList
             if (bgTint != null) {
                 val tintColor = bgTint.defaultColor
                 if (tintColor == targetColor) {
-                    view.backgroundTintList = android.content.res.ColorStateList.valueOf(replacementColor)
+                    // Set tint to null first to allow background drawable to be themed directly
+                    view.backgroundTintList = null
+                    // Then apply theme color directly to background
+                    if (view.background is ColorDrawable) {
+                        view.setBackgroundColor(replacementColor)
+                    } else if (view.background is GradientDrawable) {
+                        (view.background as GradientDrawable).setColor(replacementColor)
+                    }
                 }
             }
             

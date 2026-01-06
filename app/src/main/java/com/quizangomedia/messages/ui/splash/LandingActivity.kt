@@ -23,6 +23,7 @@ import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityLandingBinding
 import com.quizangomedia.messages.ui.language.LanguageActivity
 import com.quizangomedia.messages.ui.main.MainActivity
+import com.quizangomedia.messages.util.AppOpenAdManager
 import com.quizangomedia.messages.util.PermissionManager
 
 class LandingActivity : AppCompatActivity() {
@@ -34,6 +35,8 @@ class LandingActivity : AppCompatActivity() {
     
     private var permissionsRequested = false
     private var overlayPermissionRequested = false
+    private var appOpenAdManager: AppOpenAdManager? = null
+    private val AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921"
 
     // Activity result launcher for overlay permission
     private val overlayPermissionLauncher = registerForActivityResult(
@@ -67,6 +70,10 @@ class LandingActivity : AppCompatActivity() {
         
         // Initialize AdMob SDK
         initializeMobileAdsSdk()
+        
+        // Initialize App Open Ad Manager
+        appOpenAdManager = AppOpenAdManager(application)
+        appOpenAdManager?.loadAd(AD_UNIT_ID)
         
         // Animate progress bar
         animateProgressBar()
@@ -246,6 +253,14 @@ class LandingActivity : AppCompatActivity() {
         Log.d("LandingActivity", "redirectToActivity - isDefaultSmsApp: $isDefaultSmsApp")
         Log.d("LandingActivity", "redirectToActivity - isLanguageSet: $isLanguageSet")
         
+        // Show app open ad before navigating
+        appOpenAdManager?.showAdIfAvailable(this) {
+            // Navigate after ad is dismissed or fails to show
+            navigateToNextActivity(isLanguageSet, isDefaultSmsApp)
+        }
+    }
+    
+    private fun navigateToNextActivity(isLanguageSet: Boolean, isDefaultSmsApp: Boolean) {
         if (!isLanguageSet) {
             // First time - show language selection
             Log.d("LandingActivity", "Redirecting to LanguageActivity")

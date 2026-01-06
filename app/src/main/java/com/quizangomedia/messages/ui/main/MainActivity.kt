@@ -46,6 +46,7 @@ import com.quizangomedia.messages.ui.swipe.SwipeGesturesActivity
 import com.quizangomedia.messages.data.model.Conversation
 import com.quizangomedia.messages.data.model.CustomFilter
 import com.quizangomedia.messages.util.CustomFilterStorage
+import com.quizangomedia.messages.util.BlockedConversationStorage
 import android.provider.Telephony
 import android.content.ContentValues
 import android.net.Uri
@@ -77,6 +78,7 @@ class MainActivity : AppCompatActivity() {
     private var exitNativeAd: NativeAd? = null
     private var customFilterTabs = mutableMapOf<String, TextView>()
     private var currentCustomFilterId: String? = null
+    private var mmsRefreshReceiver: BroadcastReceiver? = null
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -224,6 +226,9 @@ class MainActivity : AppCompatActivity() {
         
         // Register receiver for theme changes
         registerThemeChangeReceiver()
+        
+        // Register receiver for MMS sent refresh
+        registerMmsRefreshReceiver()
     }
     
     private fun registerSmsContentObserver() {
@@ -278,7 +283,28 @@ class MainActivity : AppCompatActivity() {
             true,
             smsContentObserver!!
         )
-        Log.d(TAG, "SMS ContentObserver registered for all SMS URIs")
+        // Register observer for MMS as well
+        try {
+            contentResolver.registerContentObserver(
+                Uri.parse("content://mms"),
+                true,
+                smsContentObserver!!
+            )
+            contentResolver.registerContentObserver(
+                Uri.parse("content://mms/inbox"),
+                true,
+                smsContentObserver!!
+            )
+            contentResolver.registerContentObserver(
+                Uri.parse("content://mms/sent"),
+                true,
+                smsContentObserver!!
+            )
+            Log.d(TAG, "MMS ContentObserver registered")
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not register MMS ContentObserver", e)
+        }
+        Log.d(TAG, "SMS and MMS ContentObserver registered for all URIs")
     }
     
     private fun registerThemeChangeReceiver() {
@@ -304,6 +330,43 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(themeChangeReceiver, IntentFilter("com.quizangomedia.messages.THEME_CHANGED"), receiverFlags)
     }
     
+    private fun registerMmsRefreshReceiver() {
+        val receiverFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        } else {
+            0
+        }
+        
+        mmsRefreshReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                Log.d(TAG, "MMS sent refresh broadcast received")
+                // Reload conversations when MMS is sent
+                val filterId = selectedTab?.tag as? String
+                val category = if (filterId != null && customFilterTabs.containsKey(filterId)) {
+                    null
+                } else {
+                    when (selectedTab?.id) {
+                        R.id.tabAll -> "All"
+                        R.id.tabPersonal -> "Personal"
+                        R.id.tabOTPs -> "OTPs"
+                        R.id.tabOffers -> "Offers"
+                        R.id.tabTransactions -> "Transactions"
+                        else -> "All"
+                    }
+                }
+                
+                if (category != null) {
+                    viewModel.loadConversations(category, showLoading = false)
+                } else if (filterId != null) {
+                    viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId)
+                } else {
+                    viewModel.loadConversations("All", showLoading = false)
+                }
+            }
+        }
+        registerReceiver(mmsRefreshReceiver, IntentFilter("com.quizangomedia.messages.MMS_SENT_REFRESH"), receiverFlags)
+    }
+    
     private fun updateVisibleFragments() {
         // Update theme for visible fragments
         val fragmentManager = supportFragmentManager
@@ -321,6 +384,10 @@ class MainActivity : AppCompatActivity() {
         }
         // Unregister theme change receiver
         themeChangeReceiver?.let {
+            unregisterReceiver(it)
+        }
+        // Unregister MMS refresh receiver
+        mmsRefreshReceiver?.let {
             unregisterReceiver(it)
         }
         super.onDestroy()
@@ -843,8 +910,7 @@ class MainActivity : AppCompatActivity() {
                 deleteConversation(conversation, position)
             }
             SwipeGesturesActivity.SwipeAction.BLOCK -> {
-                // TODO: Implement block functionality
-                Toast.makeText(this, "Block functionality not yet implemented", Toast.LENGTH_SHORT).show()
+                blockConversation(conversation, position)
             }
             SwipeGesturesActivity.SwipeAction.CALL -> {
                 makePhoneCall(conversation.address)
@@ -1051,6 +1117,70 @@ class MainActivity : AppCompatActivity() {
         // Save back to SharedPreferences
         val updatedJson = gson.toJson(deletedConversations)
         prefs.edit().putString("deleted_conversations", updatedJson).apply()
+    }
+    
+    private fun blockConversation(conversation: Conversation, position: Int) {
+        try {
+            // Save to blocked conversations storage
+            BlockedConversationStorage.addThreadId(this, conversation.threadId)
+            
+            // Update Realm conversation as blocked
+            try {
+                val realm = com.quizangomedia.messages.MessagesApp.realm
+                realm.writeBlocking {
+                    val existingConversation = query(com.quizangomedia.messages.data.model.Conversation::class, "threadId == ${conversation.threadId}").first().find()
+                    if (existingConversation != null) {
+                        findLatest(existingConversation)?.apply {
+                            this.blocked = true
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating Realm conversation as blocked", e)
+            }
+            
+            // Remove from adapter immediately
+            val currentList = adapter.currentList.toMutableList()
+            if (position >= 0 && position < currentList.size) {
+                currentList.removeAt(position)
+                
+                // Update allConversations to keep it in sync
+                val allList = allConversations.toMutableList()
+                val allIndex = allList.indexOfFirst { it.threadId == conversation.threadId }
+                if (allIndex >= 0) {
+                    allList.removeAt(allIndex)
+                    allConversations = allList
+                }
+                
+                adapter.submitList(currentList) {
+                    // Reset swipe position after list update
+                    binding.recyclerViewConversations.post {
+                        val viewHolder = binding.recyclerViewConversations.findViewHolderForAdapterPosition(position)
+                        viewHolder?.itemView?.translationX = 0f
+                        viewHolder?.itemView?.alpha = 1f
+                    }
+                    // Update empty state after blocking
+                    updateEmptyState(currentList.isEmpty())
+                }
+                
+                Toast.makeText(this, "Conversation blocked", Toast.LENGTH_SHORT).show()
+            } else {
+                // If position is invalid, refresh the list (which will filter out blocked items)
+                val category = when (selectedTab?.id) {
+                    R.id.tabAll -> "All"
+                    R.id.tabPersonal -> "Personal"
+                    R.id.tabOTPs -> "OTPs"
+                    R.id.tabOffers -> "Offers"
+                    R.id.tabTransactions -> "Transactions"
+                    else -> "All"
+                }
+                viewModel.loadConversations(category)
+                Toast.makeText(this, "Conversation blocked", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Failed to block conversation", Toast.LENGTH_SHORT).show()
+        }
     }
     
     private fun makePhoneCall(phoneNumber: String) {

@@ -12,6 +12,10 @@ import com.google.android.material.button.MaterialButton
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.data.model.Conversation
 import com.quizangomedia.messages.util.AvatarHelper
+import com.quizangomedia.messages.util.OtpHelper
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.widget.Toast
 import de.hdodenhof.circleimageview.CircleImageView
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -69,6 +73,7 @@ class ConversationAdapter(
         private val textTime: TextView = itemView.findViewById(R.id.textTime)
         private val textUnreadDot: View = itemView.findViewById(R.id.textUnreadDot)
         private val buttonStartChat: MaterialButton = itemView.findViewById(R.id.buttonStartChat)
+        private val buttonCopyOtpList: TextView = itemView.findViewById(R.id.buttonCopyOtpList)
 
         fun bind(conversation: Conversation) {
             // Handle "Add Conversation" special item
@@ -107,6 +112,21 @@ class ConversationAdapter(
             
             // Hide "Start Chat" button - users can click on the conversation item itself
             buttonStartChat.visibility = View.GONE
+            
+            // Check if snippet contains OTP and show copy button
+            val snippet = conversation.snippet ?: ""
+            val hasOTP = OtpHelper.isOTPMessage(snippet)
+            val otp = if (hasOTP) OtpHelper.extractOTP(snippet) else null
+            
+            if (hasOTP && otp != null) {
+                buttonCopyOtpList.visibility = View.VISIBLE
+                buttonCopyOtpList.setOnClickListener { view ->
+                    view.isClickable = true
+                    copyOTPToClipboard(otp)
+                }
+            } else {
+                buttonCopyOtpList.visibility = View.GONE
+            }
             
             // Log TextView state before loading avatar
             Log.d(TAG, "bind: Before loadAvatar - textAvatarLetter visibility=${textAvatarLetter.visibility}, text='${textAvatarLetter.text}', width=${textAvatarLetter.width}, height=${textAvatarLetter.height}")
@@ -159,7 +179,23 @@ class ConversationAdapter(
             // Only update the views that changed based on payload
             payload.forEach { change ->
                 when (change) {
-                    "snippet" -> textSnippet.text = conversation.snippet
+                    "snippet" -> {
+                        textSnippet.text = conversation.snippet
+                        // Update OTP button visibility when snippet changes
+                        val snippet = conversation.snippet ?: ""
+                        val hasOTP = OtpHelper.isOTPMessage(snippet)
+                        val otp = if (hasOTP) OtpHelper.extractOTP(snippet) else null
+                        
+                        if (hasOTP && otp != null) {
+                            buttonCopyOtpList.visibility = View.VISIBLE
+                            buttonCopyOtpList.setOnClickListener { view ->
+                                view.isClickable = true
+                                copyOTPToClipboard(otp)
+                            }
+                        } else {
+                            buttonCopyOtpList.visibility = View.GONE
+                        }
+                    }
                     "date" -> textTime.text = formatTime(conversation.date)
                     "unreadCount" -> {
                         if (conversation.unreadCount > 0) {
@@ -204,6 +240,17 @@ class ConversationAdapter(
                     val days = arrayOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
                     days[dayOfWeek - 1]
                 }
+            }
+        }
+        
+        private fun copyOTPToClipboard(otp: String) {
+            try {
+                val clipboard = itemView.context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("OTP", otp)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(itemView.context, "OTP copied: $otp", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(itemView.context, "Error copying OTP", Toast.LENGTH_SHORT).show()
             }
         }
     }

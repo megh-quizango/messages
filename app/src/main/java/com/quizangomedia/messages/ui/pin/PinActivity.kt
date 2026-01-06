@@ -48,8 +48,15 @@ class PinActivity : AppCompatActivity() {
         }
     }
 
+    private var fromNotification: Boolean = false
+    private var notificationThreadId: Long = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Check if opened from notification
+        fromNotification = intent.getBooleanExtra("from_notification", false)
+        notificationThreadId = intent.getLongExtra("threadId", -1)
         
         enableEdgeToEdge()
         binding = ActivityPinBinding.inflate(layoutInflater)
@@ -176,13 +183,18 @@ class PinActivity : AppCompatActivity() {
             val storedPin = sharedPreferences.getString(KEY_PIN, null)
             if (pinDigits.toString() == storedPin) {
                 // PIN matched, navigate to PrivateConversationsActivity
-                startActivity(Intent(this, PrivateConversationsActivity::class.java))
+                val intent = Intent(this, PrivateConversationsActivity::class.java)
+                // If opened from notification, pass threadId to open specific conversation
+                if (fromNotification && notificationThreadId != -1L) {
+                    intent.putExtra("threadId", notificationThreadId)
+                }
+                startActivity(intent)
                 finish()
             } else {
                 // PIN incorrect, clear and show error
                 pinDigits.clear()
                 updatePinDots()
-                // TODO: Show error message
+                Toast.makeText(this, "Incorrect PIN. Please try again.", Toast.LENGTH_SHORT).show()
             }
         }
     }

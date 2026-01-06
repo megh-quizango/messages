@@ -11,7 +11,7 @@
         android:id="@+id/imageRateUs"
         android:layout_width="120dp"
         android:layout_height="120dp"
-        android:src="@drawable/rate_us"
+        android:src="@drawable/rate_us_a"
         android:contentDescription="Rate Us"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
