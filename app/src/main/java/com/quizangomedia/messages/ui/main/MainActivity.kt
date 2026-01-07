@@ -376,6 +376,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
+    override fun onPause() {
+        super.onPause()
+        
+        // Reset flag when MainActivity is paused
+        // This ensures ad only shows when MainActivity is actually in foreground
+        (application as com.quizangomedia.messages.MessagesApp).isMainReady = false
+        Log.d(TAG, "MainActivity paused - App Open Ad disabled")
+    }
+    
     override fun onDestroy() {
         super.onDestroy()
         // Unregister ContentObserver to prevent memory leaks
@@ -1293,6 +1302,11 @@ class MainActivity : AppCompatActivity() {
     
     override fun onResume() {
         super.onResume()
+        
+        // CRITICAL: Mark MainActivity as ready for App Open Ads
+        // This ensures ads only show on stable MainActivity, not on splash/permission screens
+        (application as com.quizangomedia.messages.MessagesApp).isMainReady = true
+        Log.d(TAG, "MainActivity ready - App Open Ad can now be shown")
         // Ensure Messages tab is selected when activity is visible
         // Only set if we're showing messages content, not a fragment
         if (binding.fragmentContainer.visibility == View.GONE) {
