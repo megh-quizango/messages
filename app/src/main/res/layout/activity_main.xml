@@ -21,6 +21,8 @@
         android:paddingEnd="16dp"
         android:paddingTop="12dp"
         android:paddingBottom="12dp"
+        android:clickable="false"
+        android:focusable="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -42,7 +44,12 @@
             android:textColorHint="#9696A3"
             android:textColor="@color/black"
             android:textSize="14sp"
-            android:imeOptions="actionSearch"/>
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:clickable="true"
+            android:longClickable="true"/>
 
         <ImageView
             android:id="@+id/imageViewMenu"

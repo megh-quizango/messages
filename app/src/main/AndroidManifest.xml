@@ -55,10 +55,17 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713" />
 
+        <!-- Resolve AD_SERVICES_CONFIG conflict between AdMob and Firebase Analytics -->
+        <property
+            android:name="android.adservices.AD_SERVICES_CONFIG"
+            android:resource="@xml/gma_ad_services_config"
+            tools:replace="android:resource" />
+
         <!-- LandingActivity (Splash Screen) - LAUNCHER -->
         <activity
             android:name=".ui.splash.LandingActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -70,24 +77,28 @@
         <activity
             android:name=".ui.language.LanguageActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- MainActivity -->
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- DefaultSmsActivity -->
         <activity
             android:name=".ui.defaultsms.DefaultSmsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- ComposeActivity -->
         <activity
             android:name=".ui.compose.ComposeActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -105,6 +116,7 @@
         <activity
             android:name=".ui.conversation.ConversationDetailActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages"
             android:windowSoftInputMode="adjustResize" />
 
@@ -112,144 +124,168 @@
         <activity
             android:name=".ui.conversation.ConversationDetailsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- EditQuickResponseActivity -->
         <activity
             android:name=".ui.conversation.EditQuickResponseActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- PersonalizeActivity -->
         <activity
             android:name=".ui.personalize.PersonalizeActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- ThemesActivity -->
         <activity
             android:name=".ui.personalize.ThemesActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- FontSizeActivity -->
         <activity
             android:name=".ui.personalize.FontSizeActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- BubbleActivity -->
         <activity
             android:name=".ui.personalize.BubbleActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- RingtoneActivity -->
         <activity
             android:name=".ui.personalize.RingtoneActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- ContactsActivity -->
         <activity
             android:name=".ui.contacts.ContactsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- SettingsActivity -->
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- SpamBlockActivity -->
         <activity
             android:name=".ui.spam.SpamBlockActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- CustomBlockingActivity -->
         <activity
             android:name=".ui.blocking.CustomBlockingActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- BlockedConversationsActivity -->
         <activity
             android:name=".ui.blocking.BlockedConversationsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- ConversationSelectionActivity (for blocking) -->
         <activity
             android:name=".ui.blocking.overlay.ConversationSelectionActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
         
         <!-- ConversationSelectionActivity (for custom filters) -->
         <activity
             android:name=".ui.main.ConversationSelectionActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- ContactSelectionActivity -->
         <activity
             android:name=".ui.blocking.overlay.ContactSelectionActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- PrivateConversationsActivity -->
         <activity
             android:name=".ui.private.PrivateConversationsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- PinActivity -->
         <activity
             android:name=".ui.pin.PinActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- SecurityQuestionActivity -->
         <activity
             android:name=".ui.security.SecurityQuestionActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages.Dialog" />
 
         <!-- ManageAppsActivity -->
         <activity
             android:name=".ui.manageapps.ManageAppsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- ManageAppsDetailActivity -->
         <activity
             android:name=".ui.manageapps.ManageAppsDetailActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- ManageAppsCompleteActivity -->
         <activity
             android:name=".ui.manageapps.ManageAppsCompleteActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- ScheduledMessagesActivity -->
         <activity
             android:name=".ui.scheduled.ScheduledMessagesActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- CallerSettingsActivity -->
         <activity
             android:name=".ui.caller.CallerSettingsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- CallAfterActivity -->
         <activity
             android:name=".ui.caller.CallAfterActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages"
             android:launchMode="singleTop" />
 
@@ -257,48 +293,56 @@
         <activity
             android:name=".ui.starred.StarredActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
         
         <!-- ArchiveActivity -->
         <activity
             android:name=".ui.archive.ArchiveActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
         
         <!-- RecycleBinActivity -->
         <activity
             android:name=".ui.recyclebin.RecycleBinActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- NotificationsActivity -->
         <activity
             android:name=".ui.notifications.NotificationsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- AdvanceActivity -->
         <activity
             android:name=".ui.advance.AdvanceActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- FeedbackActivity -->
         <activity
             android:name=".ui.feedback.FeedbackActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- SwipeGesturesActivity -->
         <activity
             android:name=".ui.swipe.SwipeGesturesActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages" />
 
         <!-- SingleContactSelectionActivity -->
         <activity
             android:name=".ui.blocking.overlay.SingleContactSelectionActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Messages"
             android:launchMode="singleTop" />
 
@@ -317,7 +361,7 @@
             android:name=".receiver.SmsSentReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.quizangomedia.messages.SMS_SENT" />
+                <action android:name="com.text.messages.sms.messanger.SMS_SENT" />
             </intent-filter>
         </receiver>
 
@@ -326,7 +370,7 @@
             android:name=".receiver.SmsDeliveredReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.quizangomedia.messages.SMS_DELIVERED" />
+                <action android:name="com.text.messages.sms.messanger.SMS_DELIVERED" />
             </intent-filter>
         </receiver>
 
@@ -345,9 +389,9 @@
         <receiver
             android:name=".receiver.MmsSentReceiver"
             android:exported="true"
-            android:taskAffinity="com.quizangomedia.messages.MMS_SENT">
+            android:taskAffinity="com.text.messages.sms.messanger.MMS_SENT">
             <intent-filter>
-                <action android:name="com.quizangomedia.messages.MMS_SENT" />
+                <action android:name="com.text.messages.sms.messanger.MMS_SENT" />
             </intent-filter>
         </receiver>
 
@@ -355,9 +399,9 @@
         <receiver
             android:name=".receiver.MmsReceivedReceiver"
             android:exported="false"
-            android:taskAffinity="com.quizangomedia.messages.MMS_RECEIVED">
+            android:taskAffinity="com.text.messages.sms.messanger.MMS_RECEIVED">
             <intent-filter>
-                <action android:name="com.quizangomedia.messages.MMS_RECEIVED" />
+                <action android:name="com.text.messages.sms.messanger.MMS_RECEIVED" />
             </intent-filter>
         </receiver>
 
@@ -365,9 +409,9 @@
         <receiver
             android:name=".receiver.MmsUpdatedReceiver"
             android:exported="false"
-            android:taskAffinity="com.quizangomedia.messages.MMS_UPDATED">
+            android:taskAffinity="com.text.messages.sms.messanger.MMS_UPDATED">
             <intent-filter>
-                <action android:name="com.quizangomedia.messages.MMS_UPDATED" />
+                <action android:name="com.text.messages.sms.messanger.MMS_UPDATED" />
             </intent-filter>
         </receiver>
 

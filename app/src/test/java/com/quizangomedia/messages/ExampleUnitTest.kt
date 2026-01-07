@@ -1,4 +1,4 @@
-package com.quizangomedia.messages
+package com.text.messages.sms.messanger
 
 import org.junit.Test
 

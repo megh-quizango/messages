@@ -213,6 +213,16 @@
                     android:layout_marginEnd="4dp" />
 
                 <ImageView
+                    android:id="@+id/imageSmsFailed"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_error"
+                    android:background="@drawable/bg_error_badge"
+                    android:visibility="gone"
+                    android:contentDescription="Failed" />
+
+                <ImageView
                     android:id="@+id/imageStarBadge"
                     android:layout_width="16dp"
                     android:layout_height="16dp"

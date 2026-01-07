@@ -2,14 +2,16 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("io.realm.kotlin") version "1.15.0"
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
-    namespace = "com.quizangomedia.messages"
+    namespace = "com.text.messages.sms.messanger"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.quizangomedia.messages"
+        applicationId = "com.text.messages.sms.messanger"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -27,6 +29,12 @@ android {
             )
         }
     }
+    
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -42,6 +50,10 @@ android {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
+
+// Note: For Play Store submission, build an AAB (not APK) using:
+// ./gradlew bundleRelease
+// AGP 8.5.1+ automatically aligns native libraries to 16KB boundaries in AAB files
 
 dependencies {
     // Core AndroidX
@@ -83,6 +95,12 @@ dependencies {
     
     // AdMob
     implementation("com.google.android.gms:play-services-ads:23.5.0")
+    
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-config-ktx")
     
     // Material Components
     implementation("com.google.android.material:material:1.12.0")

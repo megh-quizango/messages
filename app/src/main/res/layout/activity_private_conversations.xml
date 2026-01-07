@@ -69,6 +69,40 @@
         app:layout_constraintBottom_toBottomOf="@id/buttonBack"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- ================= REMOVE ICON (SELECTION MODE) ================= -->
+
+    <ImageButton
+        android:id="@+id/imageRemove"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_delete"
+        android:tint="@color/black"
+        android:background="@android:color/transparent"
+        android:contentDescription="Remove"
+        android:scaleType="fitCenter"
+        android:padding="10dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/buttonBack"
+        app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <ImageButton
+        android:id="@+id/imageCancelSelection"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_close"
+        android:tint="@color/black"
+        android:background="@android:color/transparent"
+        android:contentDescription="Cancel selection"
+        android:scaleType="fitCenter"
+        android:padding="10dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/buttonBack"
+        app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+        app:layout_constraintEnd_toStartOf="@id/imageRemove"/>
+
     <!-- ================= EMPTY STATE ================= -->
 
     <LinearLayout
