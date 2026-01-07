@@ -140,15 +140,15 @@ class MessageAdapter(
         itemView: View,
         private val adapter: MessageAdapter
     ) : RecyclerView.ViewHolder(itemView) {
-        private val textMessage: TextView = itemView.findViewById(R.id.textMessage)
-        private val textTime: TextView = itemView.findViewById(R.id.textTime)
+        private val textMessage: TextView? = itemView.findViewById(R.id.textMessage)
+        private val textTime: TextView? = itemView.findViewById(R.id.textTime)
         private val textTimeForAttachment: TextView? = itemView.findViewById(R.id.textTimeForAttachment)
         private val textTimeForContactCard: TextView? = itemView.findViewById(R.id.textTimeForContactCard)
         private val layoutTimeForAttachment: LinearLayout? = itemView.findViewById(R.id.layoutTimeForAttachment)
         private val layoutTimeForContactCard: LinearLayout? = itemView.findViewById(R.id.layoutTimeForContactCard)
-        private val imageCheck: ImageView = itemView.findViewById(R.id.imageCheck)
-        private val imageStarBadge: ImageView = itemView.findViewById(R.id.imageStarBadge)
-        private val cardMessage: MaterialCardView = itemView.findViewById(R.id.cardMessage)
+        private val imageCheck: ImageView? = itemView.findViewById(R.id.imageCheck)
+        private val imageStarBadge: ImageView? = itemView.findViewById(R.id.imageStarBadge)
+        private val cardMessage: MaterialCardView? = itemView.findViewById(R.id.cardMessage)
         private val context = itemView.context
         
         // Attachment views
@@ -167,6 +167,11 @@ class MessageAdapter(
         private val imageDeleteOtp: ImageView? get() = itemView.findViewById(R.id.imageDeleteOtp)
 
         fun bind(message: Message, isSelectionMode: Boolean) {
+            // Early return if essential views are null (shouldn't happen, but safe during rotation)
+            if (textMessage == null || textTime == null || cardMessage == null) {
+                return
+            }
+            
             textMessage.text = message.body
             val timeText = formatTime(message.date)
             textTime.text = timeText
@@ -199,7 +204,7 @@ class MessageAdapter(
             // Handle time display - show highlighted time for attachments, regular time for text-only
             if (hasVisibleAttachment) {
                 // Hide regular time, show highlighted time for attachments
-                textTime.visibility = View.GONE
+                textTime?.visibility = View.GONE
                 
                 // Show time for image attachment
                 if (imageAttachment?.visibility == View.VISIBLE) {
@@ -218,8 +223,8 @@ class MessageAdapter(
                 }
             } else {
                 // Show regular time for text-only messages (no background)
-                textTime.visibility = View.VISIBLE
-                textTime.background = null
+                textTime?.visibility = View.VISIBLE
+                textTime?.background = null
                 layoutTimeForAttachment?.visibility = View.GONE
                 layoutTimeForContactCard?.visibility = View.GONE
             }
@@ -247,7 +252,7 @@ class MessageAdapter(
             
             // Apply font size and font family
             val fontSize = AppPreferences.getFontSize(context)
-            textMessage.textSize = fontSize
+            textMessage?.textSize = fontSize
             
             val fontFamilyIndex = AppPreferences.getFontFamily(context)
             val fontFamilies = listOf(
@@ -264,12 +269,12 @@ class MessageAdapter(
                 Typeface.create(Typeface.MONOSPACE, Typeface.ITALIC),
                 Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             )
-            textMessage.typeface = fontFamilies.getOrElse(fontFamilyIndex) { Typeface.DEFAULT }
+            textMessage?.typeface = fontFamilies.getOrElse(fontFamilyIndex) { Typeface.DEFAULT }
             
             // Set max width to 80% of screen width on the message text
             val displayMetrics = context.resources.displayMetrics
             val maxWidth = (displayMetrics.widthPixels * 0.8f).toInt()
-            textMessage.maxWidth = maxWidth
+            textMessage?.maxWidth = maxWidth
             
             // Apply bubble color only to sent messages (not theme color)
             // Make bubble transparent if it has a visible attachment
@@ -287,7 +292,7 @@ class MessageAdapter(
                     val bubbleColor = AppPreferences.getBubbleColor(context)
                     drawable.setColor(Color.parseColor(bubbleColor))
                 }
-                cardMessage.background = drawable
+                cardMessage?.background = drawable
             } else {
                 // For received messages, also make transparent if has visible attachment
                 if (hasVisibleAttachment) {
@@ -296,22 +301,22 @@ class MessageAdapter(
                     val cornerRadius = 16f * context.resources.displayMetrics.density
                     drawable.cornerRadius = cornerRadius
                     drawable.setColor(Color.TRANSPARENT)
-                    cardMessage.background = drawable
+                    cardMessage?.background = drawable
                 }
             }
             
             // Show/hide checkmark based on selection
             val isSelected = adapter.selectedMessages.contains(message.id)
             if (isSelectionMode) {
-                imageCheck.visibility = View.VISIBLE
-                imageCheck.setImageResource(if (isSelected) R.drawable.ic_checkbox_selected else R.drawable.ic_checkbox_unselected)
+                imageCheck?.visibility = View.VISIBLE
+                imageCheck?.setImageResource(if (isSelected) R.drawable.ic_checkbox_selected else R.drawable.ic_checkbox_unselected)
             } else {
-                imageCheck.visibility = View.GONE
+                imageCheck?.visibility = View.GONE
             }
             
             // Show/hide star badge based on starred status
             val isStarred = adapter.starredMessages.contains(message.id)
-            imageStarBadge.visibility = if (isStarred) View.VISIBLE else View.GONE
+            imageStarBadge?.visibility = if (isStarred) View.VISIBLE else View.GONE
             
             // Handle clicks
             itemView.setOnClickListener {

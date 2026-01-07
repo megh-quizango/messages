@@ -72,12 +72,21 @@ class AppOpenAdManager(private val application: Application) {
             return
         }
 
-        appOpenAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+        val adToShow = appOpenAd
+        if (adToShow == null) {
+            Log.e(TAG, "Ad is null when trying to show")
+            onAdDismissed?.invoke()
+            loadAd(adUnitId ?: return)
+            return
+        }
+
+        adToShow.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
                 Log.d(TAG, "App open ad dismissed")
                 appOpenAd = null
                 isShowingAd = false
                 onAdDismissedListener?.invoke()
+                onAdDismissedListener = null
                 loadAd(adUnitId ?: return)
             }
 
@@ -86,6 +95,7 @@ class AppOpenAdManager(private val application: Application) {
                 appOpenAd = null
                 isShowingAd = false
                 onAdDismissedListener?.invoke()
+                onAdDismissedListener = null
                 loadAd(adUnitId ?: return)
             }
 
@@ -93,9 +103,26 @@ class AppOpenAdManager(private val application: Application) {
                 Log.d(TAG, "App open ad showed")
                 isShowingAd = true
             }
+
+            override fun onAdClicked() {
+                Log.d(TAG, "App open ad clicked")
+            }
+
+            override fun onAdImpression() {
+                Log.d(TAG, "App open ad impression")
+            }
         }
 
-        appOpenAd?.show(activity)
+        try {
+            adToShow.show(activity)
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception showing ad: ${e.message}", e)
+            appOpenAd = null
+            isShowingAd = false
+            onAdDismissedListener?.invoke()
+            onAdDismissedListener = null
+            loadAd(adUnitId ?: return)
+        }
     }
 
     private fun isAdAvailable(): Boolean {

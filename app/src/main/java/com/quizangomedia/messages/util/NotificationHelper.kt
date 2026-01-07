@@ -9,6 +9,7 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
@@ -42,12 +43,14 @@ object NotificationHelper {
     private const val CHANNEL_ID = "sms_notifications"
     private const val CHANNEL_NAME = "SMS Notifications"
     private const val PREFS_NAME = "notifications_settings"
+    private const val RINGTONE_PREFS_NAME = "ringtone_settings"
     
     private const val KEY_NOTIFICATION_PREVIEW = "notification_preview"
     private const val KEY_WAKE_SCREEN = "wake_screen"
     private const val KEY_BUTTON_1_ACTION = "button_1_action"
     private const val KEY_BUTTON_2_ACTION = "button_2_action"
     private const val KEY_BUTTON_3_ACTION = "button_3_action"
+    private const val KEY_SELECTED_RINGTONE = "selected_ringtone"
     
     fun initialize(context: Context) {
         createNotificationChannel(context)
@@ -100,6 +103,11 @@ object NotificationHelper {
                 val button3Action = prefs.getString(KEY_BUTTON_3_ACTION, ButtonAction.NONE.name)
                 Log.d(TAG, "Button actions - 1: $button1Action, 2: $button2Action, 3: $button3Action")
                 
+                // Get ringtone preference
+                val ringtonePrefs = context.getSharedPreferences(RINGTONE_PREFS_NAME, Context.MODE_PRIVATE)
+                val selectedRingtone = ringtonePrefs.getString(KEY_SELECTED_RINGTONE, "default")
+                val notificationSound = getNotificationSoundUri(context, selectedRingtone)
+                
                 // Build notification
                 withContext(Dispatchers.Main) {
                     buildAndShowNotification(
@@ -114,7 +122,8 @@ object NotificationHelper {
                         wakeScreen = wakeScreen,
                         button1Action = button1Action,
                         button2Action = button2Action,
-                        button3Action = button3Action
+                        button3Action = button3Action,
+                        notificationSound = notificationSound
                     )
                 }
             } catch (e: Exception) {
@@ -136,7 +145,8 @@ object NotificationHelper {
         wakeScreen: Boolean,
         button1Action: String?,
         button2Action: String?,
-        button3Action: String?
+        button3Action: String?,
+        notificationSound: Uri?
     ) {
         // Check if message contains OTP (do this first so we can use it later)
         val hasOTP = OtpHelper.isOTPMessage(messageBody)
@@ -246,7 +256,6 @@ object NotificationHelper {
             .setContentText(text) // Message text
             .setStyle(NotificationCompat.BigTextStyle().bigText(text)) // Expandable text style
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
@@ -256,6 +265,21 @@ object NotificationHelper {
             .setOnlyAlertOnce(false) // Always alert for new messages
             .setGroup("sms_messages") // Group notifications
             .setGroupSummary(false)
+        
+        // Apply notification sound based on ringtone preference
+        if (notificationSound != null) {
+            // If sound_off, set sound to null (silent)
+            if (notificationSound == Uri.EMPTY) {
+                builder.setSilent(true)
+            } else {
+                builder.setSound(notificationSound)
+            }
+            // Set defaults without sound (we're setting it explicitly)
+            builder.setDefaults(NotificationCompat.DEFAULT_VIBRATE or NotificationCompat.DEFAULT_LIGHTS)
+        } else {
+            // Default behavior if no preference is set
+            builder.setDefaults(NotificationCompat.DEFAULT_ALL)
+        }
         
         Log.d(TAG, "Building standard notification with ${actions.size} actions")
         
@@ -594,6 +618,47 @@ object NotificationHelper {
         return phoneNumber.replace(Regex("[^0-9]"), "")
     }
     
+    /**
+     * Maps ringtone name to Android system notification sound URI
+     * Returns null for default system notification sound
+     * Returns Uri.EMPTY for sound_off (silent)
+     */
+    private fun getNotificationSoundUri(context: Context, ringtoneName: String?): Uri? {
+        return when (ringtoneName) {
+            "sound_off" -> Uri.EMPTY // Silent - no sound
+            "default" -> null // Use default system notification sound
+            else -> {
+                // For all other ringtones, try to get a different notification sound from system
+                // Since Android doesn't have specific sounds for these names,
+                // we'll use the default notification sound but allow the system to handle variations
+                // In a production app, you'd bundle custom sound files in res/raw/
+                var selectedUri: Uri? = null
+                try {
+                    val ringtoneManager = RingtoneManager(context)
+                    ringtoneManager.setType(RingtoneManager.TYPE_NOTIFICATION)
+                    val cursor = ringtoneManager.cursor
+                    
+                    // Try to get a different sound based on the ringtone name
+                    // This is a simple hash-based selection from available sounds
+                    val availableCount = cursor?.count ?: 0
+                    if (availableCount > 0 && ringtoneName != null) {
+                        // Use a hash of the ringtone name to select a consistent sound
+                        val index = Math.abs(ringtoneName.hashCode()) % availableCount
+                        cursor?.let { c ->
+                            if (c.moveToPosition(index)) {
+                                selectedUri = ringtoneManager.getRingtoneUri(index)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error getting custom notification sound, using default", e)
+                }
+                // Return selected URI or fallback to default notification sound
+                selectedUri ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            }
+        }
+    }
+    
     fun cancelNotification(context: Context, threadId: Long) {
         val notificationManager = NotificationManagerCompat.from(context)
         notificationManager.cancel(threadId.toInt())
@@ -615,6 +680,11 @@ object NotificationHelper {
         timestamp: Long
     ) {
         try {
+            // Get ringtone preference
+            val ringtonePrefs = context.getSharedPreferences(RINGTONE_PREFS_NAME, Context.MODE_PRIVATE)
+            val selectedRingtone = ringtonePrefs.getString(KEY_SELECTED_RINGTONE, "default")
+            val notificationSound = getNotificationSoundUri(context, selectedRingtone)
+            
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_chat_bubble)
                 .setLargeIcon(largeIcon)
@@ -622,13 +692,24 @@ object NotificationHelper {
                 .setContentText(messageText)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(messageText))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setShowWhen(true)
                 .setWhen(timestamp)
+            
+            // Apply notification sound based on ringtone preference
+            if (notificationSound != null) {
+                if (notificationSound == Uri.EMPTY) {
+                    builder.setSilent(true)
+                } else {
+                    builder.setSound(notificationSound)
+                }
+                builder.setDefaults(NotificationCompat.DEFAULT_VIBRATE or NotificationCompat.DEFAULT_LIGHTS)
+            } else {
+                builder.setDefaults(NotificationCompat.DEFAULT_ALL)
+            }
             
             val notificationManager = NotificationManagerCompat.from(context)
             notificationManager.notify(threadId.toInt(), builder.build())
