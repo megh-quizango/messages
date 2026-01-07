@@ -18,9 +18,12 @@ import com.quizangomedia.messages.data.model.MessageType
 import com.quizangomedia.messages.util.CustomFilterStorage
 import com.quizangomedia.messages.util.PrivateConversationStorage
 import com.quizangomedia.messages.util.BlockedConversationStorage
+import com.quizangomedia.messages.util.ConversationCache
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.isActive
 
 class MainViewModel : ViewModel() {
     
@@ -34,48 +37,315 @@ class MainViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
     
+    // Track loading jobs for cancellation
+    private var currentLoadJob: Job? = null
+    private var currentFilterLoadJob: Job? = null
+    
     fun loadConversations(
         category: String = "All",
         showLoading: Boolean = true,
         timeFilter: String? = null,
         startDate: Long? = null,
-        endDate: Long? = null
+        endDate: Long? = null,
+        useCache: Boolean = true,
+        forceRefresh: Boolean = false
     ) {
-        viewModelScope.launch {
+        // Cancel previous loading job
+        currentLoadJob?.cancel()
+        
+        // Try cache first if enabled and not forcing refresh
+        if (useCache && !forceRefresh && timeFilter == null) {
+            val cached = ConversationCache.getCached(category)
+            if (cached != null) {
+                Log.d(TAG, "Using cached conversations for category: $category (${cached.size} items)")
+                _conversations.postValue(cached)
+                // Still refresh in background to ensure cache is up to date
+                if (!showLoading) {
+                    loadConversationsInBackground(category, timeFilter, startDate, endDate)
+                }
+                return
+            }
+        }
+        
+        // Load from device
+        currentLoadJob = viewModelScope.launch {
             try {
                 if (showLoading) {
                     _isLoading.postValue(true)
                 }
                 val conversations = withContext(Dispatchers.IO) {
+                    // Check if job was cancelled
+                    if (!isActive) {
+                        return@withContext emptyList<Conversation>()
+                    }
                     loadConversationsFromDevice(category, timeFilter, startDate, endDate)
                 }
-                _conversations.postValue(conversations)
+                
+                // Only update if job wasn't cancelled
+                if (isActive) {
+                    _conversations.postValue(conversations)
+                    // Cache the result (only if no time filter, as time filters are dynamic)
+                    if (timeFilter == null) {
+                        ConversationCache.cache(category, conversations)
+                    }
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
-                _conversations.postValue(emptyList())
+                if (isActive) {
+                    e.printStackTrace()
+                    _conversations.postValue(emptyList())
+                }
             } finally {
-                if (showLoading) {
+                if (showLoading && isActive) {
                     _isLoading.postValue(false)
                 }
             }
         }
     }
     
-    fun loadConversationsForCustomFilter(context: android.content.Context, filterId: String) {
+    private fun loadConversationsInBackground(
+        category: String,
+        timeFilter: String?,
+        startDate: Long?,
+        endDate: Long?
+    ) {
         viewModelScope.launch {
+            try {
+                val conversations = withContext(Dispatchers.IO) {
+                    if (!isActive) return@withContext emptyList<Conversation>()
+                    loadConversationsFromDevice(category, timeFilter, startDate, endDate)
+                }
+                if (isActive && timeFilter == null) {
+                    ConversationCache.cache(category, conversations)
+                }
+            } catch (e: Exception) {
+                // Silently fail background refresh
+                Log.w(TAG, "Background refresh failed for category: $category", e)
+            }
+        }
+    }
+    
+    fun loadConversationsForCustomFilter(
+        context: android.content.Context, 
+        filterId: String,
+        useCache: Boolean = true,
+        forceRefresh: Boolean = false
+    ) {
+        // Cancel previous filter loading job
+        currentFilterLoadJob?.cancel()
+        
+        // Try cache first if enabled and not forcing refresh
+        if (useCache && !forceRefresh) {
+            val cached = ConversationCache.getCachedForFilter(filterId)
+            if (cached != null) {
+                Log.d(TAG, "Using cached conversations for filter: $filterId (${cached.size} items)")
+                _conversations.postValue(cached)
+                // Still refresh in background
+                loadConversationsForCustomFilterInBackground(context, filterId)
+                return
+            }
+        }
+        
+        // Load from device
+        currentFilterLoadJob = viewModelScope.launch {
             try {
                 _isLoading.postValue(true)
                 val conversations = withContext(Dispatchers.IO) {
+                    if (!isActive) {
+                        return@withContext emptyList<Conversation>()
+                    }
                     loadConversationsForCustomFilterFromDevice(context, filterId)
                 }
-                _conversations.postValue(conversations)
+                
+                if (isActive) {
+                    _conversations.postValue(conversations)
+                    ConversationCache.cacheForFilter(filterId, conversations)
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
-                _conversations.postValue(emptyList())
+                if (isActive) {
+                    e.printStackTrace()
+                    _conversations.postValue(emptyList())
+                }
             } finally {
-                _isLoading.postValue(false)
+                if (isActive) {
+                    _isLoading.postValue(false)
+                }
             }
         }
+    }
+    
+    private fun loadConversationsForCustomFilterInBackground(
+        context: android.content.Context,
+        filterId: String
+    ) {
+        viewModelScope.launch {
+            try {
+                val conversations = withContext(Dispatchers.IO) {
+                    if (!isActive) return@withContext emptyList<Conversation>()
+                    loadConversationsForCustomFilterFromDevice(context, filterId)
+                }
+                if (isActive) {
+                    ConversationCache.cacheForFilter(filterId, conversations)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Background refresh failed for filter: $filterId", e)
+            }
+        }
+    }
+    
+    /**
+     * Cancel any ongoing loading operations.
+     */
+    fun cancelLoading() {
+        currentLoadJob?.cancel()
+        currentFilterLoadJob?.cancel()
+        currentLoadJob = null
+        currentFilterLoadJob = null
+        Log.d(TAG, "Cancelled all loading operations")
+    }
+    
+    /**
+     * Pre-load conversations for a category in the background.
+     * Used by LandingActivity to pre-load while user is on splash screen.
+     */
+    fun preloadConversations(category: String = "All") {
+        viewModelScope.launch {
+            try {
+                Log.d(TAG, "Pre-loading conversations for category: $category")
+                val conversations = withContext(Dispatchers.IO) {
+                    if (!isActive) return@withContext emptyList<Conversation>()
+                    loadConversationsFromDevice(category, null, null, null)
+                }
+                if (isActive) {
+                    ConversationCache.cache(category, conversations)
+                    Log.d(TAG, "Pre-loaded ${conversations.size} conversations for category: $category")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Pre-load failed for category: $category", e)
+            }
+        }
+    }
+    
+    /**
+     * Load a single conversation by threadId quickly.
+     * Used when restoring conversations to add them immediately without full refresh.
+     */
+    fun loadSingleConversation(
+        context: Context, 
+        threadId: Long, 
+        category: String? = null,
+        onLoaded: (Conversation?) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val conversation = withContext(Dispatchers.IO) {
+                    loadSingleConversationFromDevice(context, threadId, category)
+                }
+                
+                if (conversation != null) {
+                    // Update cache with the restored conversation
+                    if (category != null) {
+                        val cached = ConversationCache.getCached(category)
+                        if (cached != null) {
+                            val updated = (cached + conversation).distinctBy { it.threadId }
+                                .sortedByDescending { it.date }
+                            ConversationCache.cache(category, updated)
+                        }
+                    }
+                }
+                
+                onLoaded(conversation)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading single conversation for threadId: $threadId", e)
+                onLoaded(null)
+            }
+        }
+    }
+    
+    private fun loadSingleConversationFromDevice(context: Context, threadId: Long, category: String?): Conversation? {
+        val conversationsMap = mutableMapOf<Long, Conversation>()
+        
+        // Load deleted, archived, private, and blocked lists
+        val deletedThreadIds = getDeletedThreadIds(context)
+        val archivedThreadIds = getArchivedThreadIds(context)
+        val privateThreadIds = PrivateConversationStorage.getThreadIds(context)
+        val blockedThreadIds = BlockedConversationStorage.getThreadIds(context)
+        
+        // Skip if still in any of these lists
+        if (deletedThreadIds.contains(threadId) || archivedThreadIds.contains(threadId) || 
+            privateThreadIds.contains(threadId) || blockedThreadIds.contains(threadId)) {
+            return null
+        }
+        
+        // Pre-load contact phone numbers for Personal filter
+        val contactPhoneNumbers = if (category == "Personal") {
+            loadContactPhoneNumbers(context)
+        } else {
+            null
+        }
+        
+        // Query SMS for this specific thread
+        val uri = Telephony.Sms.CONTENT_URI
+        val projection = arrayOf(
+            Telephony.Sms._ID,
+            Telephony.Sms.THREAD_ID,
+            Telephony.Sms.ADDRESS,
+            Telephony.Sms.BODY,
+            Telephony.Sms.DATE,
+            Telephony.Sms.READ,
+            Telephony.Sms.TYPE
+        )
+        
+        val selection = "${Telephony.Sms.THREAD_ID} = ?"
+        val selectionArgs = arrayOf(threadId.toString())
+        val sortOrder = "${Telephony.Sms.DATE} DESC"
+        
+        context.contentResolver.query(uri, projection, selection, selectionArgs, sortOrder)?.use { cursor ->
+            while (cursor.moveToNext()) {
+                val address = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)) ?: ""
+                val body = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.BODY)) ?: ""
+                val date = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.DATE))
+                val read = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
+                val type = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
+                
+                // Filter by category if specified
+                if (category != null && !matchesCategory(body, category, address, contactPhoneNumbers)) {
+                    continue
+                }
+                
+                val conversation = conversationsMap.getOrPut(threadId) {
+                    Conversation().apply {
+                        this.threadId = threadId
+                        this.address = address
+                        this.snippet = body
+                        this.date = date
+                        this.unreadCount = 0
+                    }
+                }
+                
+                // Update with latest message
+                if (date > conversation.date) {
+                    conversation.snippet = body
+                    conversation.date = date
+                }
+                
+                // Count unread messages
+                if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                    conversation.unreadCount++
+                }
+            }
+        }
+        
+        // Also check MMS from Realm
+        loadMmsConversationsFromRealm(conversationsMap, category ?: "All", contactPhoneNumbers, 
+            deletedThreadIds, archivedThreadIds, privateThreadIds, blockedThreadIds)
+        
+        // Get contact name
+        val conversation = conversationsMap[threadId]
+        if (conversation != null) {
+            loadContactNamesBatch(context, listOf(conversation))
+        }
+        
+        return conversation
     }
     
     fun loadPrivateConversations(context: android.content.Context) {

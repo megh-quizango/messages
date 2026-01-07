@@ -79,13 +79,14 @@ class MainActivity : AppCompatActivity() {
     private var customFilterTabs = mutableMapOf<String, TextView>()
     private var currentCustomFilterId: String? = null
     private var mmsRefreshReceiver: BroadcastReceiver? = null
+    private var conversationRestoredReceiver: BroadcastReceiver? = null
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            // Permission granted, load conversations
-            viewModel.loadConversations("All")
+            // Permission granted, load conversations with cache
+            viewModel.loadConversations("All", showLoading = true, useCache = true)
         } else {
             // Permission denied
             Toast.makeText(
@@ -126,7 +127,7 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode == RESULT_OK && currentCustomFilterId != null) {
             // Reload conversations for the current custom filter
             currentCustomFilterId?.let { filterId ->
-                viewModel.loadConversationsForCustomFilter(this, filterId)
+                viewModel.loadConversationsForCustomFilter(this, filterId, useCache = true)
             }
         }
     }
@@ -204,6 +205,7 @@ class MainActivity : AppCompatActivity() {
         loadCustomFilterTabs()
         
         // Request SMS permission and load conversations
+        // Use cache first for instant loading
         checkSmsPermissionAndLoad()
         
         // Set Messages as selected initially and apply theme after views are laid out
@@ -229,6 +231,9 @@ class MainActivity : AppCompatActivity() {
         
         // Register receiver for MMS sent refresh
         registerMmsRefreshReceiver()
+        
+        // Register receiver for conversation restorations
+        registerConversationRestoredReceiver()
     }
     
     private fun registerSmsContentObserver() {
@@ -257,12 +262,13 @@ class MainActivity : AppCompatActivity() {
                 
                 if (category != null) {
                     Log.d(TAG, "ContentObserver: Reloading conversations for category: $category (background refresh, no loading indicator)")
-                    viewModel.loadConversations(category, showLoading = false)
+                    // Force refresh to get latest data
+                    viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
                 } else if (filterId != null) {
                     Log.d(TAG, "ContentObserver: Reloading conversations for custom filter: $filterId (background refresh, no loading indicator)")
-                    viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId)
+                    viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId, useCache = false, forceRefresh = true)
                 } else {
-                    viewModel.loadConversations("All", showLoading = false)
+                    viewModel.loadConversations("All", showLoading = false, useCache = false, forceRefresh = true)
                 }
             }, 500) // 500ms delay to ensure database is committed
         }
@@ -356,15 +362,111 @@ class MainActivity : AppCompatActivity() {
                 }
                 
                 if (category != null) {
-                    viewModel.loadConversations(category, showLoading = false)
+                    viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
                 } else if (filterId != null) {
-                    viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId)
+                    viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId, useCache = false, forceRefresh = true)
                 } else {
-                    viewModel.loadConversations("All", showLoading = false)
+                    viewModel.loadConversations("All", showLoading = false, useCache = false, forceRefresh = true)
                 }
             }
         }
         registerReceiver(mmsRefreshReceiver, IntentFilter("com.quizangomedia.messages.MMS_SENT_REFRESH"), receiverFlags)
+    }
+    
+    private fun registerConversationRestoredReceiver() {
+        val receiverFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        } else {
+            0
+        }
+        
+        conversationRestoredReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val threadId = intent?.getLongExtra("thread_id", -1) ?: -1
+                if (threadId != -1L) {
+                    Log.d(TAG, "Conversation restored broadcast received for threadId: $threadId")
+                    
+                    // Get current category/filter
+                    val filterId = selectedTab?.tag as? String
+                    val category = if (filterId != null && customFilterTabs.containsKey(filterId)) {
+                        null
+                    } else {
+                        when (selectedTab?.id) {
+                            R.id.tabAll -> "All"
+                            R.id.tabPersonal -> "Personal"
+                            R.id.tabOTPs -> "OTPs"
+                            R.id.tabOffers -> "Offers"
+                            R.id.tabTransactions -> "Transactions"
+                            else -> "All"
+                        }
+                    }
+                    
+                    // Load the single conversation quickly and add it to the current list
+                    if (category != null) {
+                        // Load conversation and add to list immediately
+                        viewModel.loadSingleConversation(this@MainActivity, threadId, category) { restoredConversation ->
+                            if (restoredConversation != null) {
+                                // Add to current list immediately on main thread
+                                binding.recyclerViewConversations.post {
+                                    val currentList = adapter.currentList.toMutableList()
+                                    
+                                    // Remove if already exists (shouldn't happen, but safety check)
+                                    currentList.removeAll { it.threadId == threadId }
+                                    
+                                    // Insert at correct position (sorted by date, newest first)
+                                    val insertIndex = currentList.indexOfFirst { it.date < restoredConversation.date }
+                                    if (insertIndex >= 0) {
+                                        currentList.add(insertIndex, restoredConversation)
+                                    } else {
+                                        // Add to end if it's the oldest
+                                        currentList.add(restoredConversation)
+                                    }
+                                    
+                                    // Update allConversations
+                                    allConversations = currentList.filter { it.threadId != -1L }
+                                    
+                                    // Update adapter with new list - DiffUtil will handle smooth animation
+                                    adapter.submitList(currentList) {
+                                        Log.d(TAG, "Restored conversation added to list at position: $insertIndex")
+                                        updateEmptyState(currentList.isEmpty())
+                                    }
+                                }
+                            } else {
+                                // If loading single conversation failed, do a full refresh
+                                Log.d(TAG, "Failed to load single conversation, doing full refresh")
+                                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
+                            }
+                        }
+                    } else if (filterId != null) {
+                        // For custom filters, do a full refresh (less common case)
+                        viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId, useCache = false, forceRefresh = true)
+                    } else {
+                        // Default to "All"
+                        viewModel.loadSingleConversation(this@MainActivity, threadId, "All") { restoredConversation ->
+                            if (restoredConversation != null) {
+                                binding.recyclerViewConversations.post {
+                                    val currentList = adapter.currentList.toMutableList()
+                                    currentList.removeAll { it.threadId == threadId }
+                                    val insertIndex = currentList.indexOfFirst { it.date < restoredConversation.date }
+                                    if (insertIndex >= 0) {
+                                        currentList.add(insertIndex, restoredConversation)
+                                    } else {
+                                        currentList.add(restoredConversation)
+                                    }
+                                    allConversations = currentList.filter { it.threadId != -1L }
+                                    adapter.submitList(currentList) {
+                                        updateEmptyState(currentList.isEmpty())
+                                    }
+                                }
+                            } else {
+                                viewModel.loadConversations("All", showLoading = false, useCache = false, forceRefresh = true)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        registerReceiver(conversationRestoredReceiver, IntentFilter("com.quizangomedia.messages.CONVERSATION_RESTORED"), receiverFlags)
     }
     
     private fun updateVisibleFragments() {
@@ -390,6 +492,10 @@ class MainActivity : AppCompatActivity() {
         mmsRefreshReceiver?.let {
             unregisterReceiver(it)
         }
+        // Unregister conversation restored receiver
+        conversationRestoredReceiver?.let {
+            unregisterReceiver(it)
+        }
         super.onDestroy()
         exitNativeAd?.destroy()
         exitNativeAd = null
@@ -401,8 +507,8 @@ class MainActivity : AppCompatActivity() {
                 this,
                 Manifest.permission.READ_SMS
             ) == PackageManager.PERMISSION_GRANTED -> {
-                // Permission already granted, load conversations
-                viewModel.loadConversations("All")
+                // Permission already granted, load conversations with cache
+                viewModel.loadConversations("All", showLoading = true, useCache = true)
             }
             else -> {
                 // Request permission
@@ -458,9 +564,13 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun selectCustomFilterTab(tab: TextView, filterId: String) {
+        // Cancel any ongoing loading when switching filters
+        viewModel.cancelLoading()
+        
         currentCustomFilterId = filterId
         selectTab(tab)
-        viewModel.loadConversationsForCustomFilter(this, filterId)
+        // Use cache first for instant loading
+        viewModel.loadConversationsForCustomFilter(this, filterId, useCache = true)
     }
     
     private fun showAddFilterDialog() {
@@ -503,6 +613,9 @@ class MainActivity : AppCompatActivity() {
         val themeColor = ThemeManager.getThemeColor(this)
         val themeColorLight = ThemeManager.getThemeColorLight(this)
         
+        // Cancel any ongoing loading when switching tabs
+        viewModel.cancelLoading()
+        
         // Deselect previous tab
         selectedTab?.let {
             // Create new drawable with theme light color dynamically
@@ -536,7 +649,7 @@ class MainActivity : AppCompatActivity() {
         // Reset current custom filter if switching to a standard tab
         currentCustomFilterId = null
         
-        // Filter conversations by category
+        // Filter conversations by category - use cache for instant loading
         val category = when (tab.id) {
             R.id.tabAll -> "All"
             R.id.tabPersonal -> "Personal"
@@ -545,7 +658,8 @@ class MainActivity : AppCompatActivity() {
             R.id.tabTransactions -> "Transactions"
             else -> "All"
         }
-        viewModel.loadConversations(category)
+        // Use cache first, then refresh in background if needed
+        viewModel.loadConversations(category, showLoading = false, useCache = true)
     }
     
     private fun setupRecyclerView() {
@@ -960,8 +1074,12 @@ class MainActivity : AppCompatActivity() {
                 allConversations = allList
             }
             
-            // Update the list immediately
-            adapter.submitList(currentList)
+            // Update cache with the changed conversation
+            com.quizangomedia.messages.util.ConversationCache.updateConversation(threadId, updatedConversation)
+            
+            // Use incremental update with DiffUtil payload instead of full refresh
+            val payload = setOf("unreadCount")
+            adapter.notifyItemChanged(index, payload)
             
             // Reset swipe position and update UI immediately
             binding.recyclerViewConversations.post {
@@ -971,8 +1089,6 @@ class MainActivity : AppCompatActivity() {
                     itemView.alpha = 1f
                     itemView.clearAnimation()
                 }
-                // Force immediate UI update to show/hide blue dot
-                adapter.notifyItemChanged(index)
             }
         }
     }
@@ -981,6 +1097,9 @@ class MainActivity : AppCompatActivity() {
         try {
             // Save to recycle bin (don't actually delete from SMS, just mark as deleted)
             saveToRecycleBin(conversation)
+            
+            // Remove from cache
+            com.quizangomedia.messages.util.ConversationCache.removeConversation(conversation.threadId)
             
             // Remove from adapter immediately
             val currentList = adapter.currentList.toMutableList()
@@ -1007,7 +1126,15 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 // If position is invalid, refresh the list (which will filter out deleted items)
-                viewModel.loadConversations(selectedTab?.text?.toString() ?: "All")
+                val category = when (selectedTab?.id) {
+                    R.id.tabAll -> "All"
+                    R.id.tabPersonal -> "Personal"
+                    R.id.tabOTPs -> "OTPs"
+                    R.id.tabOffers -> "Offers"
+                    R.id.tabTransactions -> "Transactions"
+                    else -> "All"
+                }
+                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1018,6 +1145,9 @@ class MainActivity : AppCompatActivity() {
         try {
             // Save to archive
             saveToArchive(conversation)
+            
+            // Remove from cache
+            com.quizangomedia.messages.util.ConversationCache.removeConversation(conversation.threadId)
             
             // Remove from adapter immediately
             val currentList = adapter.currentList.toMutableList()
@@ -1052,7 +1182,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.tabTransactions -> "Transactions"
                     else -> "All"
                 }
-                viewModel.loadConversations(category)
+                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1139,6 +1269,9 @@ class MainActivity : AppCompatActivity() {
                 Log.e(TAG, "Error updating Realm conversation as blocked", e)
             }
             
+            // Remove from cache
+            com.quizangomedia.messages.util.ConversationCache.removeConversation(conversation.threadId)
+            
             // Remove from adapter immediately
             val currentList = adapter.currentList.toMutableList()
             if (position >= 0 && position < currentList.size) {
@@ -1174,7 +1307,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.tabTransactions -> "Transactions"
                     else -> "All"
                 }
-                viewModel.loadConversations(category)
+                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
                 Toast.makeText(this, "Conversation blocked", Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
@@ -1252,6 +1385,9 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun <T : Fragment> navigateToFragment(fragmentClass: Class<T>) {
+        // Cancel any ongoing loading when navigating away from messages screen
+        viewModel.cancelLoading()
+        
         // Hide messages content, show fragment container
         binding.searchBar.visibility = View.GONE
         binding.categoryTabs.visibility = View.GONE
@@ -1349,6 +1485,21 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "observeConversations: Received ${newConversations.size} conversations, currentCustomFilterId=$currentCustomFilterId")
             // Store all conversations for search filtering
             allConversations = newConversations
+            
+            // Update cache when new conversations arrive
+            if (currentCustomFilterId != null) {
+                com.quizangomedia.messages.util.ConversationCache.cacheForFilter(currentCustomFilterId!!, newConversations)
+            } else {
+                val category = when (selectedTab?.id) {
+                    R.id.tabAll -> "All"
+                    R.id.tabPersonal -> "Personal"
+                    R.id.tabOTPs -> "OTPs"
+                    R.id.tabOffers -> "Offers"
+                    R.id.tabTransactions -> "Transactions"
+                    else -> "All"
+                }
+                com.quizangomedia.messages.util.ConversationCache.cache(category, newConversations)
+            }
             
             // For custom filters, prepend "Add Conversation" item
             val conversationsToShow = if (currentCustomFilterId != null) {

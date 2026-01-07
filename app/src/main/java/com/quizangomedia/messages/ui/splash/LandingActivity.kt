@@ -16,13 +16,17 @@ import android.animation.ObjectAnimator
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.quizangomedia.messages.R
 import com.quizangomedia.messages.databinding.ActivityLandingBinding
 import com.quizangomedia.messages.ui.language.LanguageActivity
 import com.quizangomedia.messages.ui.main.MainActivity
+import com.quizangomedia.messages.ui.main.MainViewModel
 import com.quizangomedia.messages.util.PermissionManager
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 
 class LandingActivity : AppCompatActivity() {
 
@@ -66,6 +70,12 @@ class LandingActivity : AppCompatActivity() {
         
         // Animate progress bar
         animateProgressBar()
+        
+        // Pre-load conversations in background
+        // This will make MainActivity load instantly from cache
+        handler.postDelayed({
+            preloadConversations()
+        }, 1000)
         
         // Check and request permissions first
         checkAndRequestPermissions()
@@ -220,6 +230,28 @@ class LandingActivity : AppCompatActivity() {
         animator.start()
     }
     
+    private fun preloadConversations() {
+        // Check if we have SMS permission before pre-loading
+        if (android.content.pm.PackageManager.PERMISSION_GRANTED == 
+            ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_SMS)) {
+            // Create ViewModel to pre-load conversations in background
+            // This will populate the cache so MainActivity loads instantly
+            // Use handler.post to ensure it runs asynchronously and doesn't block
+            handler.post {
+                try {
+                    val viewModel = ViewModelProvider(this@LandingActivity)[MainViewModel::class.java]
+                    // Pre-load "All" category conversations in background
+                    viewModel.preloadConversations("All")
+                    Log.d("LandingActivity", "Started pre-loading conversations")
+                } catch (e: Exception) {
+                    Log.w("LandingActivity", "Failed to start pre-loading conversations", e)
+                }
+            }
+        } else {
+            Log.d("LandingActivity", "SMS permission not granted, skipping pre-load")
+        }
+    }
+    
     private fun redirectToActivity() {
         val isLanguageSet = sharedPreferences.getBoolean("IS_LANGUAGE_SET", false)
         
@@ -261,4 +293,3 @@ class LandingActivity : AppCompatActivity() {
         finish()
     }
 }
-
