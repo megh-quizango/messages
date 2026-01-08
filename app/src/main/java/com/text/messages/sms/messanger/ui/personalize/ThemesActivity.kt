@@ -22,6 +22,7 @@ class ThemesActivity : AppCompatActivity() {
     private var selectedCardId: Int? = null
     private var selectedIconId: Int? = null
     private var themeChangeReceiver: BroadcastReceiver? = null
+    private var themeUpdateCallback: ((Context, View) -> Unit)? = null
     
     // Theme colors mapping - will be initialized after binding
     private val themeColors: Map<Int, String> by lazy {
@@ -80,6 +81,10 @@ class ThemesActivity : AppCompatActivity() {
         themeChangeReceiver?.let {
             unregisterReceiver(it)
         }
+        // Unregister theme callback
+        themeUpdateCallback?.let {
+            ThemeManager.unregisterThemeUpdateCallback(it)
+        }
     }
     
     private fun setupBackButton() {
@@ -117,32 +122,76 @@ class ThemesActivity : AppCompatActivity() {
                 selectedCardId = card.id
                 selectedIconId = icon.id
                 
-                // Save theme color
+                // Save theme color - use commit() for immediate persistence
                 val themeColor = themeColors[card.id] ?: AppPreferences.getThemeColor(this)
                 AppPreferences.setThemeColor(this, themeColor)
                 AppPreferences.setThemeColorLight(this, AppPreferences.getLighterColor(themeColor))
                 
-                // Apply theme immediately to this activity (multiple times to ensure it's applied)
-                ThemeManager.applyTheme(this, binding.root)
-                binding.root.post {
-                    ThemeManager.applyTheme(this@ThemesActivity, binding.root)
-                    binding.root.post {
-                        ThemeManager.applyTheme(this@ThemesActivity, binding.root)
+                // CRITICAL: Update back button FIRST and IMMEDIATELY (synchronously)
+                // This must happen before any async operations
+                val themeColorInt = android.graphics.Color.parseColor(themeColor)
+                
+                // Directly recreate the back button drawable with new color for immediate effect
+                try {
+                    // Create a new GradientDrawable with the theme color (matching bg_back_button.xml structure)
+                    val newDrawable = android.graphics.drawable.GradientDrawable().apply {
+                        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                        setColor(themeColorInt)
+                        cornerRadius = 8f * resources.displayMetrics.density // 8dp converted to pixels
+                    }
+                    binding.buttonBack.background = newDrawable
+                    // Force immediate redraw
+                    binding.buttonBack.invalidate()
+                    binding.buttonBack.requestLayout()
+                    // Also force parent to redraw
+                    (binding.buttonBack.parent as? View)?.invalidate()
+                } catch (e: Exception) {
+                    // Fallback: Use ThemeManager
+                    ThemeManager.applyThemeImmediate(this, binding.buttonBack)
+                    binding.buttonBack.invalidate()
+                    binding.buttonBack.requestLayout()
+                }
+                
+                // Apply theme IMMEDIATELY and aggressively to this activity
+                ThemeManager.applyThemeImmediate(this, binding.root)
+                
+                // Also update root immediately
+                binding.root.invalidate()
+                binding.root.requestLayout()
+                
+                // Update all visible activities immediately via AppForegroundActivityTracker
+                val currentActivity = com.text.messages.sms.messanger.util.AppForegroundActivityTracker.currentActivity
+                if (currentActivity != null) {
+                    try {
+                        val activityRoot = currentActivity.window?.decorView?.findViewById<View>(android.R.id.content)
+                        activityRoot?.let {
+                            ThemeManager.applyThemeImmediate(currentActivity, it)
+                            it.invalidate()
+                            it.requestLayout()
+                        }
+                    } catch (e: Exception) {
+                        // Ignore
                     }
                 }
+                
+                // Notify ThemeManager callbacks immediately (this updates all registered activities)
+                ThemeManager.notifyThemeChanged(this, binding.root)
                 
                 // Broadcast theme change to update entire app immediately
                 val intent = android.content.Intent("com.text.messages.sms.messanger.THEME_CHANGED")
                 intent.setPackage(packageName) // Ensure it's sent to this app only
                 
-                // Send broadcast multiple ways to ensure delivery
+                // Send broadcast immediately
                 sendBroadcast(intent)
                 sendOrderedBroadcast(intent, null)
                 
-                // Also send with a small delay to catch any late listeners
+                // Send additional broadcasts with minimal delays
                 binding.root.postDelayed({
                     sendBroadcast(intent)
-                }, 100)
+                }, 10)
+                binding.root.postDelayed({
+                    sendBroadcast(intent)
+                }, 50)
             }
         }
     }
@@ -156,10 +205,27 @@ class ThemesActivity : AppCompatActivity() {
         
         themeChangeReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                // Re-apply theme when it changes
-                ThemeManager.applyTheme(this@ThemesActivity, binding.root)
+                // Re-apply theme IMMEDIATELY when it changes
+                ThemeManager.applyThemeImmediate(this@ThemesActivity, binding.root)
+                // Force immediate back button update
+                ThemeManager.applyThemeImmediate(this@ThemesActivity, binding.buttonBack)
+                binding.buttonBack.invalidate()
+                binding.buttonBack.requestLayout()
+                binding.root.invalidate()
+                binding.root.requestLayout()
             }
         }
+        
+        // Also register for direct callback updates
+        themeUpdateCallback = { ctx: Context, view: View ->
+            if (ctx == this@ThemesActivity) {
+                ThemeManager.applyThemeImmediate(this@ThemesActivity, binding.root)
+                ThemeManager.applyThemeImmediate(this@ThemesActivity, binding.buttonBack)
+                binding.buttonBack.invalidate()
+                binding.buttonBack.requestLayout()
+            }
+        }
+        themeUpdateCallback?.let { ThemeManager.registerThemeUpdateCallback(it) }
         registerReceiver(themeChangeReceiver, IntentFilter("com.text.messages.sms.messanger.THEME_CHANGED"), receiverFlags)
     }
     

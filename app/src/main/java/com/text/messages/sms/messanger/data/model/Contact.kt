@@ -1,13 +1,13 @@
 package com.text.messages.sms.messanger.data.model
 
-import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.annotations.PrimaryKey
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-class Contact : RealmObject {
+@Entity(tableName = "contacts")
+data class Contact(
     @PrimaryKey
-    var phoneNumber: String = ""
-    var displayName: String = ""
-    var photoUri: String? = null
-    var lastContacted: Long = 0
-}
-
+    val phoneNumber: String = "",
+    val displayName: String = "",
+    val photoUri: String? = null,
+    val lastContacted: Long = 0
+)

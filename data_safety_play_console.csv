@@ -1,12 +1,64 @@
-Data type,Collected,Shared,Processed ephemerally,Required for your app or service's core functionality,Users can request deletion,Retention period,Is this data processed for a purpose that users would not reasonably expect?,Is this data used for tracking users?,Is this data used for personalization?,Is this data used for advertising or marketing?,Is this data used for analytics?,Is this data used for fraud prevention, security, or compliance?,Is this data used for account management?,Is this data used for app functionality?,Is this data used for developer communications or customer support?
-Messages and other in-app content (SMS, MMS, text messages),Yes,No,No,Yes,Yes,Until user deletes,No,No,No,No,No,No,No,Yes,No
-Photos and videos,Yes,No,No,Yes,Yes,Until user deletes,No,No,No,No,No,No,No,Yes,No
-Contacts,Yes,No,No,Yes,Yes,Until user deletes,No,No,No,No,No,No,No,Yes,No
-Phone numbers,Yes,No,No,Yes,Yes,Until user deletes,No,No,No,No,No,No,No,Yes,No
-Call logs,Yes,No,No,Yes,Yes,Until user deletes,No,No,No,No,No,No,No,Yes,No
-Device or other IDs,Yes,Yes,No,Yes,Yes,Until user deletes,No,Yes,No,Yes,Yes,No,No,Yes,No
-Crash logs,Yes,Yes,No,Yes,Yes,Until user deletes,No,No,No,No,No,No,No,Yes,No
-Diagnostics,Yes,Yes,No,Yes,Yes,Until user deletes,No,No,No,No,No,No,No,Yes,No
-App activity (interactions),Yes,Yes,No,Yes,Yes,Until user deletes,No,Yes,No,No,Yes,No,No,Yes,No
-App info and performance,Yes,Yes,No,Yes,Yes,Until user deletes,No,No,No,No,Yes,No,No,Yes,No
-
+Question ID (machine readable),Response ID (machine readable),Response value,Answer requirement,Human-friendly question label
+PSL_DATA_COLLECTION_COLLECTS_PERSONAL_DATA,,true,REQUIRED,Does your app collect or share any of the required user data types?
+PSL_DATA_COLLECTION_ENCRYPTED_IN_TRANSIT,,true,MAYBE_REQUIRED,Is all of the user data collected by your app encrypted in transit?
+PSL_SUPPORTED_ACCOUNT_CREATION_METHODS,PSL_ACM_NONE,true,MULTIPLE_CHOICE,Which of the following methods of account creation does your app support? Select all that apply/My app does not allow users to create an account
+PSL_SUPPORT_DATA_DELETION_BY_USER,DATA_DELETION_YES,true,SINGLE_CHOICE,Do you provide a way for users to request that their data is deleted?/Yes
+PSL_DATA_TYPES_PERSONAL,PSL_PHONE,true,MULTIPLE_CHOICE,Personal info/Phone number
+PSL_DATA_TYPES_EMAIL_AND_TEXT,PSL_SMS_CALL_LOG,true,MULTIPLE_CHOICE,Messages/SMS or MMS
+PSL_DATA_TYPES_PHOTOS_AND_VIDEOS,PSL_PHOTOS,true,MULTIPLE_CHOICE,Photos and videos/Photos
+PSL_DATA_TYPES_PHOTOS_AND_VIDEOS,PSL_VIDEOS,true,MULTIPLE_CHOICE,Photos and videos/Videos
+PSL_DATA_TYPES_CONTACTS,PSL_CONTACTS,true,MULTIPLE_CHOICE,Contacts/Contacts
+PSL_DATA_TYPES_APP_PERFORMANCE,PSL_CRASH_LOGS,true,MULTIPLE_CHOICE,App info and performance/Crash logs
+PSL_DATA_TYPES_APP_PERFORMANCE,PSL_PERFORMANCE_DIAGNOSTICS,true,MULTIPLE_CHOICE,App info and performance/Diagnostics
+PSL_DATA_TYPES_APP_ACTIVITY,PSL_USER_INTERACTION,true,MULTIPLE_CHOICE,App activity/App interactions
+PSL_DATA_TYPES_IDENTIFIERS,PSL_DEVICE_ID,true,MULTIPLE_CHOICE,Device or other IDs/Device or other IDs
+PSL_DATA_USAGE_RESPONSES:PSL_PHONE:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_COLLECTED,true,MULTIPLE_CHOICE,"Data usage and handling (Phone number)/Is this data collected, shared or both?/Collected"
+PSL_DATA_USAGE_RESPONSES:PSL_PHONE:PSL_DATA_USAGE_EPHEMERAL,,false,MAYBE_REQUIRED,Data usage and handling (Phone number)/Is this data processed ephemerally?
+PSL_DATA_USAGE_RESPONSES:PSL_PHONE:DATA_USAGE_USER_CONTROL,PSL_DATA_USAGE_USER_CONTROL_REQUIRED,true,SINGLE_CHOICE,"Data usage and handling (Phone number)/Is this data required for your app, or can users choose whether it's collected?/Data collection is required (users can't turn off this data collection)"
+PSL_DATA_USAGE_RESPONSES:PSL_PHONE:DATA_USAGE_COLLECTION_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Phone number)/Why is this user data collected? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_SMS_CALL_LOG:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_COLLECTED,true,MULTIPLE_CHOICE,"Data usage and handling (SMS or MMS)/Is this data collected, shared or both?/Collected"
+PSL_DATA_USAGE_RESPONSES:PSL_SMS_CALL_LOG:PSL_DATA_USAGE_EPHEMERAL,,false,MAYBE_REQUIRED,Data usage and handling (SMS or MMS)/Is this data processed ephemerally?
+PSL_DATA_USAGE_RESPONSES:PSL_SMS_CALL_LOG:DATA_USAGE_USER_CONTROL,PSL_DATA_USAGE_USER_CONTROL_REQUIRED,true,SINGLE_CHOICE,"Data usage and handling (SMS or MMS)/Is this data required for your app, or can users choose whether it's collected?/Data collection is required (users can't turn off this data collection)"
+PSL_DATA_USAGE_RESPONSES:PSL_SMS_CALL_LOG:DATA_USAGE_COLLECTION_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (SMS or MMS)/Why is this user data collected? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_PHOTOS:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_COLLECTED,true,MULTIPLE_CHOICE,"Data usage and handling (Photos)/Is this data collected, shared or both?/Collected"
+PSL_DATA_USAGE_RESPONSES:PSL_PHOTOS:PSL_DATA_USAGE_EPHEMERAL,,false,MAYBE_REQUIRED,Data usage and handling (Photos)/Is this data processed ephemerally?
+PSL_DATA_USAGE_RESPONSES:PSL_PHOTOS:DATA_USAGE_USER_CONTROL,PSL_DATA_USAGE_USER_CONTROL_REQUIRED,true,SINGLE_CHOICE,"Data usage and handling (Photos)/Is this data required for your app, or can users choose whether it's collected?/Data collection is required (users can't turn off this data collection)"
+PSL_DATA_USAGE_RESPONSES:PSL_PHOTOS:DATA_USAGE_COLLECTION_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Photos)/Why is this user data collected? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_VIDEOS:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_COLLECTED,true,MULTIPLE_CHOICE,"Data usage and handling (Videos)/Is this data collected, shared or both?/Collected"
+PSL_DATA_USAGE_RESPONSES:PSL_VIDEOS:PSL_DATA_USAGE_EPHEMERAL,,false,MAYBE_REQUIRED,Data usage and handling (Videos)/Is this data processed ephemerally?
+PSL_DATA_USAGE_RESPONSES:PSL_VIDEOS:DATA_USAGE_USER_CONTROL,PSL_DATA_USAGE_USER_CONTROL_REQUIRED,true,SINGLE_CHOICE,"Data usage and handling (Videos)/Is this data required for your app, or can users choose whether it's collected?/Data collection is required (users can't turn off this data collection)"
+PSL_DATA_USAGE_RESPONSES:PSL_VIDEOS:DATA_USAGE_COLLECTION_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Videos)/Why is this user data collected? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_CONTACTS:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_COLLECTED,true,MULTIPLE_CHOICE,"Data usage and handling (Contacts)/Is this data collected, shared or both?/Collected"
+PSL_DATA_USAGE_RESPONSES:PSL_CONTACTS:PSL_DATA_USAGE_EPHEMERAL,,false,MAYBE_REQUIRED,Data usage and handling (Contacts)/Is this data processed ephemerally?
+PSL_DATA_USAGE_RESPONSES:PSL_CONTACTS:DATA_USAGE_USER_CONTROL,PSL_DATA_USAGE_USER_CONTROL_REQUIRED,true,SINGLE_CHOICE,"Data usage and handling (Contacts)/Is this data required for your app, or can users choose whether it's collected?/Data collection is required (users can't turn off this data collection)"
+PSL_DATA_USAGE_RESPONSES:PSL_CONTACTS:DATA_USAGE_COLLECTION_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Contacts)/Why is this user data collected? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_CRASH_LOGS:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_COLLECTED,true,MULTIPLE_CHOICE,"Data usage and handling (Crash logs)/Is this data collected, shared or both?/Collected"
+PSL_DATA_USAGE_RESPONSES:PSL_CRASH_LOGS:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_SHARED,true,MULTIPLE_CHOICE,"Data usage and handling (Crash logs)/Is this data collected, shared or both?/Shared"
+PSL_DATA_USAGE_RESPONSES:PSL_CRASH_LOGS:PSL_DATA_USAGE_EPHEMERAL,,false,MAYBE_REQUIRED,Data usage and handling (Crash logs)/Is this data processed ephemerally?
+PSL_DATA_USAGE_RESPONSES:PSL_CRASH_LOGS:DATA_USAGE_USER_CONTROL,PSL_DATA_USAGE_USER_CONTROL_REQUIRED,true,SINGLE_CHOICE,"Data usage and handling (Crash logs)/Is this data required for your app, or can users choose whether it's collected?/Data collection is required (users can't turn off this data collection)"
+PSL_DATA_USAGE_RESPONSES:PSL_CRASH_LOGS:DATA_USAGE_COLLECTION_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Crash logs)/Why is this user data collected? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_CRASH_LOGS:DATA_USAGE_SHARING_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Crash logs)/Why is this user data shared? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_PERFORMANCE_DIAGNOSTICS:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_COLLECTED,true,MULTIPLE_CHOICE,"Data usage and handling (Diagnostics)/Is this data collected, shared or both?/Collected"
+PSL_DATA_USAGE_RESPONSES:PSL_PERFORMANCE_DIAGNOSTICS:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_SHARED,true,MULTIPLE_CHOICE,"Data usage and handling (Diagnostics)/Is this data collected, shared or both?/Shared"
+PSL_DATA_USAGE_RESPONSES:PSL_PERFORMANCE_DIAGNOSTICS:PSL_DATA_USAGE_EPHEMERAL,,false,MAYBE_REQUIRED,Data usage and handling (Diagnostics)/Is this data processed ephemerally?
+PSL_DATA_USAGE_RESPONSES:PSL_PERFORMANCE_DIAGNOSTICS:DATA_USAGE_USER_CONTROL,PSL_DATA_USAGE_USER_CONTROL_REQUIRED,true,SINGLE_CHOICE,"Data usage and handling (Diagnostics)/Is this data required for your app, or can users choose whether it's collected?/Data collection is required (users can't turn off this data collection)"
+PSL_DATA_USAGE_RESPONSES:PSL_PERFORMANCE_DIAGNOSTICS:DATA_USAGE_COLLECTION_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Diagnostics)/Why is this user data collected? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_PERFORMANCE_DIAGNOSTICS:DATA_USAGE_SHARING_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Diagnostics)/Why is this user data shared? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_USER_INTERACTION:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_COLLECTED,true,MULTIPLE_CHOICE,"Data usage and handling (App interactions)/Is this data collected, shared or both?/Collected"
+PSL_DATA_USAGE_RESPONSES:PSL_USER_INTERACTION:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_SHARED,true,MULTIPLE_CHOICE,"Data usage and handling (App interactions)/Is this data collected, shared or both?/Shared"
+PSL_DATA_USAGE_RESPONSES:PSL_USER_INTERACTION:PSL_DATA_USAGE_EPHEMERAL,,false,MAYBE_REQUIRED,Data usage and handling (App interactions)/Is this data processed ephemerally?
+PSL_DATA_USAGE_RESPONSES:PSL_USER_INTERACTION:DATA_USAGE_USER_CONTROL,PSL_DATA_USAGE_USER_CONTROL_REQUIRED,true,SINGLE_CHOICE,"Data usage and handling (App interactions)/Is this data required for your app, or can users choose whether it's collected?/Data collection is required (users can't turn off this data collection)"
+PSL_DATA_USAGE_RESPONSES:PSL_USER_INTERACTION:DATA_USAGE_COLLECTION_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (App interactions)/Why is this user data collected? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_USER_INTERACTION:DATA_USAGE_COLLECTION_PURPOSE,PSL_ANALYTICS,true,MULTIPLE_CHOICE,Data usage and handling (App interactions)/Why is this user data collected? Select all that apply./Analytics
+PSL_DATA_USAGE_RESPONSES:PSL_USER_INTERACTION:DATA_USAGE_SHARING_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (App interactions)/Why is this user data shared? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_USER_INTERACTION:DATA_USAGE_SHARING_PURPOSE,PSL_ANALYTICS,true,MULTIPLE_CHOICE,Data usage and handling (App interactions)/Why is this user data shared? Select all that apply./Analytics
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_COLLECTED,true,MULTIPLE_CHOICE,"Data usage and handling (Device or other IDs)/Is this data collected, shared or both?/Collected"
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:PSL_DATA_USAGE_COLLECTION_AND_SHARING,PSL_DATA_USAGE_ONLY_SHARED,true,MULTIPLE_CHOICE,"Data usage and handling (Device or other IDs)/Is this data collected, shared or both?/Shared"
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:PSL_DATA_USAGE_EPHEMERAL,,false,MAYBE_REQUIRED,Data usage and handling (Device or other IDs)/Is this data processed ephemerally?
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:DATA_USAGE_USER_CONTROL,PSL_DATA_USAGE_USER_CONTROL_REQUIRED,true,SINGLE_CHOICE,"Data usage and handling (Device or other IDs)/Is this data required for your app, or can users choose whether it's collected?/Data collection is required (users can't turn off this data collection)"
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:DATA_USAGE_COLLECTION_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Device or other IDs)/Why is this user data collected? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:DATA_USAGE_COLLECTION_PURPOSE,PSL_ANALYTICS,true,MULTIPLE_CHOICE,Data usage and handling (Device or other IDs)/Why is this user data collected? Select all that apply./Analytics
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:DATA_USAGE_COLLECTION_PURPOSE,PSL_ADVERTISING,true,MULTIPLE_CHOICE,Data usage and handling (Device or other IDs)/Why is this user data collected? Select all that apply./Advertising or marketing
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:DATA_USAGE_SHARING_PURPOSE,PSL_APP_FUNCTIONALITY,true,MULTIPLE_CHOICE,Data usage and handling (Device or other IDs)/Why is this user data shared? Select all that apply./App functionality
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:DATA_USAGE_SHARING_PURPOSE,PSL_ANALYTICS,true,MULTIPLE_CHOICE,Data usage and handling (Device or other IDs)/Why is this user data shared? Select all that apply./Analytics
+PSL_DATA_USAGE_RESPONSES:PSL_DEVICE_ID:DATA_USAGE_SHARING_PURPOSE,PSL_ADVERTISING,true,MULTIPLE_CHOICE,Data usage and handling (Device or other IDs)/Why is this user data shared? Select all that apply./Advertising or marketing

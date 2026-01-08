@@ -36,6 +36,36 @@ object ThemeManager {
     private val PRIMARY_COLOR = "#0C56CF"
     private val LIGHT_COLOR = "#E6F0FF"
     
+    // List of callbacks for immediate theme updates
+    private val themeUpdateCallbacks = mutableSetOf<(Context, View) -> Unit>()
+    
+    /**
+     * Register a callback for immediate theme updates
+     */
+    fun registerThemeUpdateCallback(callback: (Context, View) -> Unit) {
+        themeUpdateCallbacks.add(callback)
+    }
+    
+    /**
+     * Unregister a callback
+     */
+    fun unregisterThemeUpdateCallback(callback: (Context, View) -> Unit) {
+        themeUpdateCallbacks.remove(callback)
+    }
+    
+    /**
+     * Notify all registered callbacks immediately
+     */
+    fun notifyThemeChanged(context: Context, rootView: View) {
+        themeUpdateCallbacks.forEach { callback ->
+            try {
+                callback(context, rootView)
+            } catch (e: Exception) {
+                // Ignore errors from individual callbacks
+            }
+        }
+    }
+    
     /**
      * Apply theme colors to a view and its children recursively
      * Replaces all instances of #0C56CF with theme color and #E6F0FF with light theme color
@@ -46,12 +76,48 @@ object ThemeManager {
         val themeColorLight = AppPreferences.getThemeColorLight(context)
         
         // Always apply theme to ensure it works even if default colors are used
-        // Apply immediately
+        // Apply immediately and synchronously
         applyThemeToView(context, rootView, themeColor, themeColorLight)
+        
+        // Force immediate invalidation and layout
+        rootView.invalidate()
+        rootView.requestLayout()
         
         // Also apply after layout to catch any views that weren't ready
         rootView.post {
             applyThemeToView(context, rootView, themeColor, themeColorLight)
+            rootView.invalidate()
+            rootView.requestLayout()
+        }
+    }
+    
+    /**
+     * Apply theme immediately and aggressively - forces immediate updates
+     */
+    fun applyThemeImmediate(context: Context, rootView: View) {
+        val themeColor = AppPreferences.getThemeColor(context)
+        val themeColorLight = AppPreferences.getThemeColorLight(context)
+        
+        // Apply multiple times immediately
+        applyThemeToView(context, rootView, themeColor, themeColorLight)
+        rootView.invalidate()
+        rootView.requestLayout()
+        
+        // Force all child views to update
+        if (rootView is android.view.ViewGroup) {
+            for (i in 0 until rootView.childCount) {
+                val child = rootView.getChildAt(i)
+                applyThemeToView(context, child, themeColor, themeColorLight)
+                child.invalidate()
+                child.requestLayout()
+            }
+        }
+        
+        // Apply again after a micro-delay
+        rootView.post {
+            applyThemeToView(context, rootView, themeColor, themeColorLight)
+            rootView.invalidate()
+            rootView.requestLayout()
         }
     }
     
@@ -138,6 +204,54 @@ object ThemeManager {
                                 // Apply theme color tint
                                 view.imageTintList = android.content.res.ColorStateList.valueOf(themeColorInt)
                             }
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Ignore
+                }
+            }
+            
+            // Handle ImageButton (back buttons, etc.) - ensure background drawable is updated
+            if (view is ImageButton) {
+                try {
+                    // ImageButton background drawable needs special handling
+                    // Recreate drawable instead of mutating for immediate effect
+                    val background = view.background
+                    if (background != null) {
+                        // Check if it's a shape drawable that needs color update
+                        val bgColor = when (background) {
+                            is ColorDrawable -> background.color
+                            is GradientDrawable -> getGradientDrawableColor(background) ?: -1
+                            else -> -1
+                        }
+                        
+                        if (bgColor == primaryColorInt || bgColor == lightColorInt) {
+                            // Recreate the drawable with new color for immediate update
+                            val newDrawable = background.constantState?.newDrawable()?.mutate()
+                            if (newDrawable != null) {
+                                applyThemeToDrawable(newDrawable, themeColor, themeColorLight, primaryColorInt, lightColorInt)
+                                view.background = newDrawable
+                                view.invalidate()
+                            }
+                        } else {
+                            // Try to apply theme anyway
+                            val newBackground = applyThemeToDrawable(background.mutate(), themeColor, themeColorLight, primaryColorInt, lightColorInt)
+                            if (newBackground != null && newBackground !== background) {
+                                view.background = newBackground
+                                view.invalidate()
+                            }
+                        }
+                    }
+                    // Also check backgroundTintList
+                    val backgroundTint = view.backgroundTintList
+                    if (backgroundTint != null) {
+                        val currentTintColor = backgroundTint.defaultColor
+                        if (currentTintColor == primaryColorInt) {
+                            view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColorInt)
+                            view.invalidate()
+                        } else if (currentTintColor == lightColorInt) {
+                            view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColorLightInt)
+                            view.invalidate()
                         }
                     }
                 } catch (e: Exception) {

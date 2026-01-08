@@ -112,16 +112,18 @@ class NotificationActionReceiver : BroadcastReceiver() {
     private fun handleArchive(context: Context, threadId: Long) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val realm = MessagesApp.realm
-                realm.writeBlocking {
-                    val conversation = query(Conversation::class, "threadId == $threadId").first().find()
-                    if (conversation != null) {
-                        findLatest(conversation)?.apply {
-                            this.archived = true
-                        }
-                        Log.d(TAG, "Conversation archived: threadId=$threadId")
-                    }
-                }
+                val database = MessagesApp.database
+                val conversationDao = database.conversationDao()
+                conversationDao.updateArchivedStatus(threadId, true)
+                Log.d(TAG, "Conversation archived: threadId=$threadId")
+                
+                // Immediately remove from cache and invalidate all category caches
+                com.text.messages.sms.messanger.util.ConversationCache.removeConversation(threadId)
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
             } catch (e: Exception) {
                 Log.e(TAG, "Error archiving conversation", e)
             }
@@ -131,13 +133,12 @@ class NotificationActionReceiver : BroadcastReceiver() {
     private fun handleDelete(context: Context, threadId: Long, address: String, contactName: String?) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val realm = MessagesApp.realm
+                val database = MessagesApp.database
+                val conversationDao = database.conversationDao()
+                val messageDao = database.messageDao()
                 
                 // Get conversation data before deleting
-                var conversationData: Conversation? = null
-                realm.writeBlocking {
-                    conversationData = query(Conversation::class, "threadId == $threadId").first().find()
-                }
+                val conversationData = conversationDao.getConversationByThreadId(threadId)
                 
                 if (conversationData != null) {
                     // Save to recycle bin
@@ -145,9 +146,9 @@ class NotificationActionReceiver : BroadcastReceiver() {
                         threadId = threadId,
                         address = address,
                         contactName = contactName,
-                        snippet = conversationData!!.snippet,
-                        date = conversationData!!.date,
-                        unreadCount = conversationData!!.unreadCount,
+                        snippet = conversationData.snippet,
+                        date = conversationData.date,
+                        unreadCount = conversationData.unreadCount,
                         deletedAt = System.currentTimeMillis()
                     )
                     
@@ -161,18 +162,17 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     )
                     Log.d(TAG, "Deleted $deleted messages from system database for threadId=$threadId")
                     
-                    // Delete from Realm
-                    realm.writeBlocking {
-                        val conversation = query(Conversation::class, "threadId == $threadId").first().find()
-                        if (conversation != null) {
-                            delete(conversation)
-                        }
-                        
-                        val messages = query(Message::class, "threadId == $threadId").find()
-                        messages.forEach { message ->
-                            delete(message)
-                        }
-                    }
+                    // Delete from database
+                    messageDao.deleteMessagesByThread(threadId)
+                    conversationDao.deleteConversation(threadId)
+                    
+                    // Immediately remove from cache and invalidate all category caches
+                    com.text.messages.sms.messanger.util.ConversationCache.removeConversation(threadId)
+                    com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+                    com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+                    com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+                    com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+                    com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error deleting conversation", e)
@@ -210,17 +210,19 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 // Save to blocked conversations storage
                 com.text.messages.sms.messanger.util.BlockedConversationStorage.addThreadId(context, threadId)
                 
-                // Update Realm conversation as blocked
-                val realm = MessagesApp.realm
-                realm.writeBlocking {
-                    val conversation = query(Conversation::class, "threadId == $threadId").first().find()
-                    if (conversation != null) {
-                        findLatest(conversation)?.apply {
-                            this.blocked = true
-                        }
-                        Log.d(TAG, "Conversation blocked: threadId=$threadId, address=$address")
-                    }
-                }
+                // Update database conversation as blocked
+                val database = MessagesApp.database
+                val conversationDao = database.conversationDao()
+                conversationDao.updateBlockedStatus(threadId, true)
+                Log.d(TAG, "Conversation blocked: threadId=$threadId, address=$address")
+                
+                // Immediately remove from cache and invalidate all category caches
+                com.text.messages.sms.messanger.util.ConversationCache.removeConversation(threadId)
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
             } catch (e: Exception) {
                 Log.e(TAG, "Error blocking conversation", e)
             }
@@ -319,22 +321,16 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 )
                 Log.d(TAG, "Marked $updated messages as read in system database for threadId=$threadId")
                 
-                // Update Realm
-                val realm = MessagesApp.realm
-                realm.writeBlocking {
-                    val conversation = query(Conversation::class, "threadId == $threadId").first().find()
-                    if (conversation != null) {
-                        findLatest(conversation)?.apply {
-                            this.unreadCount = 0
-                        }
-                    }
-                    
-                    val messages = query(com.text.messages.sms.messanger.data.model.Message::class, "threadId == $threadId AND read == false").find()
-                    messages.forEach { message ->
-                        findLatest(message)?.apply {
-                            this.read = true
-                        }
-                    }
+                // Update database
+                val database = MessagesApp.database
+                val conversationDao = database.conversationDao()
+                val messageDao = database.messageDao()
+                
+                conversationDao.updateUnreadCount(threadId, 0)
+                
+                val unreadMessages = messageDao.getMessagesByThreadSync(threadId).filter { !it.read }
+                unreadMessages.forEach { message ->
+                    messageDao.updateMessageReadStatus(message.id, true)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error marking as read", e)
@@ -415,7 +411,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     Log.d(TAG, "sendMultipartTextMessage called")
                 }
                 
-                // Save message to Realm and system database
+                // Save message to database and system database
                 // Use the same messageId that was used for sending
                 val actualThreadId = if (threadId > 0) {
                     threadId
@@ -442,39 +438,40 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     Log.e(TAG, "Error saving reply to system SMS database", e)
                 }
                 
-                // Save to Realm
-                val realm = MessagesApp.realm
-                realm.writeBlocking {
-                    // Update conversation
-                    val conversation = query(Conversation::class, "threadId == $actualThreadId").first().find()
-                    if (conversation != null) {
-                        findLatest(conversation)?.apply {
-                            this.snippet = replyText
-                            this.date = timestamp
-                        }
-                    } else {
-                        // Create conversation if it doesn't exist
-                        copyToRealm(Conversation().apply {
-                            this.threadId = actualThreadId
-                            this.address = address
-                            this.snippet = replyText
-                            this.date = timestamp
-                            this.unreadCount = 0
-                        })
-                    }
-                    
-                    // Save message
-                    copyToRealm(Message().apply {
-                        this.id = messageId
-                        this.threadId = actualThreadId
-                        this.address = address
-                        this.body = replyText
-                        this.date = timestamp
-                        this.type = MessageType.SENT
-                        this.status = MessageStatus.PENDING
-                        this.read = true
-                    })
+                // Save to database
+                val database = MessagesApp.database
+                val conversationDao = database.conversationDao()
+                val messageDao = database.messageDao()
+                
+                // Update or create conversation
+                val conversation = conversationDao.getConversationByThreadId(actualThreadId)
+                if (conversation != null) {
+                    conversationDao.updateConversationSnippet(actualThreadId, replyText, timestamp)
+                } else {
+                    conversationDao.insertConversation(
+                        Conversation(
+                            threadId = actualThreadId,
+                            address = address,
+                            snippet = replyText,
+                            date = timestamp,
+                            unreadCount = 0
+                        )
+                    )
                 }
+                
+                // Save message
+                messageDao.insertMessage(
+                    Message(
+                        id = messageId,
+                        threadId = actualThreadId,
+                        address = address,
+                        body = replyText,
+                        date = timestamp,
+                        type = MessageType.SENT,
+                        status = MessageStatus.PENDING,
+                        read = true
+                    )
+                )
                 
                 Log.d(TAG, "Inline reply sent: threadId=$threadId, address=$address, messageId=$messageId")
                 

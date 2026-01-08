@@ -19,7 +19,6 @@ object PermissionManager {
         add(Manifest.permission.SEND_SMS)
         add(Manifest.permission.RECEIVE_SMS)
         add(Manifest.permission.READ_PHONE_STATE)
-        add(Manifest.permission.READ_CALL_LOG)
         add(Manifest.permission.READ_CONTACTS)
         add(Manifest.permission.CALL_PHONE)
         

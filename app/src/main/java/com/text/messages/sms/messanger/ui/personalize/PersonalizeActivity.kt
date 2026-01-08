@@ -1,5 +1,7 @@
 package com.text.messages.sms.messanger.ui.personalize
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -23,13 +25,13 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
-import android.content.BroadcastReceiver
 
 class PersonalizeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPersonalizeBinding
     private var isSettingSelectedItem = false
     private var themeChangeReceiver: BroadcastReceiver? = null
+    private var themeUpdateCallback: ((Context, View) -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,8 +106,65 @@ class PersonalizeActivity : AppCompatActivity() {
             setSelectedNavigationItem(R.id.nav_personalize)
         }
         
-        // Register theme change receiver
-        themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
+        // Register theme change receiver with enhanced immediate updates
+        val receiverFlags = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        } else {
+            0
+        }
+        
+        themeChangeReceiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
+                // Apply theme IMMEDIATELY to all containers - multiple passes for reliability
+                updatePersonalizeContainersTheme()
+            }
+        }
+        
+        // Also register for direct callback updates
+        themeUpdateCallback = { ctx: Context, view: View ->
+            if (ctx == this@PersonalizeActivity) {
+                // Apply theme IMMEDIATELY to all containers
+                updatePersonalizeContainersTheme()
+            }
+        }
+        themeUpdateCallback?.let { ThemeManager.registerThemeUpdateCallback(it) }
+        
+        registerReceiver(
+            themeChangeReceiver,
+            android.content.IntentFilter("com.text.messages.sms.messanger.THEME_CHANGED"),
+            receiverFlags
+        )
+    }
+    
+    /**
+     * Update all PersonalizeActivity containers with current theme colors immediately
+     * Called when theme changes to ensure containers reflect new colors instantly
+     */
+    private fun updatePersonalizeContainersTheme() {
+        // Apply theme IMMEDIATELY to all containers - multiple passes
+        ThemeManager.applyThemeImmediate(this, binding.root)
+        ThemeManager.applyThemeImmediate(this, binding.layoutThemeSection)
+        ThemeManager.applyThemeImmediate(this, binding.layoutFontSection)
+        ThemeManager.applyThemeImmediate(this, binding.layoutBubbleSection)
+        ThemeManager.applyThemeImmediate(this, binding.layoutRingtoneSection)
+        
+        // Force immediate invalidation and layout on all containers
+        binding.layoutThemeSection.invalidate()
+        binding.layoutThemeSection.requestLayout()
+        binding.layoutFontSection.invalidate()
+        binding.layoutFontSection.requestLayout()
+        binding.layoutBubbleSection.invalidate()
+        binding.layoutBubbleSection.requestLayout()
+        binding.layoutRingtoneSection.invalidate()
+        binding.layoutRingtoneSection.requestLayout()
+        binding.root.invalidate()
+        binding.root.requestLayout()
+        
+        // Also invalidate parent to force redraw
+        (binding.layoutThemeSection.parent as? View)?.invalidate()
+        (binding.layoutFontSection.parent as? View)?.invalidate()
+        (binding.layoutBubbleSection.parent as? View)?.invalidate()
+        (binding.layoutRingtoneSection.parent as? View)?.invalidate()
     }
     
     private fun setupThemeSection() {
@@ -149,11 +208,13 @@ class PersonalizeActivity : AppCompatActivity() {
             
             when (item.itemId) {
                 R.id.nav_messages -> {
+                    overridePendingTransition(0, 0)
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                     true
                 }
                 R.id.nav_contacts -> {
+                    overridePendingTransition(0, 0)
                     startActivity(Intent(this, ContactsActivity::class.java))
                     finish()
                     true
@@ -163,6 +224,7 @@ class PersonalizeActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_settings -> {
+                    overridePendingTransition(0, 0)
                     startActivity(Intent(this, SettingsActivity::class.java))
                     finish()
                     true
@@ -241,6 +303,10 @@ class PersonalizeActivity : AppCompatActivity() {
         super.onDestroy()
         themeChangeReceiver?.let {
             unregisterReceiver(it)
+        }
+        // Unregister theme callback
+        themeUpdateCallback?.let {
+            ThemeManager.unregisterThemeUpdateCallback(it)
         }
     }
 }

@@ -55,6 +55,18 @@
         app:layout_constraintStart_toEndOf="@+id/avatarContainer"
         app:layout_constraintTop_toTopOf="@+id/avatarContainer" />
 
+    <ImageView
+        android:id="@+id/imageSimBadge"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/sim"
+        android:visibility="gone"
+        android:contentDescription="SIM card badge"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/textTime"
+        app:layout_constraintTop_toTopOf="@+id/textContactName"
+        app:layout_constraintBottom_toBottomOf="@+id/textContactName" />
+
     <TextView
         android:id="@+id/textTime"
         android:layout_width="wrap_content"
@@ -87,7 +99,7 @@
         android:text="Copy OTP"
         android:textSize="12sp"
         android:textColor="@color/black"
-        android:background="@drawable/button_copy_otp_background"
+        android:background="@drawable/button_copy_otp_list_background"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:paddingTop="6dp"

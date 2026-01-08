@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Mensajes</string>
+    <string name="languages">Idiomas</string>
+    <string name="next">SIGUIENTE</string>
+    <string name="messages">Mensajes</string>
+    <string name="new_conversation">Nueva Conversación</string>
+    <string name="compose_message">La interfaz de usuario de redacción de mensajes se implementará aquí</string>
+    <string name="set_default_sms">Establecer como aplicación SMS predeterminada</string>
+    <string name="private_conversations">Conversaciones Privadas</string>
+    <string name="spam_block">Spam y Bloqueo</string>
+    <string name="custom_blocking">Bloqueo Personalizado</string>
+    <string name="personalize">Personalizar</string>
+    <string name="contacts">Contactos</string>
+    <string name="settings">Configuración</string>
+    <string name="manage_apps">Administrar Aplicaciones</string>
+    <string name="enter_pin">Ingresar PIN</string>
+    <string name="create_your_pin">Crea tu PIN</string>
+    <string name="select_security_question">Seleccionar pregunta de seguridad</string>
+    <string name="missed_call">Llamada Perdida</string>
+    <string name="no_answer">Sin Respuesta</string>
+    <string name="call_ended">Llamada Finalizada</string>
+    <string name="unknown_number">Número Desconocido</string>
+    <string name="invalid_number">Número inválido</string>
+    <string name="call_failed">Error al realizar la llamada</string>
+    <string name="message_failed">Error al abrir el mensaje</string>
+    <string name="add_contact_failed">Error al agregar contacto</string>
+    <string name="search_messages">Buscar Mensajes</string>
+    <string name="system_default">Predeterminado del Sistema</string>
+    <string name="english">Inglés</string>
+    <string name="hindi">Hindi</string>
+    <string name="spanish">Español</string>
+    <string name="german">Alemán</string>
+</resources>
+

@@ -137,6 +137,13 @@ class RecycleBinActivity : AppCompatActivity() {
             prefs.edit().putString(KEY_DELETED_CONVERSATIONS, updatedJson).apply()
         }
         
+        // Immediately invalidate all category caches so MainActivity shows the restored conversation
+        com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+        com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+        com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+        com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+        com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
+        
         // Send broadcast to notify MainActivity to restore the conversation
         val intent = android.content.Intent("com.text.messages.sms.messanger.CONVERSATION_RESTORED").apply {
             putExtra("thread_id", deletedConversation.threadId)

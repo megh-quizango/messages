@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">संदेश</string>
+    <string name="languages">भाषाएं</string>
+    <string name="next">अगला</string>
+    <string name="messages">संदेश</string>
+    <string name="new_conversation">नया वार्तालाप</string>
+    <string name="compose_message">संदेश UI यहां लागू किया जाएगा</string>
+    <string name="set_default_sms">डिफ़ॉल्ट SMS ऐप सेट करें</string>
+    <string name="private_conversations">निजी वार्तालाप</string>
+    <string name="spam_block">स्पैम और ब्लॉक</string>
+    <string name="custom_blocking">कस्टम ब्लॉकिंग</string>
+    <string name="personalize">व्यक्तिगत बनाएं</string>
+    <string name="contacts">संपर्क</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="manage_apps">ऐप्स प्रबंधित करें</string>
+    <string name="enter_pin">पिन दर्ज करें</string>
+    <string name="create_your_pin">अपना पिन बनाएं</string>
+    <string name="select_security_question">सुरक्षा प्रश्न चुनें</string>
+    <string name="missed_call">मिस्ड कॉल</string>
+    <string name="no_answer">कोई जवाब नहीं</string>
+    <string name="call_ended">कॉल समाप्त</string>
+    <string name="unknown_number">अज्ञात नंबर</string>
+    <string name="invalid_number">अमान्य नंबर</string>
+    <string name="call_failed">कॉल करने में विफल</string>
+    <string name="message_failed">संदेश खोलने में विफल</string>
+    <string name="add_contact_failed">संपर्क जोड़ने में विफल</string>
+    <string name="search_messages">संदेश खोजें</string>
+    <string name="system_default">सिस्टम डिफ़ॉल्ट</string>
+    <string name="english">अंग्रेजी</string>
+    <string name="hindi">हिंदी</string>
+    <string name="spanish">स्पेनिश</string>
+    <string name="german">जर्मन</string>
+</resources>
+

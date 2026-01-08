@@ -40,7 +40,9 @@ class SmsReceiver : BroadcastReceiver() {
     private suspend fun processSmsMessages(context: Context, messages: Array<SmsMessage>) {
         Log.d(TAG, "processSmsMessages started, processing ${messages.size} messages")
         try {
-            val realm = MessagesApp.realm
+            val database = MessagesApp.database
+            val messageDao = database.messageDao()
+            val conversationDao = database.conversationDao()
             
             messages.forEach { smsMessage ->
                 val address = smsMessage.originatingAddress ?: run {
@@ -56,71 +58,71 @@ class SmsReceiver : BroadcastReceiver() {
                 val threadId = Telephony.Threads.getOrCreateThreadId(context, address)
                 Log.d(TAG, "Thread ID for address $address: $threadId")
                 
-                // Check if message already exists (avoid duplicates) - check before writeBlocking
-                var messageExists = false
-                realm.writeBlocking {
-                    val existingMessage = query(Message::class, "threadId == $threadId AND address == '$address' AND date >= ${timestamp - 1000} AND date <= ${timestamp + 1000}").first().find()
-                    messageExists = existingMessage != null
-                }
+                // Check if message already exists (avoid duplicates)
+                val existingMessage = messageDao.findMessageByThreadAndTime(
+                    threadId = threadId,
+                    address = address,
+                    startTime = timestamp - 1000,
+                    endTime = timestamp + 1000
+                )
                 
                 // Skip if message already exists
-                if (messageExists) {
-                    Log.d(TAG, "Message already exists in Realm, skipping duplicate. Address: $address, Timestamp: $timestamp")
+                if (existingMessage != null) {
+                    Log.d(TAG, "Message already exists in database, skipping duplicate. Address: $address, Timestamp: $timestamp")
                     return@forEach
                 }
                 
-                // Store message in Realm database
-                realm.writeBlocking {
-                    // Generate unique message ID
-                    val messageId = System.currentTimeMillis()
-                    Log.d(TAG, "Storing message in Realm - MessageId: $messageId, ThreadId: $threadId")
-                    
-                    // Create or update conversation
-                    val existingConversation = query(Conversation::class, "threadId == $threadId").first().find()
-                    
-                    if (existingConversation == null) {
-                        // Create new conversation
-                        Log.d(TAG, "Creating new conversation for threadId: $threadId")
-                        copyToRealm(Conversation().apply {
-                            this.threadId = threadId
-                            this.address = address
-                            this.snippet = body
-                            this.date = timestamp
-                            this.unreadCount = 1
-                        })
-                    } else {
-                        // Update existing conversation
-                        Log.d(TAG, "Updating existing conversation for threadId: $threadId")
-                        findLatest(existingConversation)?.apply {
-                            this.snippet = body
-                            this.date = timestamp
-                            this.unreadCount = this.unreadCount + 1
-                        }
-                    }
-                    
-                    // Detect and extract OTP from message
-                    val detectedOtp = if (OtpHelper.isOTPMessage(body)) {
-                        OtpHelper.extractOTP(body)
-                    } else {
-                        null
-                    }
-                    
-                    // Create message in Realm
-                    copyToRealm(Message().apply {
-                        this.id = messageId
-                        this.threadId = threadId
-                        this.address = address
-                        this.body = body
-                        this.date = timestamp
-                        this.type = MessageType.INBOX
-                        this.status = MessageStatus.RECEIVED
-                        this.read = false
-                        this.starred = false
-                        this.messagePartCount = 1
-                        this.otp = detectedOtp
-                    })
-                    Log.d(TAG, "Message stored successfully in Realm - MessageId: $messageId")
+                // Generate unique message ID
+                val messageId = System.currentTimeMillis()
+                Log.d(TAG, "Storing message in database - MessageId: $messageId, ThreadId: $threadId")
+                
+                // Create or update conversation
+                val existingConversation = conversationDao.getConversationByThreadId(threadId)
+                
+                if (existingConversation == null) {
+                    // Create new conversation
+                    Log.d(TAG, "Creating new conversation for threadId: $threadId")
+                    conversationDao.insertConversation(
+                        Conversation(
+                            threadId = threadId,
+                            address = address,
+                            snippet = body,
+                            date = timestamp,
+                            unreadCount = 1
+                        )
+                    )
+                } else {
+                    // Update existing conversation
+                    Log.d(TAG, "Updating existing conversation for threadId: $threadId")
+                    conversationDao.updateConversationSnippet(threadId, body, timestamp)
+                    val currentUnread = existingConversation.unreadCount
+                    conversationDao.updateUnreadCount(threadId, currentUnread + 1)
                 }
+                
+                // Detect and extract OTP from message
+                val detectedOtp = if (OtpHelper.isOTPMessage(body)) {
+                    OtpHelper.extractOTP(body)
+                } else {
+                    null
+                }
+                
+                // Create message in database
+                messageDao.insertMessage(
+                    Message(
+                        id = messageId,
+                        threadId = threadId,
+                        address = address,
+                        body = body,
+                        date = timestamp,
+                        type = MessageType.INBOX,
+                        status = MessageStatus.RECEIVED,
+                        read = false,
+                        starred = false,
+                        messagePartCount = 1,
+                        otp = detectedOtp
+                    )
+                )
+                Log.d(TAG, "Message stored successfully in database - MessageId: $messageId")
                 
                 // Save message to system SMS database so it appears in queries
                 saveMessageToSmsDatabase(context, threadId, address, body, timestamp)

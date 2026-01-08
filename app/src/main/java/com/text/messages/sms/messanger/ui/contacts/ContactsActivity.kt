@@ -192,6 +192,7 @@ class ContactsActivity : AppCompatActivity() {
             
             when (item.itemId) {
                 R.id.nav_messages -> {
+                    overridePendingTransition(0, 0)
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                     true
@@ -201,11 +202,13 @@ class ContactsActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_personalize -> {
+                    overridePendingTransition(0, 0)
                     startActivity(Intent(this, PersonalizeActivity::class.java))
                     finish()
                     true
                 }
                 R.id.nav_settings -> {
+                    overridePendingTransition(0, 0)
                     startActivity(Intent(this, SettingsActivity::class.java))
                     finish()
                     true

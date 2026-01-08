@@ -1,5 +1,6 @@
 package com.text.messages.sms.messanger.ui.language
 
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -15,6 +16,7 @@ import com.google.android.gms.ads.nativead.NativeAdView
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityLanguageBinding
 import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
+import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 
 class LanguageActivity : AppCompatActivity() {
@@ -26,6 +28,10 @@ class LanguageActivity : AppCompatActivity() {
     private var nativeAd: NativeAd? = null
     private var isFromSettings: Boolean = false
     private var nativeAdView: NativeAdView? = null
+    
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +58,9 @@ class LanguageActivity : AppCompatActivity() {
         
         sharedPreferences = getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
         
+        // Load saved language preference
+        selectedLanguage = LocaleHelper.getSavedLanguage(this)
+        
         setupRecyclerView()
         setupNextButton()
         initializeNativeAdView()
@@ -60,14 +69,20 @@ class LanguageActivity : AppCompatActivity() {
     
     private fun setupRecyclerView() {
         val languages = listOf(
-            LanguageItem("System Default", true),
+            LanguageItem("System Default", false),
             LanguageItem("English", false),
             LanguageItem("Hindi", false),
             LanguageItem("Español", false),
             LanguageItem("Deutsch", false)
         )
         
-        adapter = LanguageAdapter(languages) { language ->
+        // Find and mark the saved language as selected
+        val savedLanguage = selectedLanguage
+        val languagesWithSelection = languages.map { 
+            LanguageItem(it.name, it.name == savedLanguage) 
+        }
+        
+        adapter = LanguageAdapter(languagesWithSelection) { language ->
             selectedLanguage = language
             adapter.updateSelection(language)
         }
@@ -78,20 +93,34 @@ class LanguageActivity : AppCompatActivity() {
     
     private fun setupNextButton() {
         binding.buttonNext.setOnClickListener {
-            // Save language preference
+            // Save language preference and apply locale
+            LocaleHelper.setLanguage(this, selectedLanguage)
+            LocaleHelper.updateLocale(this, selectedLanguage)
+            
+            // Save additional preference
             sharedPreferences.edit()
-                .putString("SELECTED_LANGUAGE", selectedLanguage)
                 .putBoolean("IS_LANGUAGE_SET", true)
                 .apply()
             
-            // If opened from Settings, return to Settings
-            if (isFromSettings) {
-                finish()
-            } else {
-                // Navigate to Default SMS Activity (for first-time setup)
-                startActivity(Intent(this, com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity::class.java))
-                finish()
-            }
+            // Restart the app to apply language changes
+            restartApp()
+        }
+    }
+    
+    private fun restartApp() {
+        // If opened from Settings, restart the app to apply language changes
+        if (isFromSettings) {
+            // Restart the entire app by going to MainActivity, which will show the new language
+            val intent = Intent(this, com.text.messages.sms.messanger.ui.main.MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        } else {
+            // For first-time setup, navigate to Default SMS Activity
+            val intent = Intent(this, com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
         }
     }
     

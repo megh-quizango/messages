@@ -122,9 +122,22 @@ class SettingsAdapter(
                     
                     // Remove old listener before setting new one (RecyclerView rule)
                     switchToggle.setOnCheckedChangeListener(null)
-                    switchToggle.setOnCheckedChangeListener { _, _ ->
-                        // Handle toggle state change
-                        // TODO: Save preference
+                    switchToggle.setOnCheckedChangeListener { _, isChecked ->
+                        // Handle toggle state change - save preference
+                        when (option.title) {
+                            "Color SIM card icons" -> {
+                                com.text.messages.sms.messanger.util.AppPreferences.setColorSimCardIcons(
+                                    itemView.context,
+                                    isChecked
+                                )
+                                Log.d(TAG, "Saved Color SIM card icons preference: $isChecked")
+                            }
+                            "Contacts colored icons" -> {
+                                // Handle contacts colored icons if needed
+                                // For now, just log
+                                Log.d(TAG, "Contacts colored icons toggled: $isChecked")
+                            }
+                        }
                     }
                     // Apply theme after view is added to container
                     Log.d(TAG, "Applying theme to toggle for: ${option.title}")

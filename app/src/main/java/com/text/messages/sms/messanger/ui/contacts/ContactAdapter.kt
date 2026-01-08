@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.text.messages.sms.messanger.R
+import com.text.messages.sms.messanger.util.AvatarHelper
 import de.hdodenhof.circleimageview.CircleImageView
 
 sealed class ContactListItem {
@@ -72,6 +73,7 @@ class ContactAdapter(
 
     inner class ContactViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageContact: CircleImageView = itemView.findViewById(R.id.imageContact)
+        private val textAvatarLetter: TextView = itemView.findViewById(R.id.textAvatarLetter)
         private val textName: TextView = itemView.findViewById(R.id.textName)
         private val textPhone: TextView = itemView.findViewById(R.id.textPhone)
 
@@ -79,23 +81,40 @@ class ContactAdapter(
             textName.text = contact.name
             textPhone.text = contact.phoneNumber
             
-            // Set different background colors for contact icons (cycling through colors)
-            // Colors: pink (#FF6B9D), teal/green (#4ECDC4), light blue (#95E1D3), light blue (#E6F0FF)
-            val colors = listOf("#FF6B9D", "#4ECDC4", "#95E1D3", "#E6F0FF")
-            val colorIndex = contact.name.hashCode() % colors.size
-            val color = colors[Math.abs(colorIndex)]
+            // Reset avatar state first to prevent showing stale data
+            resetAvatarState()
             
-            // Set background color for the circle image view
-            try {
-                imageContact.setCircleBackgroundColor(android.graphics.Color.parseColor(color))
-            } catch (e: Exception) {
-                // Fallback if method doesn't exist
-                imageContact.setBackgroundColor(android.graphics.Color.parseColor(color))
-            }
-            imageContact.setImageResource(R.drawable.contacts)
+            // Load avatar with contact image, first letter, or icon (same as main activity)
+            AvatarHelper.loadAvatar(
+                imageContact,
+                textAvatarLetter,
+                contact.photoUri,
+                contact.name,
+                contact.phoneNumber,
+                itemView.context
+            )
             
             itemView.setOnClickListener {
                 onContactClick(contact)
+            }
+        }
+        
+        private fun resetAvatarState() {
+            // Cancel any pending Picasso requests
+            com.squareup.picasso.Picasso.get().cancelRequest(imageContact)
+            
+            // Reset image view to a clean state
+            imageContact.setImageDrawable(null)
+            imageContact.visibility = View.VISIBLE
+            
+            // Reset text view to a clean state
+            textAvatarLetter.text = ""
+            textAvatarLetter.visibility = View.GONE
+            textAvatarLetter.background = null
+            textAvatarLetter.alpha = 1.0f
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                textAvatarLetter.elevation = 0f
+                textAvatarLetter.translationZ = 0f
             }
         }
     }

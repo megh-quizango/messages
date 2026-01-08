@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("io.realm.kotlin") version "1.15.0"
+    id("kotlin-kapt")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
@@ -14,10 +14,15 @@ android {
         applicationId = "com.text.messages.sms.messanger"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Ensure only arm64-v8a is included (16KB requirement is for 64-bit)
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     buildTypes {
@@ -46,14 +51,20 @@ android {
         compose = true
         viewBinding = true
     }
+    
+    // Enable kapt for Room annotation processing
+    kapt {
+        correctErrorTypes = true
+    }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
 
-// Note: For Play Store submission, build an AAB (not APK) using:
-// ./gradlew bundleRelease
-// AGP 8.5.1+ automatically aligns native libraries to 16KB boundaries in AAB files
+// IMPORTANT: Realm Kotlin removed due to 16KB page size incompatibility
+// Realm Kotlin 1.16.0 still uses 4KB-aligned native libraries (librealmc.so)
+// Replaced with Room (SQLite) which is 16KB-compatible and Google-backed
+// Build AAB for Play Store: ./gradlew bundleRelease
 
 dependencies {
     // Core AndroidX
@@ -90,8 +101,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     
-    // Realm Database
-    implementation("io.realm.kotlin:library-base:1.15.0")
+    // Room Database (SQLite) - 16KB compatible, replaces Realm Kotlin
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
     
     // AdMob
     implementation("com.google.android.gms:play-services-ads:23.5.0")

@@ -24,4 +24,10 @@
     <string name="call_failed">Failed to make call</string>
     <string name="message_failed">Failed to open message</string>
     <string name="add_contact_failed">Failed to add contact</string>
+    <string name="search_messages">Search Messages</string>
+    <string name="system_default">System Default</string>
+    <string name="english">English</string>
+    <string name="hindi">Hindi</string>
+    <string name="spanish">Español</string>
+    <string name="german">Deutsch</string>
 </resources>

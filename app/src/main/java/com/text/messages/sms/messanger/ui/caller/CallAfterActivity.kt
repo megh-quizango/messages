@@ -63,10 +63,10 @@ class CallAfterActivity : AppCompatActivity() {
         Log.d(TAG, "CallAfterActivity: number=$callerNumber, type=$callType, incoming=$isIncoming")
         
         setupUI()
-        setupCallHistory()
+//        setupCallHistory()
         loadContactInfo()
         displayCallDetails()
-        loadCallHistory()
+//        loadCallHistory()
     }
     
     private fun setupUI() {
@@ -107,100 +107,100 @@ class CallAfterActivity : AppCompatActivity() {
         applyThemeToCloseButton()
     }
     
-    private fun setupCallHistory() {
-        callHistoryAdapter = CallHistoryAdapter()
-        binding.recyclerViewCallHistory.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewCallHistory.adapter = callHistoryAdapter
-    }
+//    private fun setupCallHistory() {
+//        callHistoryAdapter = CallHistoryAdapter()
+//        binding.recyclerViewCallHistory.layoutManager = LinearLayoutManager(this)
+//        binding.recyclerViewCallHistory.adapter = callHistoryAdapter
+//    }
     
-    private fun loadCallHistory() {
-        val number = callerNumber
-        if (number.isNullOrEmpty()) {
-            binding.textCallHistoryHeader.visibility = View.GONE
-            binding.recyclerViewCallHistory.visibility = View.GONE
-            return
-        }
-        
-        try {
-            val callHistory = mutableListOf<CallHistoryItem>()
-            val normalizedNumber = normalizePhoneNumber(number)
-            
-            // Try multiple variations of the phone number
-            val variations = mutableListOf<String>().apply {
-                add(normalizedNumber)
-                add(number)
-                if (normalizedNumber.length > 10) {
-                    add(normalizedNumber.takeLast(10))
-                }
-                if (!normalizedNumber.startsWith("+")) {
-                    add("+$normalizedNumber")
-                }
-            }.distinct()
-            
-            // Query CallLog for each variation
-            for (phoneNumber in variations) {
-                val projection = arrayOf(
-                    CallLog.Calls._ID,
-                    CallLog.Calls.NUMBER,
-                    CallLog.Calls.DATE,
-                    CallLog.Calls.DURATION,
-                    CallLog.Calls.TYPE,
-                    CallLog.Calls.CACHED_NAME
-                )
-                
-                val selection = "${CallLog.Calls.NUMBER} = ?"
-                val selectionArgs = arrayOf(phoneNumber)
-                val sortOrder = "${CallLog.Calls.DATE} DESC"
-                
-                contentResolver.query(
-                    CallLog.Calls.CONTENT_URI,
-                    projection,
-                    selection,
-                    selectionArgs,
-                    sortOrder
-                )?.use { cursor ->
-                    while (cursor.moveToNext()) {
-                        val id = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls._ID))
-                        val callNumber = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER))
-                        val date = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls.DATE))
-                        val duration = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls.DURATION))
-                        val type = cursor.getInt(cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE))
-                        val nameIndex = cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)
-                        val name = if (nameIndex >= 0 && !cursor.isNull(nameIndex)) {
-                            cursor.getString(nameIndex)
-                        } else null
-                        
-                        // Avoid duplicates
-                        if (!callHistory.any { it.id == id }) {
-                            callHistory.add(CallHistoryItem(id, callNumber, date, duration, type, name))
-                        }
-                    }
-                }
-            }
-            
-            // Sort by date descending and limit to recent calls
-            val sortedHistory = callHistory.sortedByDescending { it.date }.take(20)
-            
-            if (sortedHistory.isNotEmpty()) {
-                callHistoryAdapter.submitList(sortedHistory)
-                binding.textCallHistoryHeader.visibility = View.VISIBLE
-                binding.recyclerViewCallHistory.visibility = View.VISIBLE
-            } else {
-                binding.textCallHistoryHeader.visibility = View.GONE
-                binding.recyclerViewCallHistory.visibility = View.GONE
-            }
-            
-            Log.d(TAG, "Loaded ${sortedHistory.size} call history entries")
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Permission denied to read CallLog", e)
-            binding.textCallHistoryHeader.visibility = View.GONE
-            binding.recyclerViewCallHistory.visibility = View.GONE
-        } catch (e: Exception) {
-            Log.e(TAG, "Error loading call history", e)
-            binding.textCallHistoryHeader.visibility = View.GONE
-            binding.recyclerViewCallHistory.visibility = View.GONE
-        }
-    }
+//    private fun loadCallHistory() {
+//        val number = callerNumber
+//        if (number.isNullOrEmpty()) {
+//            binding.textCallHistoryHeader.visibility = View.GONE
+//            binding.recyclerViewCallHistory.visibility = View.GONE
+//            return
+//        }
+//
+//        try {
+//            val callHistory = mutableListOf<CallHistoryItem>()
+//            val normalizedNumber = normalizePhoneNumber(number)
+//
+//            // Try multiple variations of the phone number
+//            val variations = mutableListOf<String>().apply {
+//                add(normalizedNumber)
+//                add(number)
+//                if (normalizedNumber.length > 10) {
+//                    add(normalizedNumber.takeLast(10))
+//                }
+//                if (!normalizedNumber.startsWith("+")) {
+//                    add("+$normalizedNumber")
+//                }
+//            }.distinct()
+//
+//            // Query CallLog for each variation
+//            for (phoneNumber in variations) {
+//                val projection = arrayOf(
+//                    CallLog.Calls._ID,
+//                    CallLog.Calls.NUMBER,
+//                    CallLog.Calls.DATE,
+//                    CallLog.Calls.DURATION,
+//                    CallLog.Calls.TYPE,
+//                    CallLog.Calls.CACHED_NAME
+//                )
+//
+//                val selection = "${CallLog.Calls.NUMBER} = ?"
+//                val selectionArgs = arrayOf(phoneNumber)
+//                val sortOrder = "${CallLog.Calls.DATE} DESC"
+//
+//                contentResolver.query(
+//                    CallLog.Calls.CONTENT_URI,
+//                    projection,
+//                    selection,
+//                    selectionArgs,
+//                    sortOrder
+//                )?.use { cursor ->
+//                    while (cursor.moveToNext()) {
+//                        val id = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls._ID))
+//                        val callNumber = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER))
+//                        val date = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls.DATE))
+//                        val duration = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls.DURATION))
+//                        val type = cursor.getInt(cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE))
+//                        val nameIndex = cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)
+//                        val name = if (nameIndex >= 0 && !cursor.isNull(nameIndex)) {
+//                            cursor.getString(nameIndex)
+//                        } else null
+//
+//                        // Avoid duplicates
+//                        if (!callHistory.any { it.id == id }) {
+//                            callHistory.add(CallHistoryItem(id, callNumber, date, duration, type, name))
+//                        }
+//                    }
+//                }
+//            }
+//
+//            // Sort by date descending and limit to recent calls
+//            val sortedHistory = callHistory.sortedByDescending { it.date }.take(20)
+//
+//            if (sortedHistory.isNotEmpty()) {
+//                callHistoryAdapter.submitList(sortedHistory)
+//                binding.textCallHistoryHeader.visibility = View.VISIBLE
+//                binding.recyclerViewCallHistory.visibility = View.VISIBLE
+//            } else {
+//                binding.textCallHistoryHeader.visibility = View.GONE
+//                binding.recyclerViewCallHistory.visibility = View.GONE
+//            }
+//
+//            Log.d(TAG, "Loaded ${sortedHistory.size} call history entries")
+//        } catch (e: SecurityException) {
+//            Log.e(TAG, "Permission denied to read CallLog", e)
+//            binding.textCallHistoryHeader.visibility = View.GONE
+//            binding.recyclerViewCallHistory.visibility = View.GONE
+//        } catch (e: Exception) {
+//            Log.e(TAG, "Error loading call history", e)
+//            binding.textCallHistoryHeader.visibility = View.GONE
+//            binding.recyclerViewCallHistory.visibility = View.GONE
+//        }
+//    }
     
     private fun applyThemeToCloseButton() {
         val themeColor = ThemeManager.getThemeColor(this)

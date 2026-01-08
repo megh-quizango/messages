@@ -81,18 +81,20 @@ class MmsSentReceiver : BroadcastReceiver() {
                         null
                     )
                     
-                    // Mark as sent in Realm database
+                    // Mark as sent in database
                     if (messageId > 0) {
-                        val realm = MessagesApp.realm
-                        realm.writeBlocking {
-                            val message = query(Message::class, "id == $messageId").first().find()
-                            if (message != null) {
-                                findLatest(message)?.apply {
-                                    this.status = MessageStatus.SENT
-                                    this.type = com.text.messages.sms.messanger.data.model.MessageType.SENT
-                                }
-                                Log.d(TAG, "Message marked as SENT in Realm - messageId: $messageId")
-                            }
+                        val database = MessagesApp.database
+                        val messageDao = database.messageDao()
+                        
+                        val message = messageDao.getMessageById(messageId)
+                        if (message != null) {
+                            messageDao.updateMessage(
+                                message.copy(
+                                    status = MessageStatus.SENT,
+                                    type = com.text.messages.sms.messanger.data.model.MessageType.SENT
+                                )
+                            )
+                            Log.d(TAG, "Message marked as SENT in database - messageId: $messageId")
                         }
                     }
                 } else {
@@ -123,17 +125,15 @@ class MmsSentReceiver : BroadcastReceiver() {
                         arrayOf(mmsId.toString())
                     )
                     
-                    // Mark as failed in Realm database
+                    // Mark as failed in database
                     if (messageId > 0) {
-                        val realm = MessagesApp.realm
-                        realm.writeBlocking {
-                            val message = query(Message::class, "id == $messageId").first().find()
-                            if (message != null) {
-                                findLatest(message)?.apply {
-                                    this.status = MessageStatus.FAILED
-                                }
-                                Log.d(TAG, "Message marked as FAILED in Realm - messageId: $messageId, resultCode: $resultCode")
-                            }
+                        val database = MessagesApp.database
+                        val messageDao = database.messageDao()
+                        
+                        val message = messageDao.getMessageById(messageId)
+                        if (message != null) {
+                            messageDao.updateMessage(message.copy(status = MessageStatus.FAILED))
+                            Log.d(TAG, "Message marked as FAILED in database - messageId: $messageId, resultCode: $resultCode")
                         }
                     }
                     

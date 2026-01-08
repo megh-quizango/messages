@@ -180,7 +180,9 @@ class SettingsFragment : Fragment() {
                 SettingsOption("Feedback", com.text.messages.sms.messanger.R.drawable.feedback, null, false) {
                     startActivity(Intent(requireContext(), FeedbackActivity::class.java)) 
                 },
-                SettingsOption("Share App!", com.text.messages.sms.messanger.R.drawable.share, null, false),
+                SettingsOption("Share App!", com.text.messages.sms.messanger.R.drawable.share, null, false) {
+                    openPlayStoreForSharing()
+                },
                 SettingsOption("Rate Us", com.text.messages.sms.messanger.R.drawable.rate_us, null, false) {
                     showRateUsBottomSheet()
                 }
@@ -238,6 +240,38 @@ class SettingsFragment : Fragment() {
         dialog.show()
     }
     
+    private fun openPlayStoreForRating() {
+        try {
+            val packageName = requireContext().packageName
+            val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
+            try {
+                startActivity(marketIntent)
+            } catch (e: android.content.ActivityNotFoundException) {
+                // If Play Store app is not available, open in browser
+                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+                startActivity(webIntent)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Unable to open Play Store", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun openPlayStoreForSharing() {
+        try {
+            val packageName = requireContext().packageName
+            val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
+            try {
+                startActivity(marketIntent)
+            } catch (e: android.content.ActivityNotFoundException) {
+                // If Play Store app is not available, open in browser
+                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+                startActivity(webIntent)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Unable to open Play Store", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
     private fun showRateUsBottomSheet() {
         val bottomSheetView = LayoutInflater.from(requireContext()).inflate(com.text.messages.sms.messanger.R.layout.bottom_sheet_rate_us, null)
         val bottomSheet = BottomSheetDialog(requireContext())
@@ -286,6 +320,7 @@ class SettingsFragment : Fragment() {
         buttonRateUs?.setOnClickListener {
             if (selectedRating > 0) {
                 bottomSheet.dismiss()
+                openPlayStoreForRating()
             }
         }
         

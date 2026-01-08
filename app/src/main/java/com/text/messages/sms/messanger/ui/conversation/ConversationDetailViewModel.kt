@@ -70,9 +70,9 @@ class ConversationDetailViewModel : ViewModel() {
                     val smsMessages = loadMessagesFromDevice(actualThreadId, address)
                     Log.d(TAG, "Loaded ${smsMessages.size} SMS messages from device")
                     
-                    // Also load MMS messages from Realm (they have attachments)
+                    // Also load MMS messages from database (they have attachments)
                     val mmsMessages = loadMmsMessagesFromRealm(actualThreadId, address)
-                    Log.d(TAG, "Loaded ${mmsMessages.size} MMS messages from Realm")
+                    Log.d(TAG, "Loaded ${mmsMessages.size} MMS messages from database")
                     
                     // Merge and sort by date
                     val allMessages = (smsMessages + mmsMessages).sortedBy { it.date }
@@ -90,61 +90,40 @@ class ConversationDetailViewModel : ViewModel() {
         }
     }
     
-    private fun loadMmsMessagesFromRealm(threadId: Long, address: String?): List<Message> {
+    private suspend fun loadMmsMessagesFromRealm(threadId: Long, address: String?): List<Message> {
         val messagesList = mutableListOf<Message>()
         try {
-            val realm = MessagesApp.realm
-            realm.writeBlocking {
-                val query = if (threadId > 0) {
-                    query(Message::class, "threadId == $threadId AND (mimeType != null OR attachmentPath != null)")
-                } else if (!address.isNullOrEmpty()) {
-                    val normalizedAddress = normalizePhoneNumber(address)
-                    query(Message::class, "(mimeType != null OR attachmentPath != null)")
-                } else {
-                    query(Message::class, "(mimeType != null OR attachmentPath != null)")
-                }
-                
-                val results = query.find()
-                Log.d(TAG, "Found ${results.size} MMS messages in Realm")
-                
-                results.forEach { message ->
-                    val msg = findLatest(message)
-                    if (msg != null) {
-                        // Filter by address if threadId is not available
-                        if (threadId <= 0 && !address.isNullOrEmpty()) {
-                            val normalizedMsgAddress = normalizePhoneNumber(msg.address)
-                            val normalizedTargetAddress = normalizePhoneNumber(address)
-                            val addressesMatch = normalizedMsgAddress == normalizedTargetAddress ||
-                                normalizedMsgAddress.endsWith(normalizedTargetAddress) ||
-                                normalizedTargetAddress.endsWith(normalizedMsgAddress) ||
-                                (normalizedMsgAddress.length >= 10 && normalizedTargetAddress.length >= 10 &&
-                                 normalizedMsgAddress.takeLast(10) == normalizedTargetAddress.takeLast(10))
-                            
-                            if (!addressesMatch) {
-                                return@forEach
-                            }
-                        }
-                        
-                        messagesList.add(Message().apply {
-                            this.id = msg.id
-                            this.threadId = msg.threadId
-                            this.address = msg.address
-                            this.body = msg.body
-                            this.date = msg.date
-                            this.type = msg.type
-                            this.status = msg.status
-                            this.read = msg.read
-                            this.starred = msg.starred
-                            this.mimeType = msg.mimeType
-                            this.attachmentPath = msg.attachmentPath
-                            this.messagePartCount = msg.messagePartCount
-                            this.otp = msg.otp
-                        })
+            val database = MessagesApp.database
+            val messageDao = database.messageDao()
+            
+            val results = if (threadId > 0) {
+                messageDao.getMmsMessagesByThread(threadId)
+            } else {
+                messageDao.getAllMmsMessages()
+            }
+            
+            Log.d(TAG, "Found ${results.size} MMS messages in database")
+            
+            results.forEach { msg ->
+                // Filter by address if threadId is not available
+                if (threadId <= 0 && !address.isNullOrEmpty()) {
+                    val normalizedMsgAddress = normalizePhoneNumber(msg.address)
+                    val normalizedTargetAddress = normalizePhoneNumber(address)
+                    val addressesMatch = normalizedMsgAddress == normalizedTargetAddress ||
+                        normalizedMsgAddress.endsWith(normalizedTargetAddress) ||
+                        normalizedTargetAddress.endsWith(normalizedMsgAddress) ||
+                        (normalizedMsgAddress.length >= 10 && normalizedTargetAddress.length >= 10 &&
+                         normalizedMsgAddress.takeLast(10) == normalizedTargetAddress.takeLast(10))
+                    
+                    if (!addressesMatch) {
+                        return@forEach
                     }
                 }
+                
+                messagesList.add(msg)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading MMS messages from Realm", e)
+            Log.e(TAG, "Error loading MMS messages from database", e)
             e.printStackTrace()
         }
         return messagesList
@@ -308,16 +287,18 @@ class ConversationDetailViewModel : ViewModel() {
                         }
                     }
                     
-                    messagesList.add(Message().apply {
-                        this.id = id
-                        this.threadId = msgThreadId
-                        this.address = msgAddress
-                        this.body = body
-                        this.date = date
-                        this.type = messageType
-                        this.status = messageStatus
-                        this.read = read
-                    })
+                    messagesList.add(
+                        Message(
+                            id = id,
+                            threadId = msgThreadId,
+                            address = msgAddress,
+                            body = body,
+                            date = date,
+                            type = messageType,
+                            status = messageStatus,
+                            read = read
+                        )
+                    )
                 }
                 Log.d(TAG, "Processed $rowCount rows, added ${messagesList.size} messages to list")
             }
@@ -330,47 +311,38 @@ class ConversationDetailViewModel : ViewModel() {
         return messagesList
     }
     
-    private fun updateOldPendingMessagesToFailed(threadId: Long, address: String?) {
+    private suspend fun updateOldPendingMessagesToFailed(threadId: Long, address: String?) {
         try {
-            val realm = MessagesApp.realm
+            val database = MessagesApp.database
+            val messageDao = database.messageDao()
             val currentTime = System.currentTimeMillis()
             val twoMinutesAgo = currentTime - 120000 // 2 minutes in milliseconds
             
-            realm.writeBlocking {
-                val query = if (threadId > 0) {
-                    query(Message::class, "threadId == $threadId AND type == ${MessageType.SENT} AND status == ${MessageStatus.PENDING} AND date < $twoMinutesAgo")
-                } else if (!address.isNullOrEmpty()) {
-                    val normalizedAddress = normalizePhoneNumber(address)
-                    query(Message::class, "type == ${MessageType.SENT} AND status == ${MessageStatus.PENDING} AND date < $twoMinutesAgo")
-                } else {
-                    query(Message::class, "type == ${MessageType.SENT} AND status == ${MessageStatus.PENDING} AND date < $twoMinutesAgo")
-                }
-                
-                val pendingMessages = query.find()
-                Log.d(TAG, "Found ${pendingMessages.size} old PENDING messages to update to FAILED")
-                
-                pendingMessages.forEach { message ->
-                    val msg = findLatest(message)
-                    if (msg != null) {
-                        // Filter by address if threadId is not available
-                        if (threadId <= 0 && !address.isNullOrEmpty()) {
-                            val normalizedMsgAddress = normalizePhoneNumber(msg.address)
-                            val normalizedTargetAddress = normalizePhoneNumber(address)
-                            val addressesMatch = normalizedMsgAddress == normalizedTargetAddress ||
-                                normalizedMsgAddress.endsWith(normalizedTargetAddress) ||
-                                normalizedTargetAddress.endsWith(normalizedMsgAddress) ||
-                                (normalizedMsgAddress.length >= 10 && normalizedTargetAddress.length >= 10 &&
-                                 normalizedMsgAddress.takeLast(10) == normalizedTargetAddress.takeLast(10))
-                            
-                            if (!addressesMatch) {
-                                return@forEach
-                            }
-                        }
-                        
-                        msg.status = MessageStatus.FAILED
-                        Log.d(TAG, "Updated message ${msg.id} from PENDING to FAILED (age: ${currentTime - msg.date}ms)")
-                    }
-                }
+            val pendingMessages = if (threadId > 0) {
+                messageDao.getMessagesByThreadAndStatus(threadId, MessageStatus.PENDING)
+            } else {
+                messageDao.getMessagesByStatus(MessageStatus.PENDING)
+            }
+            
+            val oldPendingMessages = pendingMessages.filter { 
+                it.type == MessageType.SENT && it.date < twoMinutesAgo &&
+                (threadId <= 0 || it.threadId == threadId) &&
+                (address.isNullOrEmpty() || {
+                    val normalizedMsgAddress = normalizePhoneNumber(it.address)
+                    val normalizedTargetAddress = normalizePhoneNumber(address)
+                    normalizedMsgAddress == normalizedTargetAddress ||
+                    normalizedMsgAddress.endsWith(normalizedTargetAddress) ||
+                    normalizedTargetAddress.endsWith(normalizedMsgAddress) ||
+                    (normalizedMsgAddress.length >= 10 && normalizedTargetAddress.length >= 10 &&
+                     normalizedMsgAddress.takeLast(10) == normalizedTargetAddress.takeLast(10))
+                }())
+            }
+            
+            Log.d(TAG, "Found ${oldPendingMessages.size} old PENDING messages to update to FAILED")
+            
+            oldPendingMessages.forEach { msg ->
+                messageDao.updateMessage(msg.copy(status = MessageStatus.FAILED))
+                Log.d(TAG, "Updated message ${msg.id} from PENDING to FAILED (age: ${currentTime - msg.date}ms)")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error updating old PENDING messages to FAILED", e)
@@ -440,7 +412,9 @@ class ConversationDetailViewModel : ViewModel() {
             
             try {
                 val context = MessagesApp.instance
-                val realm = MessagesApp.realm
+                val database = MessagesApp.database
+                val messageDao = database.messageDao()
+                val conversationDao = database.conversationDao()
                 
                 // Get or create thread ID
                 val actualThreadId = if (threadId > 0) {
@@ -452,44 +426,44 @@ class ConversationDetailViewModel : ViewModel() {
                 
                 val timestamp = System.currentTimeMillis()
                 
-                // STEP 1: Store message in Realm Database first (status: PENDING)
-                Log.d(TAG, "STEP 1: Storing message in Realm database")
-                realm.writeBlocking {
-                    // Create or update conversation
-                    val existingConversation = query(Conversation::class, "threadId == $actualThreadId").first().find()
-                    
-                    if (existingConversation == null) {
-                        // Create new conversation
-                        copyToRealm(Conversation().apply {
-                            this.threadId = actualThreadId
-                            this.address = address
-                            this.snippet = messageBody
-                            this.date = timestamp
-                            this.unreadCount = 0
-                        })
-                    } else {
-                        // Update existing conversation
-                        findLatest(existingConversation)?.apply {
-                            this.snippet = messageBody
-                            this.date = timestamp
-                        }
-                    }
-                    
-                    // Create message in Realm with PENDING status
-                    copyToRealm(Message().apply {
-                        this.id = messageId
-                        this.threadId = actualThreadId
-                        this.address = address
-                        this.body = messageBody
-                        this.date = timestamp
-                        this.type = MessageType.SENT
-                        this.status = MessageStatus.PENDING
-                        this.read = true
-                        this.starred = false
-                        this.messagePartCount = 1
-                    })
-                    Log.d(TAG, "Message stored in Realm with PENDING status - MessageId: $messageId")
+                // STEP 1: Store message in Database first (status: PENDING)
+                Log.d(TAG, "STEP 1: Storing message in database")
+                
+                // Create or update conversation
+                val existingConversation = conversationDao.getConversationByThreadId(actualThreadId)
+                
+                if (existingConversation == null) {
+                    // Create new conversation
+                    conversationDao.insertConversation(
+                        Conversation(
+                            threadId = actualThreadId,
+                            address = address,
+                            snippet = messageBody,
+                            date = timestamp,
+                            unreadCount = 0
+                        )
+                    )
+                } else {
+                    // Update existing conversation
+                    conversationDao.updateConversationSnippet(actualThreadId, messageBody, timestamp)
                 }
+                
+                // Create message in database with PENDING status
+                messageDao.insertMessage(
+                    Message(
+                        id = messageId,
+                        threadId = actualThreadId,
+                        address = address,
+                        body = messageBody,
+                        date = timestamp,
+                        type = MessageType.SENT,
+                        status = MessageStatus.PENDING,
+                        read = true,
+                        starred = false,
+                        messagePartCount = 1
+                    )
+                )
+                Log.d(TAG, "Message stored in database with PENDING status - MessageId: $messageId")
                 
                 // STEP 2: Send SMS using SmsManager
                 Log.d(TAG, "STEP 2: Sending SMS via SmsManager")
@@ -590,19 +564,18 @@ class ConversationDetailViewModel : ViewModel() {
                 Log.e(TAG, "Error in sendMessage", e)
                 e.printStackTrace()
                 // On error, update message status to FAILED
-                // Only update if message was actually created in Realm
+                // Only update if message was actually created in database
                 try {
                     Log.d(TAG, "Attempting to update message status to FAILED - messageId: $messageId")
-                    val errorRealm = MessagesApp.realm
-                    errorRealm.writeBlocking {
-                        // Find the message by ID (messageId is now accessible from outer scope)
-                        val message = query(Message::class, "id == $messageId").first().find()
-                        if (message != null) {
-                            findLatest(message)?.status = MessageStatus.FAILED
-                            Log.d(TAG, "Message status updated to FAILED - messageId: $messageId")
-                        } else {
-                            Log.w(TAG, "Message not found in Realm to update status - messageId: $messageId")
-                        }
+                    val errorDatabase = MessagesApp.database
+                    val errorMessageDao = errorDatabase.messageDao()
+                    
+                    val message = errorMessageDao.getMessageById(messageId)
+                    if (message != null) {
+                        errorMessageDao.updateMessage(message.copy(status = MessageStatus.FAILED))
+                        Log.d(TAG, "Message status updated to FAILED - messageId: $messageId")
+                    } else {
+                        Log.w(TAG, "Message not found in database to update status - messageId: $messageId")
                     }
                 } catch (ex: Exception) {
                     Log.e(TAG, "Error updating message status to FAILED", ex)
@@ -688,45 +661,46 @@ class ConversationDetailViewModel : ViewModel() {
                     }
                 }
                 
-                // Store message in Realm with PENDING status
-                val realm = MessagesApp.realm
+                // Store message in database with PENDING status
+                val database = MessagesApp.database
+                val messageDao = database.messageDao()
+                val conversationDao = database.conversationDao()
                 val timestamp = System.currentTimeMillis()
                 
-                realm.writeBlocking {
-                    // Create or update conversation
-                    val existingConversation = query(Conversation::class, "threadId == $actualThreadId").first().find()
-                    
-                    if (existingConversation == null) {
-                        copyToRealm(Conversation().apply {
-                            this.threadId = actualThreadId
-                            this.address = address
-                            this.snippet = messageBody.ifEmpty { "Photo" }
-                            this.date = timestamp
-                            this.unreadCount = 0
-                        })
-                    } else {
-                        findLatest(existingConversation)?.apply {
-                            this.snippet = messageBody.ifEmpty { "Photo" }
-                            this.date = timestamp
-                        }
-                    }
-                    
-                    // Create message in Realm with PENDING status
-                    copyToRealm(Message().apply {
-                        this.id = messageId
-                        this.threadId = actualThreadId
-                        this.address = address
-                        this.body = messageBody
-                        this.date = timestamp
-                        this.type = MessageType.SENT
-                        this.status = MessageStatus.PENDING
-                        this.read = true
-                        this.mimeType = "image/*"
-                        this.attachmentPath = permanentImageUri.toString()
-                        this.messagePartCount = 1
-                    })
-                    Log.d(TAG, "Message stored in Realm with PENDING status - MessageId: $messageId")
+                // Create or update conversation
+                val existingConversation = conversationDao.getConversationByThreadId(actualThreadId)
+                
+                if (existingConversation == null) {
+                    conversationDao.insertConversation(
+                        Conversation(
+                            threadId = actualThreadId,
+                            address = address,
+                            snippet = messageBody.ifEmpty { "Photo" },
+                            date = timestamp,
+                            unreadCount = 0
+                        )
+                    )
+                } else {
+                    conversationDao.updateConversationSnippet(actualThreadId, messageBody.ifEmpty { "Photo" }, timestamp)
                 }
+                
+                // Create message in database with PENDING status
+                messageDao.insertMessage(
+                    Message(
+                        id = messageId,
+                        threadId = actualThreadId,
+                        address = address,
+                        body = messageBody,
+                        date = timestamp,
+                        type = MessageType.SENT,
+                        status = MessageStatus.PENDING,
+                        read = true,
+                        mimeType = "image/*",
+                        attachmentPath = permanentImageUri.toString(),
+                        messagePartCount = 1
+                    )
+                )
+                Log.d(TAG, "Message stored in database with PENDING status - MessageId: $messageId")
                 
                 // Send MMS using MmsSender service (use original URI for sending, permanent URI is stored in DB)
                 val result = com.text.messages.sms.messanger.service.MmsSender.sendMms(
@@ -751,11 +725,11 @@ class ConversationDetailViewModel : ViewModel() {
                     onFailure = { error ->
                         Log.e(TAG, "Error sending MMS", error)
                         // Update message status to FAILED
-                        realm.writeBlocking {
-                            val message = query(Message::class, "id == $messageId").first().find()
-                            if (message != null) {
-                                findLatest(message)?.status = MessageStatus.FAILED
-                            }
+                        val errorDatabase = MessagesApp.database
+                        val errorMessageDao = errorDatabase.messageDao()
+                        val message = errorMessageDao.getMessageById(messageId)
+                        if (message != null) {
+                            errorMessageDao.updateMessage(message.copy(status = MessageStatus.FAILED))
                         }
                     }
                 )
@@ -764,12 +738,11 @@ class ConversationDetailViewModel : ViewModel() {
                 e.printStackTrace()
                 // Update message status to FAILED
                 try {
-                    val realm = MessagesApp.realm
-                    realm.writeBlocking {
-                        val message = query(Message::class, "id == $messageId").first().find()
-                        if (message != null) {
-                            findLatest(message)?.status = MessageStatus.FAILED
-                        }
+                    val errorDatabase = MessagesApp.database
+                    val errorMessageDao = errorDatabase.messageDao()
+                    val message = errorMessageDao.getMessageById(messageId)
+                    if (message != null) {
+                        errorMessageDao.updateMessage(message.copy(status = MessageStatus.FAILED))
                     }
                 } catch (ex: Exception) {
                     Log.e(TAG, "Error updating message status to FAILED", ex)
@@ -843,45 +816,46 @@ class ConversationDetailViewModel : ViewModel() {
                     }
                 }
                 
-                // Store message in Realm with PENDING status
-                val realm = MessagesApp.realm
+                // Store message in database with PENDING status
+                val database = MessagesApp.database
+                val messageDao = database.messageDao()
+                val conversationDao = database.conversationDao()
                 val timestamp = System.currentTimeMillis()
                 
-                realm.writeBlocking {
-                    // Create or update conversation
-                    val existingConversation = query(Conversation::class, "threadId == $actualThreadId").first().find()
-                    
-                    if (existingConversation == null) {
-                        copyToRealm(Conversation().apply {
-                            this.threadId = actualThreadId
-                            this.address = address
-                            this.snippet = messageBody.ifEmpty { "Contact card" }
-                            this.date = timestamp
-                            this.unreadCount = 0
-                        })
-                    } else {
-                        findLatest(existingConversation)?.apply {
-                            this.snippet = messageBody.ifEmpty { "Contact card" }
-                            this.date = timestamp
-                        }
-                    }
-                    
-                    // Create message in Realm with PENDING status
-                    copyToRealm(Message().apply {
-                        this.id = messageId
-                        this.threadId = actualThreadId
-                        this.address = address
-                        this.body = messageBody
-                        this.date = timestamp
-                        this.type = MessageType.SENT
-                        this.status = MessageStatus.PENDING
-                        this.read = true
-                        this.mimeType = "text/x-vCard"
-                        this.attachmentPath = vCardUri.toString()
-                        this.messagePartCount = 1
-                    })
-                    Log.d(TAG, "Message stored in Realm with PENDING status - MessageId: $messageId")
+                // Create or update conversation
+                val existingConversation = conversationDao.getConversationByThreadId(actualThreadId)
+                
+                if (existingConversation == null) {
+                    conversationDao.insertConversation(
+                        Conversation(
+                            threadId = actualThreadId,
+                            address = address,
+                            snippet = messageBody.ifEmpty { "Contact card" },
+                            date = timestamp,
+                            unreadCount = 0
+                        )
+                    )
+                } else {
+                    conversationDao.updateConversationSnippet(actualThreadId, messageBody.ifEmpty { "Contact card" }, timestamp)
                 }
+                
+                // Create message in database with PENDING status
+                messageDao.insertMessage(
+                    Message(
+                        id = messageId,
+                        threadId = actualThreadId,
+                        address = address,
+                        body = messageBody,
+                        date = timestamp,
+                        type = MessageType.SENT,
+                        status = MessageStatus.PENDING,
+                        read = true,
+                        mimeType = "text/x-vCard",
+                        attachmentPath = vCardUri.toString(),
+                        messagePartCount = 1
+                    )
+                )
+                Log.d(TAG, "Message stored in database with PENDING status - MessageId: $messageId")
                 
                 // Send MMS using MmsSender service
                 val result = com.text.messages.sms.messanger.service.MmsSender.sendMms(
@@ -906,11 +880,11 @@ class ConversationDetailViewModel : ViewModel() {
                     onFailure = { error ->
                         Log.e(TAG, "Error sending MMS", error)
                         // Update message status to FAILED
-                        realm.writeBlocking {
-                            val message = query(Message::class, "id == $messageId").first().find()
-                            if (message != null) {
-                                findLatest(message)?.status = MessageStatus.FAILED
-                            }
+                        val errorDatabase = MessagesApp.database
+                        val errorMessageDao = errorDatabase.messageDao()
+                        val message = errorMessageDao.getMessageById(messageId)
+                        if (message != null) {
+                            errorMessageDao.updateMessage(message.copy(status = MessageStatus.FAILED))
                         }
                     }
                 )
@@ -919,12 +893,11 @@ class ConversationDetailViewModel : ViewModel() {
                 e.printStackTrace()
                 // Update message status to FAILED
                 try {
-                    val realm = MessagesApp.realm
-                    realm.writeBlocking {
-                        val message = query(Message::class, "id == $messageId").first().find()
-                        if (message != null) {
-                            findLatest(message)?.status = MessageStatus.FAILED
-                        }
+                    val errorDatabase = MessagesApp.database
+                    val errorMessageDao = errorDatabase.messageDao()
+                    val message = errorMessageDao.getMessageById(messageId)
+                    if (message != null) {
+                        errorMessageDao.updateMessage(message.copy(status = MessageStatus.FAILED))
                     }
                 } catch (ex: Exception) {
                     Log.e(TAG, "Error updating message status to FAILED", ex)
@@ -936,16 +909,10 @@ class ConversationDetailViewModel : ViewModel() {
     fun deleteMessage(messageId: Long) {
         viewModelScope.launch {
             try {
-                val realm = MessagesApp.realm
-                realm.writeBlocking {
-                    val message = query(Message::class, "id == $messageId").first().find()
-                    if (message != null) {
-                        findLatest(message)?.let {
-                            delete(it)
-                            Log.d(TAG, "Message deleted - messageId: $messageId")
-                        }
-                    }
-                }
+                val database = MessagesApp.database
+                val messageDao = database.messageDao()
+                messageDao.deleteMessage(messageId)
+                Log.d(TAG, "Message deleted - messageId: $messageId")
                 // Reload messages after deletion
                 if (currentThreadId > 0) {
                     loadMessages(currentThreadId, currentAddress.takeIf { it.isNotEmpty() })

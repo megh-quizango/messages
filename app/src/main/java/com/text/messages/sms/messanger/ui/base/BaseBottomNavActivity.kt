@@ -14,7 +14,7 @@ import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import android.content.BroadcastReceiver
 
-abstract class BaseBottomNavActivity : AppCompatActivity() {
+abstract class BaseBottomNavActivity : BaseActivity() {
     
     protected lateinit var bottomNavigationView: BottomNavigationView
     protected lateinit var adViewBanner: com.google.android.gms.ads.AdView

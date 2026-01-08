@@ -9,20 +9,22 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
-import com.text.messages.sms.messanger.data.model.Contact
-import com.text.messages.sms.messanger.data.model.Conversation
-import com.text.messages.sms.messanger.data.model.Message
+import android.content.Context
+import com.text.messages.sms.messanger.data.database.AppDatabase
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AppForegroundActivityTracker
 import com.text.messages.sms.messanger.util.AppOpenAdManager
+import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
-import io.realm.kotlin.Realm
-import io.realm.kotlin.RealmConfiguration
 
 class MessagesApp : Application(), DefaultLifecycleObserver {
     
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(LocaleHelper.onAttach(base))
+    }
+    
     companion object {
-        lateinit var realm: Realm
+        lateinit var database: AppDatabase
             private set
         lateinit var instance: MessagesApp
             private set
@@ -70,7 +72,7 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
             appOpenAdManager.loadAd(appOpenAdUnitId)
         }
         
-        initRealmSafely()
+        initDatabaseSafely()
         com.text.messages.sms.messanger.util.NotificationHelper.initialize(this)
         com.text.messages.sms.messanger.util.AfterCallNotificationHelper.initialize(this)
     }
@@ -104,20 +106,12 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
 //        }
     }
     
-    private fun initRealmSafely() {
+    private fun initDatabaseSafely() {
         try {
-            val config = RealmConfiguration.Builder(
-                schema = setOf(
-                    Message::class,
-                    Conversation::class,
-                    Contact::class
-                )
-            )
-                .schemaVersion(15)
-                .build()
-            
-            realm = Realm.open(config)
+            database = AppDatabase.getDatabase(this)
+            android.util.Log.d("MessagesApp", "Room database initialized successfully")
         } catch (e: Exception) {
+            android.util.Log.e("MessagesApp", "Error initializing Room database", e)
             e.printStackTrace()
         }
     }

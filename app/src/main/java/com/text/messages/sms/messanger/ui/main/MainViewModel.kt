@@ -298,7 +298,7 @@ class MainViewModel : ViewModel() {
         }
     }
     
-    private fun loadSingleConversationFromDevice(context: Context, threadId: Long, category: String?): Conversation? {
+    private suspend fun loadSingleConversationFromDevice(context: Context, threadId: Long, category: String?): Conversation? {
         val conversationsMap = mutableMapOf<Long, Conversation>()
         
         // Load deleted, archived, private, and blocked lists
@@ -350,39 +350,46 @@ class MainViewModel : ViewModel() {
                 }
                 
                 val conversation = conversationsMap.getOrPut(threadId) {
-                    Conversation().apply {
-                        this.threadId = threadId
-                        this.address = address
-                        this.snippet = body
-                        this.date = date
-                        this.unreadCount = 0
-                    }
+                    Conversation(
+                        threadId = threadId,
+                        address = address,
+                        snippet = body,
+                        date = date,
+                        unreadCount = 0
+                    )
                 }
                 
                 // Update with latest message
-                if (date > conversation.date) {
-                    conversation.snippet = body
-                    conversation.date = date
+                val updatedConversation = if (date > conversation.date) {
+                    conversation.copy(snippet = body, date = date)
+                } else {
+                    conversation
                 }
                 
                 // Count unread messages
-                if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
-                    conversation.unreadCount++
+                val finalConversation = if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                    updatedConversation.copy(unreadCount = updatedConversation.unreadCount + 1)
+                } else {
+                    updatedConversation
                 }
+                
+                conversationsMap[threadId] = finalConversation
             }
         }
         
-        // Also check MMS from Realm
-        loadMmsConversationsFromRealm(conversationsMap, category ?: "All", contactPhoneNumbers, 
-            deletedThreadIds, archivedThreadIds, privateThreadIds, blockedThreadIds)
+        // Also check MMS from database
+        withContext(Dispatchers.IO) {
+            loadMmsConversationsFromRealm(conversationsMap, category ?: "All", contactPhoneNumbers, 
+                deletedThreadIds, archivedThreadIds, privateThreadIds, blockedThreadIds)
+        }
         
         // Get contact name
         val conversation = conversationsMap[threadId]
         if (conversation != null) {
-            loadContactNamesBatch(context, listOf(conversation))
+            loadContactNamesBatch(context, listOf(conversation), conversationsMap)
         }
         
-        return conversation
+        return conversationsMap[threadId]
     }
     
     fun loadPrivateConversations(context: android.content.Context) {
@@ -470,30 +477,35 @@ class MainViewModel : ViewModel() {
                 val type = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
                 
                 val conversation = conversationsMap.getOrPut(threadId) {
-                    Conversation().apply {
-                        this.threadId = threadId
-                        this.address = address
-                        this.snippet = body
-                        this.date = date
-                        this.unreadCount = 0
-                    }
+                    Conversation(
+                        threadId = threadId,
+                        address = address,
+                        snippet = body,
+                        date = date,
+                        unreadCount = 0
+                    )
                 }
                 
                 // Update with latest message
-                if (date > conversation.date) {
-                    conversation.snippet = body
-                    conversation.date = date
+                val updatedConversation = if (date > conversation.date) {
+                    conversation.copy(snippet = body, date = date)
+                } else {
+                    conversation
                 }
                 
                 // Count unread messages
-                if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
-                    conversation.unreadCount++
+                val finalConversation = if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                    updatedConversation.copy(unreadCount = updatedConversation.unreadCount + 1)
+                } else {
+                    updatedConversation
                 }
+                
+                conversationsMap[threadId] = finalConversation
             }
         }
         
         // Get contact names in batch
-        loadContactNamesBatch(context, conversationsMap.values)
+        loadContactNamesBatch(context, conversationsMap.values, conversationsMap)
         
         val sortedConversations = conversationsMap.values.sortedByDescending { it.date }
         Log.d(TAG, "loadBlockedConversationsFromDevice: Returning ${sortedConversations.size} conversations")
@@ -551,30 +563,35 @@ class MainViewModel : ViewModel() {
                 val type = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
                 
                 val conversation = conversationsMap.getOrPut(threadId) {
-                    Conversation().apply {
-                        this.threadId = threadId
-                        this.address = address
-                        this.snippet = body
-                        this.date = date
-                        this.unreadCount = 0
-                    }
+                    Conversation(
+                        threadId = threadId,
+                        address = address,
+                        snippet = body,
+                        date = date,
+                        unreadCount = 0
+                    )
                 }
                 
                 // Update with latest message
-                if (date > conversation.date) {
-                    conversation.snippet = body
-                    conversation.date = date
+                val updatedConversation = if (date > conversation.date) {
+                    conversation.copy(snippet = body, date = date)
+                } else {
+                    conversation
                 }
                 
                 // Count unread messages
-                if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
-                    conversation.unreadCount++
+                val finalConversation = if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                    updatedConversation.copy(unreadCount = updatedConversation.unreadCount + 1)
+                } else {
+                    updatedConversation
                 }
+                
+                conversationsMap[threadId] = finalConversation
             }
         }
         
         // Get contact names in batch
-        loadContactNamesBatch(context, conversationsMap.values)
+        loadContactNamesBatch(context, conversationsMap.values, conversationsMap)
         
         val sortedConversations = conversationsMap.values.sortedByDescending { it.date }
         Log.d(TAG, "loadPrivateConversationsFromDevice: Returning ${sortedConversations.size} conversations")
@@ -632,30 +649,35 @@ class MainViewModel : ViewModel() {
                 val type = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
                 
                 val conversation = conversationsMap.getOrPut(threadId) {
-                    Conversation().apply {
-                        this.threadId = threadId
-                        this.address = address
-                        this.snippet = body
-                        this.date = date
-                        this.unreadCount = 0
-                    }
+                    Conversation(
+                        threadId = threadId,
+                        address = address,
+                        snippet = body,
+                        date = date,
+                        unreadCount = 0
+                    )
                 }
                 
                 // Update with latest message
-                if (date > conversation.date) {
-                    conversation.snippet = body
-                    conversation.date = date
+                val updatedConversation = if (date > conversation.date) {
+                    conversation.copy(snippet = body, date = date)
+                } else {
+                    conversation
                 }
                 
                 // Count unread messages
-                if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
-                    conversation.unreadCount++
+                val finalConversation = if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                    updatedConversation.copy(unreadCount = updatedConversation.unreadCount + 1)
+                } else {
+                    updatedConversation
                 }
+                
+                conversationsMap[threadId] = finalConversation
             }
         }
         
         // Get contact names in batch
-        loadContactNamesBatch(context, conversationsMap.values)
+        loadContactNamesBatch(context, conversationsMap.values, conversationsMap)
         
         val sortedConversations = conversationsMap.values.sortedByDescending { it.date }
         Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Returning ${sortedConversations.size} conversations")
@@ -684,7 +706,7 @@ class MainViewModel : ViewModel() {
         }
     }
     
-    private fun loadConversationsFromDevice(
+    private suspend fun loadConversationsFromDevice(
         category: String,
         timeFilter: String? = null,
         startDate: Long? = null,
@@ -835,26 +857,31 @@ class MainViewModel : ViewModel() {
                 
                 val conversation = conversationsMap.getOrPut(threadId) {
                     Log.d(TAG, "loadConversationsFromDevice: Creating new conversation for threadId: $threadId, address: $address, date: $date")
-                    Conversation().apply {
-                        this.threadId = threadId
-                        this.address = address
-                        this.snippet = body
-                        this.date = date
-                        this.unreadCount = 0
-                    }
+                    Conversation(
+                        threadId = threadId,
+                        address = address,
+                        snippet = body,
+                        date = date,
+                        unreadCount = 0
+                    )
                 }
                 
                 // Update with latest message
-                if (date > conversation.date) {
+                val updatedConversation = if (date > conversation.date) {
                     Log.d(TAG, "loadConversationsFromDevice: Updating conversation threadId: $threadId, oldDate: ${conversation.date}, newDate: $date")
-                    conversation.snippet = body
-                    conversation.date = date
+                    conversation.copy(snippet = body, date = date)
+                } else {
+                    conversation
                 }
                 
                 // Count unread messages
-                if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
-                    conversation.unreadCount++
+                val finalConversation = if (!read && type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                    updatedConversation.copy(unreadCount = updatedConversation.unreadCount + 1)
+                } else {
+                    updatedConversation
                 }
+                
+                conversationsMap[threadId] = finalConversation
             }
         }
         
@@ -867,18 +894,20 @@ class MainViewModel : ViewModel() {
             Log.d(TAG, "loadConversationsFromDevice: Conversation 132 NOT FOUND in conversationsMap!")
         }
         
-        // Also load MMS messages from Realm and merge with SMS conversations
-        loadMmsConversationsFromRealm(conversationsMap, category, contactPhoneNumbers, deletedThreadIds, archivedThreadIds, privateThreadIds, blockedThreadIds)
+        // Also load MMS messages from database and merge with SMS conversations
+        withContext(Dispatchers.IO) {
+            loadMmsConversationsFromRealm(conversationsMap, category, contactPhoneNumbers, deletedThreadIds, archivedThreadIds, privateThreadIds, blockedThreadIds)
+        }
         
         // Get contact names in batch for better performance
-        loadContactNamesBatch(context, conversationsMap.values)
+        loadContactNamesBatch(context, conversationsMap.values, conversationsMap)
         
         val sortedConversations = conversationsMap.values.sortedByDescending { it.date }
         Log.d(TAG, "loadConversationsFromDevice: Returning ${sortedConversations.size} conversations")
         return sortedConversations
     }
     
-    private fun loadMmsConversationsFromRealm(
+    private suspend fun loadMmsConversationsFromRealm(
         conversationsMap: MutableMap<Long, Conversation>,
         category: String,
         contactPhoneNumbers: Set<String>?,
@@ -888,16 +917,16 @@ class MainViewModel : ViewModel() {
         blockedThreadIds: Set<Long> = emptySet()
     ) {
         try {
-            val realm = MessagesApp.realm
-            realm.writeBlocking {
-                // Query MMS messages from Realm (messages with attachments)
-                val mmsMessages = query(com.text.messages.sms.messanger.data.model.Message::class, "(mimeType != null OR attachmentPath != null)").find()
-                
-                Log.d(TAG, "loadMmsConversationsFromRealm: Found ${mmsMessages.size} MMS messages in Realm")
-                
-                mmsMessages.forEach { message ->
-                    val msg = findLatest(message)
-                    if (msg == null) return@forEach
+            val database = MessagesApp.database
+            val messageDao = database.messageDao()
+            
+            // Query MMS messages from database (messages with attachments)
+            val mmsMessages = messageDao.getAllMmsMessages()
+            
+            Log.d(TAG, "loadMmsConversationsFromRealm: Found ${mmsMessages.size} MMS messages in database")
+            
+            mmsMessages.forEach { msg ->
+                if (msg == null) return@forEach
                     
                     val threadId = msg.threadId
                     
@@ -928,30 +957,33 @@ class MainViewModel : ViewModel() {
                     }
                     
                     val conversation = conversationsMap.getOrPut(threadId) {
-                        Conversation().apply {
-                            this.threadId = threadId
-                            this.address = msg.address
-                            this.snippet = snippet
-                            this.date = msg.date
-                            this.unreadCount = 0
-                        }
+                        Conversation(
+                            threadId = threadId,
+                            address = msg.address,
+                            snippet = snippet,
+                            date = msg.date,
+                            unreadCount = 0
+                        )
                     }
                     
                     // Update with latest message if this MMS is newer
                     if (msg.date > conversation.date) {
-                        conversation.snippet = snippet
-                        conversation.date = msg.date
+                        conversationsMap[threadId] = conversation.copy(
+                            snippet = snippet,
+                            date = msg.date
+                        )
                     }
                     
                     // Count unread messages
                     if (!msg.read && msg.type == com.text.messages.sms.messanger.data.model.MessageType.INBOX) {
-                        conversation.unreadCount++
+                        conversationsMap[threadId] = conversation.copy(
+                            unreadCount = conversation.unreadCount + 1
+                        )
                     }
-                }
             }
             Log.d(TAG, "loadMmsConversationsFromRealm: Processed MMS messages, total conversations: ${conversationsMap.size}")
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading MMS conversations from Realm", e)
+            Log.e(TAG, "Error loading MMS conversations from database", e)
             e.printStackTrace()
         }
     }
@@ -1052,8 +1084,7 @@ class MainViewModel : ViewModel() {
         return normalized
     }
     
-    private fun loadContactNamesBatch(context: Context, conversations: Collection<Conversation>) {
-        // Build a map of phone numbers to contact info (name and photo) for batch lookup
+    private fun loadContactNamesBatch(context: Context, conversations: Collection<Conversation>, conversationsMap: MutableMap<Long, Conversation>? = null) {
         val phoneNumbers = conversations.map { normalizePhoneNumber(it.address) }.distinct()
         val contactNameMap = mutableMapOf<String, String?>()
         val contactPhotoMap = mutableMapOf<String, String?>()
@@ -1065,11 +1096,16 @@ class MainViewModel : ViewModel() {
             contactPhotoMap[normalizedNumber] = contactInfo.second
         }
         
-        // Assign contact names and photos to conversations
-        conversations.forEach { conversation ->
-            val normalizedAddress = normalizePhoneNumber(conversation.address)
-            conversation.contactName = contactNameMap[normalizedAddress]
-            conversation.photoUri = contactPhotoMap[normalizedAddress]
+        // Assign contact names and photos to conversations in the map
+        if (conversationsMap != null) {
+            conversationsMap.forEach { (threadId, conversation) ->
+                val normalizedAddress = normalizePhoneNumber(conversation.address)
+                val updatedConversation = conversation.copy(
+                    contactName = contactNameMap[normalizedAddress],
+                    photoUri = contactPhotoMap[normalizedAddress]
+                )
+                conversationsMap[threadId] = updatedConversation
+            }
         }
     }
     
@@ -1307,6 +1343,82 @@ class MainViewModel : ViewModel() {
                 }
             }
             else -> null
+        }
+    }
+    
+    /**
+     * Pre-cache all categories in the background for instant filter switching.
+     * This is called after the initial "All" conversations are loaded.
+     */
+    fun preCacheAllCategories(context: Context) {
+        viewModelScope.launch {
+            try {
+                val categories = listOf("Personal", "OTPs", "Offers", "Transactions")
+                Log.d(TAG, "Starting pre-caching for ${categories.size} categories")
+                
+                categories.forEach { category ->
+                    // Check if already cached
+                    val cached = ConversationCache.getCached(category)
+                    if (cached == null) {
+                        // Cache doesn't exist, load and cache in background
+                        try {
+                            val conversations = withContext(Dispatchers.IO) {
+                                if (!isActive) return@withContext emptyList<Conversation>()
+                                loadConversationsFromDevice(category, null, null, null)
+                            }
+                            if (isActive && conversations.isNotEmpty()) {
+                                ConversationCache.cache(category, conversations)
+                                Log.d(TAG, "Pre-cached ${conversations.size} conversations for category: $category")
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to pre-cache category: $category", e)
+                        }
+                    } else {
+                        Log.d(TAG, "Category '$category' already cached (${cached.size} items), skipping")
+                    }
+                }
+                Log.d(TAG, "Completed pre-caching all categories")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error pre-caching categories", e)
+            }
+        }
+    }
+    
+    /**
+     * Pre-cache all custom filters in the background for instant filter switching.
+     * This is called after custom filters are loaded.
+     */
+    fun preCacheAllCustomFilters(context: Context) {
+        viewModelScope.launch {
+            try {
+                val filters = CustomFilterStorage.loadFilters(context)
+                Log.d(TAG, "Starting pre-caching for ${filters.size} custom filters")
+                
+                filters.forEach { filter ->
+                    // Check if already cached
+                    val cached = ConversationCache.getCachedForFilter(filter.id)
+                    if (cached == null) {
+                        // Cache doesn't exist, load and cache in background
+                        try {
+                            val conversations = withContext(Dispatchers.IO) {
+                                if (!isActive) return@withContext emptyList<Conversation>()
+                                loadConversationsForCustomFilterFromDevice(context, filter.id)
+                            }
+                            if (isActive) {
+                                ConversationCache.cacheForFilter(filter.id, conversations)
+                                Log.d(TAG, "Pre-cached ${conversations.size} conversations for filter: ${filter.name} (${filter.id})")
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to pre-cache filter: ${filter.name}", e)
+                        }
+                    } else {
+                        Log.d(TAG, "Filter '${filter.name}' already cached (${cached.size} items), skipping")
+                    }
+                }
+                Log.d(TAG, "Completed pre-caching all custom filters")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error pre-caching custom filters", e)
+            }
         }
     }
 }

@@ -34,15 +34,15 @@ class SmsDeliveredReceiver : BroadcastReceiver() {
     private suspend fun updateMessageStatus(messageId: Long) {
         try {
             Log.d(TAG, "updateMessageStatus - messageId: $messageId")
-            val realm = MessagesApp.realm
-            realm.writeBlocking {
-                val message = query(Message::class, "id == $messageId").first().find()
-                if (message != null) {
-                    findLatest(message)?.status = MessageStatus.DELIVERED
-                    Log.d(TAG, "Message status updated to DELIVERED - messageId: $messageId")
-                } else {
-                    Log.w(TAG, "Message not found in Realm - messageId: $messageId")
-                }
+            val database = MessagesApp.database
+            val messageDao = database.messageDao()
+            
+            val message = messageDao.getMessageById(messageId)
+            if (message != null) {
+                messageDao.updateMessage(message.copy(status = MessageStatus.DELIVERED))
+                Log.d(TAG, "Message status updated to DELIVERED - messageId: $messageId")
+            } else {
+                Log.w(TAG, "Message not found in database - messageId: $messageId")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error updating message status to DELIVERED", e)

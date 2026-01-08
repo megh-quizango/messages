@@ -122,6 +122,13 @@ class ArchiveActivity : AppCompatActivity() {
             val updatedJson = gson.toJson(archivedMessages)
             prefs.edit().putString(KEY_ARCHIVED_MESSAGES, updatedJson).apply()
             
+            // Immediately invalidate all category caches so MainActivity shows the unarchived conversation
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
+            
             // Send broadcast to notify MainActivity to restore the conversation
             val intent = android.content.Intent("com.text.messages.sms.messanger.CONVERSATION_RESTORED").apply {
                 putExtra("thread_id", archivedMessage.threadId)

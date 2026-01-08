@@ -169,6 +169,13 @@ class ConversationSelectionActivity : AppCompatActivity() {
                     PrivateConversationStorage.addThreadId(this, threadId)
                 }
                 
+                // Immediately invalidate all category caches so MainActivity reflects the changes
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
+                
                 Toast.makeText(this, "Conversations added to private", Toast.LENGTH_SHORT).show()
                 setResult(RESULT_OK)
                 finish()

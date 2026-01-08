@@ -85,6 +85,14 @@ class BlockedConversationsActivity : AppCompatActivity() {
             onUnblockClick = { threadId ->
                 blockedConversations.remove(threadId)
                 BlockedConversationStorage.removeThreadId(this, threadId)
+                
+                // Immediately invalidate all category caches so MainActivity shows the unblocked conversation
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
+                
                 updateUI()
             }
         )

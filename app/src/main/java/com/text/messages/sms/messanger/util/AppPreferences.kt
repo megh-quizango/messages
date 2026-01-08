@@ -22,6 +22,10 @@ object AppPreferences {
     private const val DEFAULT_FONT_SIZE = 16f
     private const val DEFAULT_FONT_FAMILY = 0 // Typeface.DEFAULT
     
+    // SIM card icons preference
+    private const val KEY_COLOR_SIM_CARD_ICONS = "color_sim_card_icons"
+    private const val DEFAULT_COLOR_SIM_CARD_ICONS = false
+    
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
@@ -32,7 +36,8 @@ object AppPreferences {
     }
     
     fun setThemeColor(context: Context, color: String) {
-        getPrefs(context).edit().putString(KEY_THEME_COLOR, color).apply()
+        // Use commit() instead of apply() for immediate persistence
+        getPrefs(context).edit().putString(KEY_THEME_COLOR, color).commit()
     }
     
     fun getThemeColorLight(context: Context): String {
@@ -40,7 +45,8 @@ object AppPreferences {
     }
     
     fun setThemeColorLight(context: Context, color: String) {
-        getPrefs(context).edit().putString(KEY_THEME_COLOR_LIGHT, color).apply()
+        // Use commit() instead of apply() for immediate persistence
+        getPrefs(context).edit().putString(KEY_THEME_COLOR_LIGHT, color).commit()
     }
     
     // Bubble methods
@@ -67,6 +73,15 @@ object AppPreferences {
     
     fun setFontFamily(context: Context, family: Int) {
         getPrefs(context).edit().putInt(KEY_FONT_FAMILY, family).apply()
+    }
+    
+    // SIM card icons methods
+    fun getColorSimCardIcons(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_COLOR_SIM_CARD_ICONS, DEFAULT_COLOR_SIM_CARD_ICONS)
+    }
+    
+    fun setColorSimCardIcons(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_COLOR_SIM_CARD_ICONS, enabled).apply()
     }
     
     // Helper to convert color to much lighter version (for #E6F0FF equivalent)

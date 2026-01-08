@@ -1,18 +1,18 @@
 package com.text.messages.sms.messanger.data.model
 
-import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.annotations.PrimaryKey
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-class Conversation : RealmObject {
+@Entity(tableName = "conversations")
+data class Conversation(
     @PrimaryKey
-    var threadId: Long = 0
-    var address: String = ""
-    var contactName: String? = null
-    var snippet: String = ""
-    var date: Long = 0
-    var unreadCount: Int = 0
-    var archived: Boolean = false
-    var blocked: Boolean = false
-    var photoUri: String? = null
-}
-
+    val threadId: Long = 0,
+    val address: String = "",
+    val contactName: String? = null,
+    val snippet: String = "",
+    val date: Long = 0,
+    val unreadCount: Int = 0,
+    val archived: Boolean = false,
+    val blocked: Boolean = false,
+    val photoUri: String? = null
+)

@@ -6,13 +6,38 @@
     android:padding="16dp"
     android:background="?android:attr/selectableItemBackground">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/imageContact"
+    <FrameLayout
+        android:id="@+id/avatarContainer"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:src="@drawable/contacts"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imageContact"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/contacts"
+            android:elevation="0dp"
+            android:outlineProvider="none" />
+
+        <TextView
+            android:id="@+id/textAvatarLetter"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="A"
+            android:textColor="@color/gray_dark"
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:visibility="gone"
+            android:elevation="0dp"
+            android:background="@android:color/transparent"
+            android:includeFontPadding="false"
+            android:padding="0dp"
+            android:maxLines="1"
+            android:ellipsize="none" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/textName"
@@ -24,8 +49,8 @@
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/imageContact"
-        app:layout_constraintTop_toTopOf="@+id/imageContact" />
+        app:layout_constraintStart_toEndOf="@+id/avatarContainer"
+        app:layout_constraintTop_toTopOf="@+id/avatarContainer" />
 
     <TextView
         android:id="@+id/textPhone"

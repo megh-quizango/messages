@@ -57,7 +57,7 @@ object MmsReceiverService {
     }
     
     /**
-     * Sync message from Telephony Provider to Realm database
+     * Sync message from Telephony Provider to Room database
      */
     suspend fun syncMessage(context: Context, messageUri: Uri): Message? {
         return withContext(Dispatchers.IO) {
@@ -99,40 +99,43 @@ object MmsReceiverService {
                     // Get body text from parts
                     val body = getMmsBody(resolver, mmsId)
                     
-                    // Create or update message in Realm
-                    val realm = MessagesApp.realm
+                    // Create or update message in database
+                    val database = MessagesApp.database
+                    val messageDao = database.messageDao()
                     val messageId = mmsId
                     
-                    realm.writeBlocking {
-                        val existingMessage = query(Message::class, "id == $messageId").first().find()
-                        
-                        if (existingMessage == null) {
-                            // Create new message
-                            copyToRealm(Message().apply {
-                                this.id = messageId
-                                this.threadId = threadId
-                                this.address = address
-                                this.body = body ?: subject ?: ""
-                                this.date = date
-                                this.type = MessageType.INBOX
-                                this.status = MessageStatus.RECEIVED
-                                this.read = read
-                                this.mimeType = "application/vnd.wap.mms-message"
-                                this.messagePartCount = getMmsPartCount(resolver, mmsId)
-                            })
-                            Log.d(TAG, "Created new MMS message in Realm - messageId: $messageId")
-                        } else {
-                            // Update existing message
-                            findLatest(existingMessage)?.apply {
-                                this.body = body ?: subject ?: ""
-                                this.read = read
-                                this.messagePartCount = getMmsPartCount(resolver, mmsId)
-                            }
-                            Log.d(TAG, "Updated existing MMS message in Realm - messageId: $messageId")
-                        }
+                    val existingMessage = messageDao.getMessageById(messageId)
+                    
+                    if (existingMessage == null) {
+                        // Create new message
+                        messageDao.insertMessage(
+                            Message(
+                                id = messageId,
+                                threadId = threadId,
+                                address = address,
+                                body = body ?: subject ?: "",
+                                date = date,
+                                type = MessageType.INBOX,
+                                status = MessageStatus.RECEIVED,
+                                read = read,
+                                mimeType = "application/vnd.wap.mms-message",
+                                messagePartCount = getMmsPartCount(resolver, mmsId)
+                            )
+                        )
+                        Log.d(TAG, "Created new MMS message in database - messageId: $messageId")
+                    } else {
+                        // Update existing message
+                        messageDao.updateMessage(
+                            existingMessage.copy(
+                                body = body ?: subject ?: "",
+                                read = read,
+                                messagePartCount = getMmsPartCount(resolver, mmsId)
+                            )
+                        )
+                        Log.d(TAG, "Updated existing MMS message in database - messageId: $messageId")
                     }
                     
-                    return@withContext realm.query(Message::class, "id == $messageId").first().find()
+                    return@withContext messageDao.getMessageById(messageId)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error syncing MMS message", e)
@@ -271,45 +274,49 @@ object MmsReceiverService {
         }
     }
     
-    private fun getOrCreateConversation(context: Context, threadId: Long, address: String): Conversation {
-        val realm = MessagesApp.realm
-        return realm.writeBlocking {
-            val existing = query(Conversation::class, "threadId == $threadId").first().find()
-            if (existing != null) {
-                findLatest(existing)!!
-            } else {
-                copyToRealm(Conversation().apply {
-                    this.threadId = threadId
-                    this.address = address
-                    this.snippet = ""
-                    this.date = System.currentTimeMillis()
-                    this.unreadCount = 0
-                })
-            }
+    private suspend fun getOrCreateConversation(context: Context, threadId: Long, address: String): Conversation {
+        val database = MessagesApp.database
+        val conversationDao = database.conversationDao()
+        
+        val existing = conversationDao.getConversationByThreadId(threadId)
+        return if (existing != null) {
+            existing
+        } else {
+            val newConversation = Conversation(
+                threadId = threadId,
+                address = address,
+                snippet = "",
+                date = System.currentTimeMillis(),
+                unreadCount = 0
+            )
+            conversationDao.insertConversation(newConversation)
+            newConversation
         }
     }
     
-    private fun updateConversation(context: Context, conversation: Conversation, message: Message) {
-        val realm = MessagesApp.realm
-        realm.writeBlocking {
-            findLatest(conversation)?.apply {
-                this.snippet = message.body
-                this.date = message.date
-                if (!message.read) {
-                    this.unreadCount = (this.unreadCount ?: 0) + 1
-                }
-            }
+    private suspend fun updateConversation(context: Context, conversation: Conversation, message: Message) {
+        val database = MessagesApp.database
+        val conversationDao = database.conversationDao()
+        
+        val updatedUnreadCount = if (!message.read) {
+            conversation.unreadCount + 1
+        } else {
+            conversation.unreadCount
         }
+        
+        conversationDao.updateConversation(
+            conversation.copy(
+                snippet = message.body,
+                date = message.date,
+                unreadCount = updatedUnreadCount
+            )
+        )
     }
     
-    private fun markConversationUnarchived(context: Context, threadId: Long) {
-        val realm = MessagesApp.realm
-        realm.writeBlocking {
-            val conversation = query(Conversation::class, "threadId == $threadId").first().find()
-            conversation?.let {
-                findLatest(it)?.archived = false
-            }
-        }
+    private suspend fun markConversationUnarchived(context: Context, threadId: Long) {
+        val database = MessagesApp.database
+        val conversationDao = database.conversationDao()
+        conversationDao.updateArchivedStatus(threadId, false)
     }
 }
 

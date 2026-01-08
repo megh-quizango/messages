@@ -36,25 +36,31 @@ class SmsSentReceiver : BroadcastReceiver() {
     private suspend fun updateMessageStatus(messageId: Long, success: Boolean) {
         try {
             Log.d(TAG, "updateMessageStatus - messageId: $messageId, success: $success")
-            val realm = MessagesApp.realm
-            realm.writeBlocking {
-                val message = query(Message::class, "id == $messageId").first().find()
-                if (message != null) {
-                    findLatest(message)?.apply {
-                        this.status = if (success) {
-                            MessageStatus.SENT
-                        } else {
-                            MessageStatus.FAILED
-                        }
-                        // Update date to current time on successful send
-                        if (success) {
-                            this.date = System.currentTimeMillis()
-                        }
-                    }
-                    Log.d(TAG, "Message status updated - messageId: $messageId, new status: ${if (success) "SENT" else "FAILED"}")
+            val database = MessagesApp.database
+            val messageDao = database.messageDao()
+            
+            val message = messageDao.getMessageById(messageId)
+            if (message != null) {
+                val newStatus = if (success) {
+                    MessageStatus.SENT
                 } else {
-                    Log.w(TAG, "Message not found in Realm - messageId: $messageId")
+                    MessageStatus.FAILED
                 }
+                val updatedDate = if (success) {
+                    System.currentTimeMillis()
+                } else {
+                    message.date
+                }
+                
+                messageDao.updateMessage(
+                    message.copy(
+                        status = newStatus,
+                        date = updatedDate
+                    )
+                )
+                Log.d(TAG, "Message status updated - messageId: $messageId, new status: ${if (success) "SENT" else "FAILED"}")
+            } else {
+                Log.w(TAG, "Message not found in database - messageId: $messageId")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error updating message status", e)

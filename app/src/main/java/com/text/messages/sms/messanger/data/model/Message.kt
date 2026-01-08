@@ -1,24 +1,25 @@
 package com.text.messages.sms.messanger.data.model
 
-import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.annotations.PrimaryKey
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-class Message : RealmObject {
+@Entity(tableName = "messages")
+data class Message(
     @PrimaryKey
-    var id: Long = 0
-    var threadId: Long = 0
-    var address: String = ""
-    var body: String = ""
-    var date: Long = 0
-    var type: Int = 0 // INBOX = 1, SENT = 2, DRAFT = 3, FAILED = 5
-    var status: Int = 0 // PENDING = 0, SENT = 1, RECEIVED = 2, FAILED = 3, DELIVERED = 4
-    var read: Boolean = false
-    var starred: Boolean = false
-    var mimeType: String? = null
-    var attachmentPath: String? = null
-    var messagePartCount: Int = 1
-    var otp: String? = null // Detected OTP from message body
-}
+    val id: Long = 0,
+    val threadId: Long = 0,
+    val address: String = "",
+    val body: String = "",
+    val date: Long = 0,
+    val type: Int = 0, // INBOX = 1, SENT = 2, DRAFT = 3, FAILED = 5
+    val status: Int = 0, // PENDING = 0, SENT = 1, RECEIVED = 2, FAILED = 3, DELIVERED = 4
+    val read: Boolean = false,
+    val starred: Boolean = false,
+    val mimeType: String? = null,
+    val attachmentPath: String? = null,
+    val messagePartCount: Int = 1,
+    val otp: String? = null // Detected OTP from message body
+)
 
 object MessageType {
     const val INBOX = 1
@@ -34,4 +35,3 @@ object MessageStatus {
     const val FAILED = 3
     const val DELIVERED = 4
 }
-

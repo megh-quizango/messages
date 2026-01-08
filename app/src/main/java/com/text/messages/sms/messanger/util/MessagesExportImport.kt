@@ -125,7 +125,7 @@ object MessagesExportImport {
     }
     
     /**
-     * Import messages from a zip file and add them to Realm database
+     * Import messages from a zip file and add them to Room database
      */
     suspend fun importMessages(context: Context, inputUri: Uri): Int = withContext(Dispatchers.IO) {
         try {
@@ -159,39 +159,42 @@ object MessagesExportImport {
             
             Log.d(TAG, "Parsed ${importMessages.size} messages from JSON")
             
-            // Import to Realm database and Android SMS database
-            val realm = MessagesApp.realm
+            // Import to database and Android SMS database
+            val database = MessagesApp.database
+            val messageDao = database.messageDao()
             var importedCount = 0
             var skippedCount = 0
             var smsImportedCount = 0
             
-            realm.writeBlocking {
-                importMessages.forEach { exportMsg ->
-                    // Check if message already exists (by address, body, and date to avoid duplicates)
-                    // Use a time window of ±1 second to account for timestamp differences
-                    val existing = query(
-                        Message::class, 
-                        "threadId == ${exportMsg.threadId} AND address == '${exportMsg.address}' AND date >= ${exportMsg.date - 1000} AND date <= ${exportMsg.date + 1000}"
-                    ).first().find()
-                    
-                    if (existing == null) {
-                        // Create new message in Realm
-                        val message = Message()
-                        message.id = exportMsg.id
-                        message.threadId = exportMsg.threadId
-                        message.address = exportMsg.address
-                        message.body = exportMsg.body
-                        message.date = exportMsg.date
-                        message.type = exportMsg.type
-                        message.status = exportMsg.status
-                        message.read = exportMsg.read
-                        message.starred = exportMsg.starred
-                        message.mimeType = exportMsg.mimeType
-                        message.attachmentPath = exportMsg.attachmentPath
-                        message.messagePartCount = exportMsg.messagePartCount
-                        message.otp = exportMsg.otp
-                        copyToRealm(message)
-                        importedCount++
+            importMessages.forEach { exportMsg ->
+                // Check if message already exists (by address, body, and date to avoid duplicates)
+                // Use a time window of ±1 second to account for timestamp differences
+                val existing = messageDao.findMessageByThreadAndTime(
+                    threadId = exportMsg.threadId,
+                    address = exportMsg.address,
+                    startTime = exportMsg.date - 1000,
+                    endTime = exportMsg.date + 1000
+                )
+                
+                if (existing == null) {
+                    // Create new message in database
+                    val message = Message(
+                        id = exportMsg.id,
+                        threadId = exportMsg.threadId,
+                        address = exportMsg.address,
+                        body = exportMsg.body,
+                        date = exportMsg.date,
+                        type = exportMsg.type,
+                        status = exportMsg.status,
+                        read = exportMsg.read,
+                        starred = exportMsg.starred,
+                        mimeType = exportMsg.mimeType,
+                        attachmentPath = exportMsg.attachmentPath,
+                        messagePartCount = exportMsg.messagePartCount,
+                        otp = exportMsg.otp
+                    )
+                    messageDao.insertMessage(message)
+                    importedCount++
                         
                         // Also write to Android SMS database so it appears in recycler view
                         try {
@@ -224,13 +227,12 @@ object MessagesExportImport {
                             Log.w(TAG, "Could not insert message to SMS database (may require default SMS app): ${e.message}")
                             // Continue even if SMS database insert fails
                         }
-                    } else {
-                        skippedCount++
-                    }
+                } else {
+                    skippedCount++
                 }
             }
             
-            Log.d(TAG, "Import completed. Realm imported: $importedCount, SMS imported: $smsImportedCount, Skipped (duplicates): $skippedCount")
+            Log.d(TAG, "Import completed. Database imported: $importedCount, SMS imported: $smsImportedCount, Skipped (duplicates): $skippedCount")
             importedCount
         } catch (e: Exception) {
             Log.e(TAG, "Error importing messages", e)

@@ -128,6 +128,16 @@ class PrivateConversationsActivity : AppCompatActivity() {
 
                 PrivateConversationStorage.removeThreadId(this, threadId)
 
+                // Immediately remove from cache so MainActivity shows the update instantly
+                com.text.messages.sms.messanger.util.ConversationCache.removeConversation(threadId)
+                
+                // Invalidate all category caches to ensure the conversation appears in MainActivity
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+                com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
+
                 // Preload the restored conversation into cache so MainActivity shows it instantly
                 viewModel.loadSingleConversation(this, threadId, category = "All") { /* no-op */ }
 
@@ -242,17 +252,7 @@ class PrivateConversationsActivity : AppCompatActivity() {
         
         if (index >= 0) {
             val conversation = currentList[index]
-            val updatedConversation = com.text.messages.sms.messanger.data.model.Conversation().apply {
-                this.threadId = conversation.threadId
-                this.address = conversation.address
-                this.contactName = conversation.contactName
-                this.snippet = conversation.snippet
-                this.date = conversation.date
-                this.unreadCount = 0
-                this.archived = conversation.archived
-                this.blocked = conversation.blocked
-                this.photoUri = conversation.photoUri
-            }
+            val updatedConversation = conversation.copy(unreadCount = 0)
             currentList[index] = updatedConversation
             adapter.submitList(currentList)
         }

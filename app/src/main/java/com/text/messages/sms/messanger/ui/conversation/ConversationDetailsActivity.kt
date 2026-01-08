@@ -30,7 +30,6 @@ import com.text.messages.sms.messanger.util.AvatarHelper
 import com.text.messages.sms.messanger.util.BlockedConversationStorage
 import com.text.messages.sms.messanger.util.ConversationCache
 import com.text.messages.sms.messanger.util.ThemeManager
-import io.realm.kotlin.query.RealmQuery
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -156,41 +155,35 @@ class ConversationDetailsActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Get conversation from Realm to get all details - ensure we only get the specific conversation
-                val realm = MessagesApp.realm
-                val conversation = realm.query(Conversation::class, "threadId == $actualThreadId").first().find()
+                // Get conversation from database to get all details - ensure we only get the specific conversation
+                val database = MessagesApp.database
+                val conversationDao = database.conversationDao()
+                val conversation = conversationDao.getConversationByThreadId(actualThreadId)
                 
-                // Create conversation object with current data if not found in Realm
+                // Create conversation object with current data if not found in database
                 val conversationToArchive = if (conversation != null) {
-                    // Use values from Realm object - ensure we use the exact threadId from query
-                    val realmThreadId = conversation.threadId
-                    Log.d(TAG, "Found conversation in Realm - threadId: $realmThreadId, address: ${conversation.address}")
+                    // Use values from database object - ensure we use the exact threadId from query
+                    val dbThreadId = conversation.threadId
+                    Log.d(TAG, "Found conversation in database - threadId: $dbThreadId, address: ${conversation.address}")
                     
                     // Validate that the threadId matches
-                    if (realmThreadId != actualThreadId) {
-                        Log.w(TAG, "ThreadId mismatch! Expected: $actualThreadId, Found: $realmThreadId")
+                    if (dbThreadId != actualThreadId) {
+                        Log.w(TAG, "ThreadId mismatch! Expected: $actualThreadId, Found: $dbThreadId")
                     }
                     
-                    Conversation().apply {
-                        this.threadId = realmThreadId
-                        this.address = conversation.address
-                        this.contactName = conversation.contactName
-                        this.snippet = conversation.snippet
-                        this.date = conversation.date
-                        this.unreadCount = conversation.unreadCount
-                    }
+                    conversation
                 } else {
-                    // Create with current data if not in Realm
-                    Log.d(TAG, "Conversation not found in Realm, creating with current data - threadId: $actualThreadId, address: $address")
+                    // Create with current data if not in database
+                    Log.d(TAG, "Conversation not found in database, creating with current data - threadId: $actualThreadId, address: $address")
                     val currentContactName = this@ConversationDetailsActivity.contactName
-                    Conversation().apply {
-                        this.threadId = actualThreadId
-                        this.address = address
-                        this.contactName = if (currentContactName.isNotEmpty()) currentContactName else null
-                        this.snippet = "" // Will be empty if not in Realm
-                        this.date = System.currentTimeMillis()
-                        this.unreadCount = 0
-                    }
+                    Conversation(
+                        threadId = actualThreadId,
+                        address = address,
+                        contactName = if (currentContactName.isNotEmpty()) currentContactName else null,
+                        snippet = "", // Will be empty if not in database
+                        date = System.currentTimeMillis(),
+                        unreadCount = 0
+                    )
                 }
                 
                 // Validate conversation before archiving
@@ -207,11 +200,18 @@ class ConversationDetailsActivity : AppCompatActivity() {
                 // Save to archive (SharedPreferences) - same as MainActivity
                 saveToArchive(conversationToArchive)
                 
-                // Remove from cache
-                ConversationCache.removeConversation(actualThreadId)
-                
-                // Send broadcast to notify calling activity
-                sendConversationActionBroadcast(actualThreadId, "archived")
+                        // Remove from cache
+                        ConversationCache.removeConversation(actualThreadId)
+                        
+                        // Invalidate all category caches to ensure updates are immediately visible
+                        ConversationCache.invalidate("All")
+                        ConversationCache.invalidate("Personal")
+                        ConversationCache.invalidate("OTPs")
+                        ConversationCache.invalidate("Offers")
+                        ConversationCache.invalidate("Transactions")
+                        
+                        // Send broadcast to notify calling activity
+                        sendConversationActionBroadcast(actualThreadId, "archived")
                 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@ConversationDetailsActivity, "Conversation archived", Toast.LENGTH_SHORT).show()
@@ -304,23 +304,24 @@ class ConversationDetailsActivity : AppCompatActivity() {
                         // Save to blocked conversations storage - same as MainActivity
                         BlockedConversationStorage.addThreadId(this@ConversationDetailsActivity, actualThreadId)
                         
-                        // Update Realm conversation as blocked
+                        // Update database conversation as blocked
                         try {
-                            val realm = MessagesApp.realm
-                            realm.writeBlocking {
-                                val existingConversation = query(Conversation::class, "threadId == $actualThreadId").first().find()
-                                if (existingConversation != null) {
-                                    findLatest(existingConversation)?.apply {
-                                        this.blocked = true
-                                    }
-                                }
-                            }
+                            val database = MessagesApp.database
+                            val conversationDao = database.conversationDao()
+                            conversationDao.updateBlockedStatus(actualThreadId, true)
                         } catch (e: Exception) {
-                            Log.e(TAG, "Error updating Realm conversation as blocked", e)
+                            Log.e(TAG, "Error updating database conversation as blocked", e)
                         }
                         
                         // Remove from cache
                         ConversationCache.removeConversation(actualThreadId)
+                        
+                        // Invalidate all category caches to ensure updates are immediately visible
+                        ConversationCache.invalidate("All")
+                        ConversationCache.invalidate("Personal")
+                        ConversationCache.invalidate("OTPs")
+                        ConversationCache.invalidate("Offers")
+                        ConversationCache.invalidate("Transactions")
                         
                         // Send broadcast to notify calling activity
                         sendConversationActionBroadcast(actualThreadId, "blocked")
@@ -367,32 +368,25 @@ class ConversationDetailsActivity : AppCompatActivity() {
             .setPositiveButton("Delete") { _, _ ->
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        // Get conversation from Realm to get all details
-                        val realm = MessagesApp.realm
-                        val conversation = realm.query(Conversation::class, "threadId == $actualThreadId").first().find()
+                        // Get conversation from database to get all details
+                        val database = MessagesApp.database
+                        val conversationDao = database.conversationDao()
+                        val conversation = conversationDao.getConversationByThreadId(actualThreadId)
                         
-                        // Create conversation object with current data if not found in Realm
+                        // Create conversation object with current data if not found in database
                         val conversationToDelete = if (conversation != null) {
-                            // Use values from Realm object
-                            Conversation().apply {
-                                this.threadId = conversation.threadId
-                                this.address = conversation.address
-                                this.contactName = conversation.contactName
-                                this.snippet = conversation.snippet
-                                this.date = conversation.date
-                                this.unreadCount = conversation.unreadCount
-                            }
+                            conversation
                         } else {
-                            // Create with current data if not in Realm
+                            // Create with current data if not in database
                             val currentContactName = this@ConversationDetailsActivity.contactName
-                            Conversation().apply {
-                                this.threadId = actualThreadId
-                                this.address = address
-                                this.contactName = if (currentContactName.isNotEmpty()) currentContactName else null
-                                this.snippet = "" // Will be empty if not in Realm
-                                this.date = System.currentTimeMillis()
-                                this.unreadCount = 0
-                            }
+                            Conversation(
+                                threadId = actualThreadId,
+                                address = address,
+                                contactName = if (currentContactName.isNotEmpty()) currentContactName else null,
+                                snippet = "", // Will be empty if not in database
+                                date = System.currentTimeMillis(),
+                                unreadCount = 0
+                            )
                         }
                         
                         // Save to recycle bin (SharedPreferences) - same as MainActivity
@@ -401,6 +395,13 @@ class ConversationDetailsActivity : AppCompatActivity() {
                         
                         // Remove from cache
                         ConversationCache.removeConversation(actualThreadId)
+                        
+                        // Invalidate all category caches to ensure updates are immediately visible
+                        ConversationCache.invalidate("All")
+                        ConversationCache.invalidate("Personal")
+                        ConversationCache.invalidate("OTPs")
+                        ConversationCache.invalidate("Offers")
+                        ConversationCache.invalidate("Transactions")
                         
                         // Send broadcast to notify calling activity
                         sendConversationActionBroadcast(actualThreadId, "deleted")

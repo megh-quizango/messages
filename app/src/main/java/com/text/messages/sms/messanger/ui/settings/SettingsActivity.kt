@@ -245,7 +245,8 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 },
                 SettingsOption("Contacts colored icons", getIcon("contacts"), true, false),
-                SettingsOption("Color SIM card icons", getIcon("sim"), false, false),
+                SettingsOption("Color SIM card icons", getIcon("sim"), 
+                    com.text.messages.sms.messanger.util.AppPreferences.getColorSimCardIcons(this), false),
                 SettingsOption("Quick access to OTP", getIcon("otp"), true, false)
             )),
             SettingsItem("Go To", listOf(
@@ -297,16 +298,19 @@ class SettingsActivity : AppCompatActivity() {
             
             when (item.itemId) {
                 R.id.nav_messages -> {
+                    overridePendingTransition(0, 0)
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                     true
                 }
                 R.id.nav_contacts -> {
+                    overridePendingTransition(0, 0)
                     startActivity(Intent(this, ContactsActivity::class.java))
                     finish()
                     true
                 }
                 R.id.nav_personalize -> {
+                    overridePendingTransition(0, 0)
                     startActivity(Intent(this, PersonalizeActivity::class.java))
                     finish()
                     true

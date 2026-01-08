@@ -5,6 +5,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -14,11 +15,18 @@ import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.data.model.Conversation
 import com.text.messages.sms.messanger.util.AvatarHelper
 import com.text.messages.sms.messanger.util.OtpHelper
+import com.text.messages.sms.messanger.util.AppPreferences
+import com.text.messages.sms.messanger.util.SimHelper
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.graphics.Color
 import android.widget.Toast
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -102,6 +110,10 @@ class ConversationAdapter(
         private val textUnreadDot: View = itemView.findViewById(R.id.textUnreadDot)
         private val buttonStartChat: MaterialButton = itemView.findViewById(R.id.buttonStartChat)
         private val buttonCopyOtpList: TextView = itemView.findViewById(R.id.buttonCopyOtpList)
+        private val imageSimBadge: ImageView = itemView.findViewById(R.id.imageSimBadge)
+        
+        private var simBadgeJob: Job? = null
+        private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
         fun bind(conversation: Conversation) {
             // Handle "Add Conversation" special item
@@ -112,6 +124,7 @@ class ConversationAdapter(
                 textUnreadDot.visibility = View.GONE
                 buttonStartChat.visibility = View.GONE
                 imageContact.visibility = View.GONE
+                imageSimBadge.visibility = View.GONE
                 textAvatarLetter.visibility = View.VISIBLE
                 textAvatarLetter.text = "+"
                 textAvatarLetter.setBackgroundColor(itemView.context.getColor(R.color.blue_primary))
@@ -120,6 +133,9 @@ class ConversationAdapter(
                     onConversationClick(conversation)
                 }
                 itemView.setOnLongClickListener(null)
+                // Cancel any pending SIM badge loading
+                simBadgeJob?.cancel()
+                simBadgeJob = null
                 return
             }
 
@@ -176,6 +192,9 @@ class ConversationAdapter(
             // Log TextView state after loading avatar
             Log.d(TAG, "bind: After loadAvatar - textAvatarLetter visibility=${textAvatarLetter.visibility}, text='${textAvatarLetter.text}', width=${textAvatarLetter.width}, height=${textAvatarLetter.height}")
             
+            // Load SIM badge if setting is enabled
+            loadSimBadge(conversation.threadId)
+            
             itemView.setOnClickListener {
                 onConversationClick(conversation)
             }
@@ -229,6 +248,49 @@ class ConversationAdapter(
         fun cancelPendingLoads() {
             // Cancel any pending Picasso requests
             com.squareup.picasso.Picasso.get().cancelRequest(imageContact)
+            // Cancel any pending SIM badge loading
+            simBadgeJob?.cancel()
+            simBadgeJob = null
+        }
+        
+        /**
+         * Loads the SIM badge for the conversation if the setting is enabled.
+         * This runs on a background thread to avoid blocking the UI.
+         */
+        private fun loadSimBadge(threadId: Long) {
+            // Cancel any previous job
+            simBadgeJob?.cancel()
+            
+            // Check if setting is enabled
+            val isEnabled = AppPreferences.getColorSimCardIcons(itemView.context)
+            
+            if (!isEnabled || threadId <= 0) {
+                imageSimBadge.visibility = View.GONE
+                return
+            }
+            
+            // Load SIM subscription ID on background thread
+            simBadgeJob = coroutineScope.launch {
+                try {
+                    val subId = withContext(Dispatchers.IO) {
+                        SimHelper.getLastMessageSubId(itemView.context, threadId)
+                    }
+                    
+                    // Update UI on main thread
+                    if (subId >= 0) {
+                        val simColor = SimHelper.getSimColor(subId)
+                        imageSimBadge.setColorFilter(Color.parseColor(simColor))
+                        imageSimBadge.visibility = View.VISIBLE
+                        Log.d(TAG, "loadSimBadge: threadId=$threadId, subId=$subId, color=$simColor")
+                    } else {
+                        imageSimBadge.visibility = View.GONE
+                        Log.d(TAG, "loadSimBadge: threadId=$threadId, no subId found")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "loadSimBadge: Error loading SIM badge for threadId=$threadId", e)
+                    imageSimBadge.visibility = View.GONE
+                }
+            }
         }
         
         fun bindPartial(conversation: Conversation, payload: Set<*>) {
@@ -276,6 +338,8 @@ class ConversationAdapter(
             }
             // Ensure button is always hidden during partial updates
             buttonStartChat.visibility = View.GONE
+            // Reload SIM badge if setting might have changed
+            loadSimBadge(conversation.threadId)
         }
         
         private fun formatTime(timestamp: Long): String {

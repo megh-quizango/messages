@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
     private var loadingIndicatorHandler: android.os.Handler? = null
     private var loadingIndicatorRunnable: Runnable? = null
     private var themeChangeReceiver: BroadcastReceiver? = null
+    private var themeUpdateCallback: ((Context, View) -> Unit)? = null
     private var exitBottomSheet: com.google.android.material.bottomsheet.BottomSheetDialog? = null
     private var exitNativeAd: NativeAd? = null
     private var exitNativeAdView: NativeAdView? = null
@@ -96,6 +97,9 @@ class MainActivity : AppCompatActivity() {
     private var conversationActionReceiver: BroadcastReceiver? = null
     private var conversationUpdateReceiver: BroadcastReceiver? = null
     private var isActivityResumed: Boolean = false // Track if MainActivity is in foreground
+    private var hasPreCachedCategories: Boolean = false // Track if categories have been pre-cached
+    private val manuallyMarkedAsReadThreadIds = mutableSetOf<Long>() // Track conversations manually marked as read
+    private var hasPreCachedFilters: Boolean = false // Track if custom filters have been pre-cached
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -226,6 +230,9 @@ class MainActivity : AppCompatActivity() {
         // Ensure search bar is enabled after setup (in case loading state interferes)
         // This will be overridden by loading observer if loading is active
         enableSearchBar()
+        
+        // Load manually marked-as-read conversations from SharedPreferences
+        loadManuallyMarkedAsReadConversations()
         
         // Request SMS permission and load conversations
         // Use cache first for instant loading
@@ -366,17 +373,33 @@ class MainActivity : AppCompatActivity() {
         
         themeChangeReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                // Re-apply theme when it changes
-                binding.root.post {
-                    ThemeManager.applyTheme(this@MainActivity, binding.root)
-                    // Also update visible fragments
-                    updateVisibleFragments()
-                }
-                // Also apply immediately
-                ThemeManager.applyTheme(this@MainActivity, binding.root)
+                // Re-apply theme IMMEDIATELY when it changes
+                ThemeManager.applyThemeImmediate(this@MainActivity, binding.root)
+                
+                // CRITICAL: Update filter tabs immediately with new theme colors
+                updateFilterTabsTheme()
+                
+                binding.root.invalidate()
+                binding.root.requestLayout()
+                // Also update visible fragments immediately
                 updateVisibleFragments()
             }
         }
+        
+        // Also register for direct callback updates
+        themeUpdateCallback = { ctx: Context, view: View ->
+            if (ctx == this@MainActivity) {
+                ThemeManager.applyThemeImmediate(this@MainActivity, binding.root)
+                
+                // CRITICAL: Update filter tabs immediately with new theme colors
+                updateFilterTabsTheme()
+                
+                binding.root.invalidate()
+                binding.root.requestLayout()
+                updateVisibleFragments()
+            }
+        }
+        themeUpdateCallback?.let { ThemeManager.registerThemeUpdateCallback(it) }
         registerReceiver(themeChangeReceiver, IntentFilter("com.text.messages.sms.messanger.THEME_CHANGED"), receiverFlags)
     }
     
@@ -453,153 +476,20 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                             
-                            // Load the single conversation quickly and add it to the current list
+                            // Always force a full refresh to ensure the restored conversation appears
+                            // This is more reliable than trying to load a single conversation
                             if (category != null) {
-                                // Load conversation and add to list immediately
-                                viewModel.loadSingleConversation(this@MainActivity, threadId, category) { restoredConversation ->
-                                    // Ensure callback runs on main thread
-                                    Handler(Looper.getMainLooper()).post {
-                                        if (restoredConversation != null) {
-                                            try {
-                                                // Always update allConversations and cache regardless of activity state
-                                                val allList = allConversations.toMutableList()
-                                                val existingIndex = allList.indexOfFirst { it.threadId == threadId }
-                                                if (existingIndex >= 0) {
-                                                    allList[existingIndex] = restoredConversation
-                                                } else {
-                                                    // Insert at correct position in allConversations
-                                                    val allInsertIndex = allList.indexOfFirst { it.date < restoredConversation.date }
-                                                    if (allInsertIndex >= 0) {
-                                                        allList.add(allInsertIndex, restoredConversation)
-                                                    } else {
-                                                        allList.add(restoredConversation)
-                                                    }
-                                                }
-                                                allConversations = allList
-                                                
-                                                // Update cache
-                                                ConversationCache.updateConversation(threadId, restoredConversation)
-                                                
-                                                // Invalidate cache for current category to ensure it's updated
-                                                ConversationCache.invalidate(category)
-                                                
-                                                // Only update UI if MainActivity is in the foreground
-                                                if (!isActivityResumed) {
-                                                    Log.d(TAG, "MainActivity not in foreground, updated data in background. UI will refresh on resume.")
-                                                    return@post
-                                                }
-                                                
-                                                // Check if adapter is initialized
-                                                if (!::adapter.isInitialized) {
-                                                    Log.w(TAG, "Adapter not initialized yet, will update on next load")
-                                                    return@post
-                                                }
-                                                
-                                                // Add to current list immediately on main thread
-                                                val currentList = adapter.currentList.toMutableList()
-                                                
-                                                // Remove if already exists (shouldn't happen, but safety check)
-                                                currentList.removeAll { it.threadId == threadId }
-                                                
-                                                // Insert at correct position (sorted by date, newest first)
-                                                val insertIndex = currentList.indexOfFirst { it.date < restoredConversation.date }
-                                                if (insertIndex >= 0) {
-                                                    currentList.add(insertIndex, restoredConversation)
-                                                } else {
-                                                    // Add to end if it's the oldest
-                                                    currentList.add(restoredConversation)
-                                                }
-                                                
-                                                // Create a new list instance to ensure DiffUtil detects the change
-                                                val newList = currentList.toList()
-                                                
-                                                // Force update on main thread
-                                                adapter.submitList(newList) {
-                                                    Log.d(TAG, "Successfully restored conversation $threadId at position: $insertIndex")
-                                                    updateEmptyState(newList.isEmpty())
-                                                }
-                                            } catch (e: Exception) {
-                                                Log.e(TAG, "Error restoring conversation in adapter", e)
-                                            }
-                                        } else {
-                                            // If loading single conversation failed, do a full refresh
-                                            Log.d(TAG, "Failed to load single conversation, doing full refresh")
-                                            if (isActivityResumed) {
-                                                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
-                                            }
-                                        }
-                                    }
-                                }
+                                Log.d(TAG, "Refreshing category '$category' after conversation restore")
+                                // Force refresh regardless of activity state - it will update when activity resumes
+                                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
                             } else if (filterId != null) {
-                                // For custom filters, do a full refresh (less common case)
-                                if (isActivityResumed) {
-                                    viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId, useCache = false, forceRefresh = true)
-                                }
+                                Log.d(TAG, "Refreshing custom filter '$filterId' after conversation restore")
+                                // Force refresh for custom filter
+                                viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId, useCache = false, forceRefresh = true)
                             } else {
+                                Log.d(TAG, "Refreshing 'All' category after conversation restore")
                                 // Default to "All"
-                                viewModel.loadSingleConversation(this@MainActivity, threadId, "All") { restoredConversation ->
-                                    Handler(Looper.getMainLooper()).post {
-                                        if (restoredConversation != null) {
-                                            try {
-                                                // Always update allConversations and cache regardless of activity state
-                                                val allList = allConversations.toMutableList()
-                                                val existingIndex = allList.indexOfFirst { it.threadId == threadId }
-                                                if (existingIndex >= 0) {
-                                                    allList[existingIndex] = restoredConversation
-                                                } else {
-                                                    val allInsertIndex = allList.indexOfFirst { it.date < restoredConversation.date }
-                                                    if (allInsertIndex >= 0) {
-                                                        allList.add(allInsertIndex, restoredConversation)
-                                                    } else {
-                                                        allList.add(restoredConversation)
-                                                    }
-                                                }
-                                                allConversations = allList
-                                                
-                                                // Update cache
-                                                ConversationCache.updateConversation(threadId, restoredConversation)
-                                                
-                                                // Invalidate cache to ensure it's updated
-                                                ConversationCache.invalidate("All")
-                                                
-                                                // Only update UI if MainActivity is in the foreground
-                                                if (!isActivityResumed) {
-                                                    Log.d(TAG, "MainActivity not in foreground, updated data in background. UI will refresh on resume.")
-                                                    return@post
-                                                }
-                                                
-                                                // Check if adapter is initialized
-                                                if (!::adapter.isInitialized) {
-                                                    Log.w(TAG, "Adapter not initialized yet, will update on next load")
-                                                    return@post
-                                                }
-                                                
-                                                val currentList = adapter.currentList.toMutableList()
-                                                currentList.removeAll { it.threadId == threadId }
-                                                val insertIndex = currentList.indexOfFirst { it.date < restoredConversation.date }
-                                                if (insertIndex >= 0) {
-                                                    currentList.add(insertIndex, restoredConversation)
-                                                } else {
-                                                    currentList.add(restoredConversation)
-                                                }
-                                                
-                                                // Create a new list instance to ensure DiffUtil detects the change
-                                                val newList = currentList.toList()
-                                                
-                                                adapter.submitList(newList) {
-                                                    Log.d(TAG, "Successfully restored conversation $threadId in All filter")
-                                                    updateEmptyState(newList.isEmpty())
-                                                }
-                                            } catch (e: Exception) {
-                                                Log.e(TAG, "Error restoring conversation in adapter", e)
-                                            }
-                                        } else {
-                                            if (isActivityResumed) {
-                                                viewModel.loadConversations("All", showLoading = false, useCache = false, forceRefresh = true)
-                                            }
-                                        }
-                                    }
-                                }
+                                viewModel.loadConversations("All", showLoading = false, useCache = false, forceRefresh = true)
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error in conversation restored receiver", e)
@@ -714,22 +604,12 @@ class MainActivity : AppCompatActivity() {
                     // Load updated conversation from Realm (always update data, UI update depends on activity state)
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
-                            val realm = MessagesApp.realm
-                            val conversation = realm.query(Conversation::class, "threadId == $threadId").first().find()
+                            val database = MessagesApp.database
+                            val conversationDao = database.conversationDao()
+                            val conversation = conversationDao.getConversationByThreadId(threadId)
                             
                             if (conversation != null) {
-                                // Access conversation properties directly (Realm objects are live)
-                                val updatedConversation = Conversation().apply {
-                                    this.threadId = conversation.threadId
-                                    this.address = conversation.address
-                                    this.contactName = conversation.contactName
-                                    this.snippet = conversation.snippet
-                                    this.date = conversation.date
-                                    this.unreadCount = conversation.unreadCount
-                                    this.archived = conversation.archived
-                                    this.blocked = conversation.blocked
-                                    this.photoUri = conversation.photoUri
-                                }
+                                val updatedConversation = conversation
                                 
                                 withContext(Dispatchers.Main) {
                                     // Always update allConversations and cache regardless of activity state
@@ -765,39 +645,11 @@ class MainActivity : AppCompatActivity() {
                                     
                                     // Update in adapter
                                     updateConversationInAdapter(threadId) { oldConv ->
-                                        Conversation().apply {
-                                            this.threadId = updatedConversation.threadId
-                                            this.address = updatedConversation.address
-                                            this.contactName = updatedConversation.contactName
-                                            this.snippet = updatedConversation.snippet
-                                            this.date = updatedConversation.date
-                                            this.unreadCount = updatedConversation.unreadCount
-                                            this.archived = updatedConversation.archived
-                                            this.blocked = updatedConversation.blocked
-                                            this.photoUri = updatedConversation.photoUri
-                                        }
+                                        updatedConversation
                                     }
                                     
-                                    // If date changed significantly (new message), might need to reorder
-                                    val currentList = adapter.currentList
-                                    val currentIndex = currentList.indexOfFirst { it.threadId == threadId }
-                                    if (currentIndex > 0 && updatedConversation.date > currentList[0].date) {
-                                        // New message received - move to top
-                                        val newList = currentList.toMutableList()
-                                        newList.removeAt(currentIndex)
-                                        newList.add(0, Conversation().apply {
-                                            this.threadId = updatedConversation.threadId
-                                            this.address = updatedConversation.address
-                                            this.contactName = updatedConversation.contactName
-                                            this.snippet = updatedConversation.snippet
-                                            this.date = updatedConversation.date
-                                            this.unreadCount = updatedConversation.unreadCount
-                                            this.archived = updatedConversation.archived
-                                            this.blocked = updatedConversation.blocked
-                                            this.photoUri = updatedConversation.photoUri
-                                        })
-                                        adapter.submitList(newList)
-                                    }
+                                    // Don't move conversations to top - let the merge logic handle sorting by date/time
+                                    // The conversation will be updated in place, and the list will be re-sorted on next load
                                 }
                             }
                         } catch (e: Exception) {
@@ -823,6 +675,9 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         Log.d(TAG, "=== MainActivity.onPause() ===")
         Log.d(TAG, "MainActivity.onPause(): Current RecyclerView visibility: ${if (::binding.isInitialized) binding.recyclerViewConversations.visibility else "binding not initialized"}")
+        
+        // Save manually marked-as-read conversations to SharedPreferences
+        saveManuallyMarkedAsReadConversations()
         
         // Mark activity as not resumed - prevents recycler view updates when in background
         isActivityResumed = false
@@ -853,6 +708,10 @@ class MainActivity : AppCompatActivity() {
         // Unregister theme change receiver
         themeChangeReceiver?.let {
             unregisterReceiver(it)
+        }
+        // Unregister theme callback
+        themeUpdateCallback?.let {
+            ThemeManager.unregisterThemeUpdateCallback(it)
         }
         // Unregister MMS refresh receiver
         mmsRefreshReceiver?.let {
@@ -999,6 +858,9 @@ class MainActivity : AppCompatActivity() {
             addCustomFilterTab(filter)
             dialog.dismiss()
             
+            // Pre-cache the new filter in background
+            viewModel.preCacheAllCustomFilters(this)
+            
             // Select the new filter tab
             customFilterTabs[filter.id]?.let { tab ->
                 selectCustomFilterTab(tab, filter.id)
@@ -1006,6 +868,66 @@ class MainActivity : AppCompatActivity() {
         }
         
         dialog.show()
+    }
+    
+    /**
+     * Update all filter tabs with current theme colors immediately
+     * Called when theme changes to ensure tabs reflect new colors instantly
+     */
+    private fun updateFilterTabsTheme() {
+        val themeColor = ThemeManager.getThemeColor(this)
+        val themeColorLight = ThemeManager.getThemeColorLight(this)
+        val tabCornerRadius = 50f * resources.displayMetrics.density
+        
+        // Update selected tab with new theme color
+        selectedTab?.let { tab ->
+            val selectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = tabCornerRadius
+                setColor(themeColor)
+            }
+            tab.background = selectedDrawable
+            tab.invalidate()
+            tab.requestLayout()
+        }
+        
+        // Update all unselected tabs with new theme light color
+        val allTabs = listOf(
+            binding.tabAll,
+            binding.tabPersonal,
+            binding.tabOTPs,
+            binding.tabOffers,
+            binding.tabTransactions
+        )
+        
+        allTabs.forEach { tab ->
+            if (tab != selectedTab) {
+                val unselectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                    cornerRadius = tabCornerRadius
+                    setColor(themeColorLight)
+                }
+                tab.background = unselectedDrawable
+                tab.invalidate()
+                tab.requestLayout()
+            }
+        }
+        
+        // Update custom filter tabs
+        customFilterTabs.values.forEach { tab ->
+            if (tab != selectedTab) {
+                val unselectedDrawable = android.graphics.drawable.GradientDrawable().apply {
+                    cornerRadius = tabCornerRadius
+                    setColor(themeColorLight)
+                }
+                tab.background = unselectedDrawable
+                tab.invalidate()
+                tab.requestLayout()
+            }
+        }
+        
+        // Also update search bar background if it uses theme colors
+        ThemeManager.applyThemeImmediate(this, binding.searchBar)
+        binding.searchBar.invalidate()
+        binding.searchBar.requestLayout()
     }
     
     private fun selectTab(tab: TextView) {
@@ -1380,14 +1302,14 @@ class MainActivity : AppCompatActivity() {
             // Show all conversations for current category
             // For custom filters, prepend "Add Conversation" item
             if (currentCustomFilterId != null) {
-                val addConversationItem = Conversation().apply {
-                    threadId = -1L
-                    contactName = "Add Conversation"
-                    snippet = "Tap to add conversations to this filter"
-                    address = ""
-                    date = 0
+                val addConversationItem = Conversation(
+                    threadId = -1L,
+                    contactName = "Add Conversation",
+                    snippet = "Tap to add conversations to this filter",
+                    address = "",
+                    date = 0,
                     unreadCount = 0
-                }
+                )
                 listOf(addConversationItem) + allConversations
             } else {
                 allConversations
@@ -1412,14 +1334,14 @@ class MainActivity : AppCompatActivity() {
             
             // For custom filters, still show "Add Conversation" item even when searching
             if (currentCustomFilterId != null) {
-                val addConversationItem = Conversation().apply {
-                    threadId = -1L
-                    contactName = "Add Conversation"
-                    snippet = "Tap to add conversations to this filter"
-                    address = ""
-                    date = 0
+                val addConversationItem = Conversation(
+                    threadId = -1L,
+                    contactName = "Add Conversation",
+                    snippet = "Tap to add conversations to this filter",
+                    address = "",
+                    date = 0,
                     unreadCount = 0
-                }
+                )
                 listOf(addConversationItem) + filtered
             } else {
                 filtered
@@ -1449,7 +1371,55 @@ class MainActivity : AppCompatActivity() {
     
     private fun markConversationAsRead(threadId: Long, position: Int) {
         // Update adapter without reloading - this will remove the blue dot
-        // Don't update device SMS, manage state in app
+        // Also update device SMS database and Room database to persist the read state
+        manuallyMarkedAsReadThreadIds.add(threadId) // Track that this conversation was manually marked as read
+        
+        // Update device SMS database and Room database
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Mark as read in system SMS database
+                val smsValues = ContentValues().apply {
+                    put(Telephony.Sms.READ, 1)
+                }
+                val smsUpdated = contentResolver.update(
+                    Telephony.Sms.CONTENT_URI,
+                    smsValues,
+                    "${Telephony.Sms.THREAD_ID} = ? AND ${Telephony.Sms.READ} = 0",
+                    arrayOf(threadId.toString())
+                )
+                Log.d(TAG, "Marked $smsUpdated SMS messages as read in system database for threadId=$threadId")
+                
+                // Mark as read in system MMS database
+                val mmsValues = ContentValues().apply {
+                    put(Telephony.Mms.READ, 1)
+                }
+                val mmsUpdated = contentResolver.update(
+                    Telephony.Mms.CONTENT_URI,
+                    mmsValues,
+                    "${Telephony.Mms.THREAD_ID} = ? AND ${Telephony.Mms.READ} = 0",
+                    arrayOf(threadId.toString())
+                )
+                Log.d(TAG, "Marked $mmsUpdated MMS messages as read in system database for threadId=$threadId")
+                
+                // Update database
+                val database = MessagesApp.database
+                val conversationDao = database.conversationDao()
+                val messageDao = database.messageDao()
+                
+                conversationDao.updateUnreadCount(threadId, 0)
+                
+                // Also mark all messages in this thread as read
+                val unreadMessages = messageDao.getMessagesByThreadSync(threadId).filter { !it.read }
+                unreadMessages.forEach { message ->
+                    messageDao.updateMessageReadStatus(message.id, true)
+                }
+                Log.d(TAG, "Marked conversation $threadId as read in database")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error marking conversation as read", e)
+            }
+        }
+        
+        // Update UI immediately
         updateConversationUnreadCount(threadId, 0, position)
     }
     
@@ -1486,6 +1456,7 @@ class MainActivity : AppCompatActivity() {
     private fun markConversationAsUnread(threadId: Long, position: Int) {
         // Update adapter without reloading - set unread count to 1 to show blue dot
         // Don't update device SMS, manage state in app
+        manuallyMarkedAsReadThreadIds.remove(threadId) // Remove from manually marked as read set
         updateConversationUnreadCount(threadId, 1, position)
     }
     
@@ -1538,17 +1509,7 @@ class MainActivity : AppCompatActivity() {
     
     private fun updateConversationUnreadCount(threadId: Long, unreadCount: Int, position: Int) {
         updateConversationInAdapter(threadId) { conversation ->
-            Conversation().apply {
-                this.threadId = conversation.threadId
-                this.address = conversation.address
-                this.contactName = conversation.contactName
-                this.snippet = conversation.snippet
-                this.date = conversation.date
-                this.unreadCount = unreadCount
-                this.archived = conversation.archived
-                this.blocked = conversation.blocked
-                this.photoUri = conversation.photoUri
-            }
+            conversation.copy(unreadCount = unreadCount)
         }
         
         // Reset swipe position if needed
@@ -1573,6 +1534,13 @@ class MainActivity : AppCompatActivity() {
             
             // Remove from cache
             com.text.messages.sms.messanger.util.ConversationCache.removeConversation(conversation.threadId)
+            
+            // Invalidate all category caches to ensure updates are immediately visible
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
             
             // Remove from adapter immediately
             val currentList = adapter.currentList.toMutableList()
@@ -1621,6 +1589,13 @@ class MainActivity : AppCompatActivity() {
             
             // Remove from cache
             com.text.messages.sms.messanger.util.ConversationCache.removeConversation(conversation.threadId)
+            
+            // Invalidate all category caches to ensure updates are immediately visible
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
             
             // Remove from adapter immediately
             val currentList = adapter.currentList.toMutableList()
@@ -1727,23 +1702,26 @@ class MainActivity : AppCompatActivity() {
             // Save to blocked conversations storage
             BlockedConversationStorage.addThreadId(this, conversation.threadId)
             
-            // Update Realm conversation as blocked
-            try {
-                val realm = com.text.messages.sms.messanger.MessagesApp.realm
-                realm.writeBlocking {
-                    val existingConversation = query(com.text.messages.sms.messanger.data.model.Conversation::class, "threadId == ${conversation.threadId}").first().find()
-                    if (existingConversation != null) {
-                        findLatest(existingConversation)?.apply {
-                            this.blocked = true
-                        }
-                    }
+            // Update database conversation as blocked
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val database = MessagesApp.database
+                    val conversationDao = database.conversationDao()
+                    conversationDao.updateBlockedStatus(conversation.threadId, true)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error updating database conversation as blocked", e)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error updating Realm conversation as blocked", e)
             }
             
             // Remove from cache
             com.text.messages.sms.messanger.util.ConversationCache.removeConversation(conversation.threadId)
+            
+            // Invalidate all category caches to ensure updates are immediately visible
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("All")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Personal")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("OTPs")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
+            com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
             
             // Remove from adapter immediately
             val currentList = adapter.currentList.toMutableList()
@@ -1975,7 +1953,7 @@ class MainActivity : AppCompatActivity() {
         }
         
         // Refresh the list to ensure it's up to date if there were changes while in background
-        // Use cache first for fast loading, but force refresh to get latest data
+        // Check if cache was invalidated (e.g., after restoring a conversation) and force refresh if needed
         val filterId = selectedTab?.tag as? String
         val category = if (filterId != null && customFilterTabs.containsKey(filterId)) {
             null
@@ -1991,11 +1969,26 @@ class MainActivity : AppCompatActivity() {
         }
         
         if (category != null) {
-            // Refresh current category without showing loading indicator
-            viewModel.loadConversations(category, showLoading = false, useCache = true, forceRefresh = true)
+            // Check if cache exists - if not, it was invalidated and we need a full refresh
+            val cached = com.text.messages.sms.messanger.util.ConversationCache.getCached(category)
+            if (cached == null) {
+                // Cache was invalidated (e.g., after restore), do a full refresh
+                Log.d(TAG, "MainActivity.onResume(): Cache invalidated for '$category', forcing full refresh")
+                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
+            } else {
+                // Cache exists, use it but still refresh in background to ensure we have latest data
+                viewModel.loadConversations(category, showLoading = false, useCache = true, forceRefresh = true)
+            }
         } else if (filterId != null) {
-            // Refresh custom filter
-            viewModel.loadConversationsForCustomFilter(this, filterId, useCache = true, forceRefresh = true)
+            val cached = com.text.messages.sms.messanger.util.ConversationCache.getCachedForFilter(filterId)
+            if (cached == null) {
+                // Cache was invalidated, do a full refresh
+                Log.d(TAG, "MainActivity.onResume(): Cache invalidated for filter '$filterId', forcing full refresh")
+                viewModel.loadConversationsForCustomFilter(this, filterId, useCache = false, forceRefresh = true)
+            } else {
+                // Cache exists, use it but still refresh in background
+                viewModel.loadConversationsForCustomFilter(this, filterId, useCache = true, forceRefresh = true)
+            }
         }
         
         // CRITICAL: Mark MainActivity as ready for App Open Ads
@@ -2076,6 +2069,20 @@ class MainActivity : AppCompatActivity() {
                     else -> "All"
                 }
                 com.text.messages.sms.messanger.util.ConversationCache.cache(category, newConversations)
+                
+                // Pre-cache all other categories in background after "All" is first loaded
+                if (category == "All" && !hasPreCachedCategories && newConversations.isNotEmpty()) {
+                    hasPreCachedCategories = true
+                    Log.d(TAG, "Triggering pre-cache for all categories after initial 'All' load")
+                    viewModel.preCacheAllCategories(this@MainActivity)
+                }
+            }
+            
+            // Pre-cache all custom filters in background after first successful load
+            if (!hasPreCachedFilters && newConversations.isNotEmpty()) {
+                hasPreCachedFilters = true
+                Log.d(TAG, "Triggering pre-cache for all custom filters")
+                viewModel.preCacheAllCustomFilters(this@MainActivity)
             }
             
             // Only update RecyclerView if MainActivity is in the foreground and adapter is initialized
@@ -2111,14 +2118,14 @@ class MainActivity : AppCompatActivity() {
             val conversationsToShow = if (currentCustomFilterId != null) {
                 Log.d(TAG, "observeConversations: Custom filter active, adding 'Add Conversation' item")
                 // Create a special conversation item for "Add Conversation"
-                val addConversationItem = Conversation().apply {
-                    threadId = -1L // Special ID to identify this item
-                    contactName = "Add Conversation"
-                    snippet = "Tap to add conversations to this filter"
-                    address = ""
-                    date = 0
+                val addConversationItem = Conversation(
+                    threadId = -1L, // Special ID to identify this item
+                    contactName = "Add Conversation",
+                    snippet = "Tap to add conversations to this filter",
+                    address = "",
+                    date = 0,
                     unreadCount = 0
-                }
+                )
                 val result = listOf(addConversationItem) + newConversations
                 Log.d(TAG, "observeConversations: Final list size with 'Add Conversation': ${result.size}")
                 result
@@ -2175,14 +2182,14 @@ class MainActivity : AppCompatActivity() {
                         
                         // Prepend "Add Conversation" item if it's a custom filter
                         val finalList = if (currentCustomFilterId != null) {
-                            val addConversationItem = Conversation().apply {
-                                threadId = -1L
-                                contactName = "Add Conversation"
-                                snippet = "Tap to add conversations to this filter"
-                                address = ""
-                                date = 0
+                            val addConversationItem = Conversation(
+                                threadId = -1L,
+                                contactName = "Add Conversation",
+                                snippet = "Tap to add conversations to this filter",
+                                address = "",
+                                date = 0,
                                 unreadCount = 0
-                            }
+                            )
                             listOf(addConversationItem) + sortedNewList
                         } else {
                             sortedNewList
@@ -2219,14 +2226,14 @@ class MainActivity : AppCompatActivity() {
                         
                         // Prepend "Add Conversation" item if it's a custom filter
                         val finalList = if (currentCustomFilterId != null) {
-                            val addConversationItem = Conversation().apply {
-                                threadId = -1L
-                                contactName = "Add Conversation"
-                                snippet = "Tap to add conversations to this filter"
-                                address = ""
-                                date = 0
+                            val addConversationItem = Conversation(
+                                threadId = -1L,
+                                contactName = "Add Conversation",
+                                snippet = "Tap to add conversations to this filter",
+                                address = "",
+                                date = 0,
                                 unreadCount = 0
-                            }
+                            )
                             listOf(addConversationItem) + mergedList
                         } else {
                             mergedList
@@ -2526,11 +2533,11 @@ class MainActivity : AppCompatActivity() {
     }
     
     /**
-     * Intelligently merges new conversations with existing list:
-     * - Adds new conversations to the top
-     * - Updates existing conversations in place
-     * - Moves conversations with new messages to the top
-     * - Preserves order of unchanged conversations from current list
+     * Merges new conversations with existing list:
+     * - Always sorts ALL conversations by date/time (newest first)
+     * - Updates existing conversations with new data
+     * - Does NOT move conversations when they are marked as read
+     * - Preserves manually marked-as-read state
      */
     private fun mergeConversationLists(
         currentList: List<Conversation>,
@@ -2538,68 +2545,65 @@ class MainActivity : AppCompatActivity() {
     ): List<Conversation> {
         Log.d(TAG, "mergeConversationLists - current: ${currentList.size}, new: ${newList.size}")
         val newMap = newList.associateBy { it.threadId }
-        val conversationsToMoveToTop = mutableListOf<Conversation>()
-        val unchangedConversations = mutableListOf<Conversation>()
+        val mergedMap = mutableMapOf<Long, Conversation>()
         val processedThreadIds = mutableSetOf<Long>()
         
-        // First pass: identify conversations that have new messages or are completely new
-        newList.forEach { newConv ->
-            val currentConv = currentList.find { it.threadId == newConv.threadId }
-            if (currentConv == null) {
-                // New conversation - add to top
-                Log.d(TAG, "New conversation ${newConv.threadId}, adding to top")
-                conversationsToMoveToTop.add(newConv)
-                processedThreadIds.add(newConv.threadId)
-            } else {
-                // Existing conversation - check if it has new messages
-                // Consider it has new message if:
-                // 1. Date is newer (new message received)
-                // 2. Unread count increased
-                // 3. Snippet changed AND date is same or newer (message updated)
-                val hasNewMessage = newConv.date > currentConv.date || 
-                                   newConv.unreadCount > currentConv.unreadCount ||
-                                   (newConv.snippet != currentConv.snippet && newConv.date >= currentConv.date)
-                if (hasNewMessage) {
-                    // Has new message - move to top
-                    Log.d(TAG, "Conversation ${newConv.threadId} has new message (oldDate: ${currentConv.date}, newDate: ${newConv.date}, oldUnread: ${currentConv.unreadCount}, newUnread: ${newConv.unreadCount}), moving to top")
-                    conversationsToMoveToTop.add(newConv)
-                    processedThreadIds.add(newConv.threadId)
-                }
-            }
-        }
-        
-        // Sort conversations to move to top by date (newest first)
-        conversationsToMoveToTop.sortByDescending { it.date }
-        
-        // Second pass: preserve order of unchanged conversations from current list
-        // This maintains the relative position of conversations that haven't changed
+        // First pass: update existing conversations with new data from newList
         currentList.forEach { currentConv ->
-            if (!processedThreadIds.contains(currentConv.threadId)) {
-                // This conversation wasn't moved to top, check if it exists in new list
-                val newConv = newMap[currentConv.threadId]
-                if (newConv != null) {
-                    // Conversation exists in new list but hasn't changed - keep in same relative position
-                    unchangedConversations.add(newConv)
-                    processedThreadIds.add(newConv.threadId)
-                } else {
-                    // Conversation was removed from new list - don't add it
-                    Log.d(TAG, "Conversation ${currentConv.threadId} removed from new list")
+            val newConv = newMap[currentConv.threadId]
+            if (newConv != null) {
+                // Conversation exists in both lists - use updated version from newList
+                // But preserve manually marked-as-read state for unread count
+                val isManuallyMarkedAsRead = manuallyMarkedAsReadThreadIds.contains(currentConv.threadId)
+                
+                if (isManuallyMarkedAsRead && newConv.unreadCount > currentConv.unreadCount) {
+                    // New unread message received - remove from manually marked-as-read set
+                    manuallyMarkedAsReadThreadIds.remove(currentConv.threadId)
+                    Log.d(TAG, "Manually marked-as-read conversation ${currentConv.threadId} has new unread message")
                 }
+                
+                mergedMap[currentConv.threadId] = newConv
+                processedThreadIds.add(currentConv.threadId)
+            } else {
+                // Conversation exists in current but not in new - keep it (might be filtered out)
+                mergedMap[currentConv.threadId] = currentConv
+                processedThreadIds.add(currentConv.threadId)
             }
         }
         
-        // Third pass: add any remaining new conversations that weren't processed
-        // (This shouldn't happen, but it's a safety check)
+        // Second pass: add any new conversations that weren't in current list
         newList.forEach { newConv ->
             if (!processedThreadIds.contains(newConv.threadId)) {
-                Log.d(TAG, "Adding remaining conversation ${newConv.threadId} to unchanged list")
-                unchangedConversations.add(newConv)
+                mergedMap[newConv.threadId] = newConv
             }
         }
         
-        Log.d(TAG, "mergeConversationLists result - toTop: ${conversationsToMoveToTop.size}, unchanged: ${unchangedConversations.size}")
-        // Combine: conversations with new messages first (sorted by date), then unchanged ones in their original order
-        return conversationsToMoveToTop + unchangedConversations
+        // Always sort ALL conversations by date/time (newest first)
+        val sortedList = mergedMap.values.sortedByDescending { it.date }
+        
+        Log.d(TAG, "mergeConversationLists result - merged: ${sortedList.size} conversations, all sorted by date")
+        return sortedList
+    }
+    
+    private fun loadManuallyMarkedAsReadConversations() {
+        val prefs = getSharedPreferences("marked_as_read", MODE_PRIVATE)
+        val threadIdsString = prefs.getString("thread_ids", "") ?: ""
+        if (threadIdsString.isNotEmpty()) {
+            manuallyMarkedAsReadThreadIds.clear()
+            threadIdsString.split(",").forEach { idString ->
+                idString.toLongOrNull()?.let { threadId ->
+                    manuallyMarkedAsReadThreadIds.add(threadId)
+                }
+            }
+            Log.d(TAG, "Loaded ${manuallyMarkedAsReadThreadIds.size} manually marked-as-read conversations")
+        }
+    }
+    
+    private fun saveManuallyMarkedAsReadConversations() {
+        val prefs = getSharedPreferences("marked_as_read", MODE_PRIVATE)
+        val threadIdsString = manuallyMarkedAsReadThreadIds.joinToString(",")
+        prefs.edit().putString("thread_ids", threadIdsString).apply()
+        Log.d(TAG, "Saved ${manuallyMarkedAsReadThreadIds.size} manually marked-as-read conversations")
     }
     
     private fun setupBackPressHandler() {
