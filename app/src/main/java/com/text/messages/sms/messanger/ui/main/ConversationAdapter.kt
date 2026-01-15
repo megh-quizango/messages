@@ -160,12 +160,13 @@ class ConversationAdapter(
             // Hide "Start Chat" button - users can click on the conversation item itself
             buttonStartChat.visibility = View.GONE
             
-            // Check if snippet contains OTP and show copy button
+            // Check for OTP: First use stored lastOtp, then check snippet
             val snippet = conversation.snippet ?: ""
-            val hasOTP = OtpHelper.isOTPMessage(snippet)
-            val otp = if (hasOTP) OtpHelper.extractOTP(snippet) else null
-            
-            if (hasOTP && otp != null) {
+            val storedOtp = conversation.lastOtp
+            val snippetOtp = if (OtpHelper.isOTPMessage(snippet)) OtpHelper.extractOTP(snippet) else null
+            val otp = storedOtp ?: snippetOtp  // Prefer stored OTP, fallback to snippet OTP
+
+            if (otp != null) {
                 buttonCopyOtpList.visibility = View.VISIBLE
                 buttonCopyOtpList.setOnClickListener { view ->
                     view.isClickable = true
@@ -297,14 +298,15 @@ class ConversationAdapter(
             // Only update the views that changed based on payload
             payload.forEach { change ->
                 when (change) {
-                    "snippet" -> {
+                    "snippet", "lastOtp" -> {
                         textSnippet.text = conversation.snippet
-                        // Update OTP button visibility when snippet changes
+                        // Update OTP button visibility when snippet or lastOtp changes
                         val snippet = conversation.snippet ?: ""
-                        val hasOTP = OtpHelper.isOTPMessage(snippet)
-                        val otp = if (hasOTP) OtpHelper.extractOTP(snippet) else null
-                        
-                        if (hasOTP && otp != null) {
+                        val storedOtp = conversation.lastOtp
+                        val snippetOtp = if (OtpHelper.isOTPMessage(snippet)) OtpHelper.extractOTP(snippet) else null
+                        val otp = storedOtp ?: snippetOtp
+
+                        if (otp != null) {
                             buttonCopyOtpList.visibility = View.VISIBLE
                             buttonCopyOtpList.setOnClickListener { view ->
                                 view.isClickable = true

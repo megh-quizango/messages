@@ -24,6 +24,7 @@ import com.text.messages.sms.messanger.databinding.ActivityLandingBinding
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.main.MainViewModel
+import com.text.messages.sms.messanger.util.AppOpenAdManager
 import com.text.messages.sms.messanger.util.PermissionManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -269,9 +270,13 @@ class LandingActivity : AppCompatActivity() {
         
         Log.d("LandingActivity", "redirectToActivity - isDefaultSmsApp: $isDefaultSmsApp")
         Log.d("LandingActivity", "redirectToActivity - isLanguageSet: $isLanguageSet")
-        
-        // Navigate directly without showing ad
-        navigateToNextActivity(isLanguageSet, isDefaultSmsApp)
+
+        // Show App Open Ad(s) before navigating
+        // DEBUG: Shows 2 ads back-to-back
+        // RELEASE: Shows 1 ad only
+        AppOpenAdManager.showDoubleAppOpenIfDebug(this) {
+            navigateToNextActivity(isLanguageSet, isDefaultSmsApp)
+        }
     }
     
     private fun navigateToNextActivity(isLanguageSet: Boolean, isDefaultSmsApp: Boolean) {

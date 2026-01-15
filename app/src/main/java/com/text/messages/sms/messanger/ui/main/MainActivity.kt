@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import android.widget.EditText
+import com.facebook.shimmer.ShimmerFrameLayout
 
 class MainActivity : AppCompatActivity() {
     
@@ -248,10 +249,7 @@ class MainActivity : AppCompatActivity() {
         // Also apply theme immediately
         ThemeManager.applyTheme(this, binding.root)
         
-        // Apply theme to loading state progress indicator
-        binding.root.post {
-            ThemeManager.applyTheme(this, binding.layoutLoadingState)
-        }
+        // Shimmer layout doesn't need theme - it's just placeholder shapes
         
         // Register ContentObserver to detect new SMS messages
         registerSmsContentObserver()
@@ -686,9 +684,9 @@ class MainActivity : AppCompatActivity() {
         // Hide RecyclerView when MainActivity is paused to prevent it from showing on other activities
         if (::binding.isInitialized) {
             binding.recyclerViewConversations.visibility = View.GONE
-            binding.layoutLoadingState.visibility = View.GONE
+            hideShimmer()
             binding.layoutEmptyState.visibility = View.GONE
-            Log.d(TAG, "MainActivity.onPause(): RecyclerView, loading, and empty state hidden. New visibility: ${binding.recyclerViewConversations.visibility}")
+            Log.d(TAG, "MainActivity.onPause(): RecyclerView, shimmer, and empty state hidden. New visibility: ${binding.recyclerViewConversations.visibility}")
         } else {
             Log.w(TAG, "MainActivity.onPause(): Binding not initialized, cannot hide RecyclerView")
         }
@@ -1015,7 +1013,33 @@ class MainActivity : AppCompatActivity() {
         
         binding.recyclerViewConversations.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewConversations.adapter = adapter
-        
+
+        // Setup scroll listener to shrink/extend FAB
+        binding.recyclerViewConversations.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                // dy > 0 means scrolling down, dy < 0 means scrolling up
+                if (dy > 0 && binding.fabStartChat.isExtended) {
+                    // Scrolling down - shrink to icon only
+                    binding.fabStartChat.shrink()
+                } else if (dy < 0 && !binding.fabStartChat.isExtended) {
+                    // Scrolling up - extend to show text
+                    binding.fabStartChat.extend()
+                }
+            }
+
+            override fun onScrollStateChanged(recyclerView: androidx.recyclerview.widget.RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                // When scroll stops and at the top, extend the FAB
+                if (newState == androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE) {
+                    val layoutManager = recyclerView.layoutManager as? LinearLayoutManager
+                    if (layoutManager?.findFirstCompletelyVisibleItemPosition() == 0) {
+                        binding.fabStartChat.extend()
+                    }
+                }
+            }
+        })
+
         // Setup swipe gestures
         val swipeHelper = SwipeHelper(this, adapter) { conversation: Conversation, action: SwipeGesturesActivity.SwipeAction ->
             handleSwipeAction(conversation, action)
@@ -1867,7 +1891,7 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerViewConversations.visibility = View.GONE
         binding.fabStartChat.visibility = View.GONE
         binding.layoutEmptyState.visibility = View.GONE
-        binding.layoutLoadingState.visibility = View.GONE
+        hideShimmer()
         binding.fragmentContainer.visibility = View.VISIBLE
         
         Log.d(TAG, "navigateToFragment: RecyclerView hidden, fragment container shown. New RecyclerView visibility: ${binding.recyclerViewConversations.visibility}")
@@ -1940,13 +1964,13 @@ class MainActivity : AppCompatActivity() {
                     binding.layoutEmptyState.visibility = View.GONE
                     Log.d(TAG, "MainActivity.onResume(): Showing RecyclerView, hiding empty state. New visibility: ${binding.recyclerViewConversations.visibility}")
                 }
-                binding.layoutLoadingState.visibility = View.GONE
+                hideShimmer()
             } else {
-                // Still loading - show loading state
-                binding.layoutLoadingState.visibility = View.VISIBLE
+                // Still loading - show shimmer loading state
+                showShimmer()
                 binding.recyclerViewConversations.visibility = View.GONE
                 binding.layoutEmptyState.visibility = View.GONE
-                Log.d(TAG, "MainActivity.onResume(): Showing loading state, hiding RecyclerView")
+                Log.d(TAG, "MainActivity.onResume(): Showing shimmer, hiding RecyclerView")
             }
         } else {
             Log.w(TAG, "MainActivity.onResume(): Binding or adapter not initialized. binding=${::binding.isInitialized}, adapter=${::adapter.isInitialized}")
@@ -2311,37 +2335,33 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "isLoading observer: PROCEEDING with UI update - MainActivity is in foreground and showing messages")
             
             if (isLoading) {
-                Log.d(TAG, "isLoading observer: Showing loading state, hiding RecyclerView")
-                // Show loading indicator immediately with "Syncing messages" text
-                binding.layoutLoadingState.visibility = View.VISIBLE
+                Log.d(TAG, "isLoading observer: Showing shimmer, hiding RecyclerView")
+                // Show shimmer loading effect
+                showShimmer()
                 binding.layoutEmptyState.visibility = View.GONE
                 binding.recyclerViewConversations.visibility = View.GONE
                 Log.d(TAG, "isLoading observer: RecyclerView visibility after setting to GONE: ${binding.recyclerViewConversations.visibility}")
-                
-                // Hide bottom nav bar and FAB when loading
-                binding.bottomNavigationView.visibility = View.GONE
-                binding.fabStartChat.visibility = View.GONE
-                
+
                 // Disable search bar and tabs when loading
                 disableSearchBar()
                 disableTabs()
             } else {
                 // Cancel delayed loading indicator since loading finished
                 cancelDelayedLoadingIndicator()
-                binding.layoutLoadingState.visibility = View.GONE
-                
+                hideShimmer()
+
                 // Show bottom navigation bar and FAB after loading
                 binding.bottomNavigationView.visibility = View.VISIBLE
                 binding.fabStartChat.visibility = View.VISIBLE
-                
+
                 // Enable search bar and tabs after loading
                 enableSearchBar()
                 enableTabs()
-                
+
                 // Show recycler view after loading
                 binding.recyclerViewConversations.visibility = View.VISIBLE
                 Log.d(TAG, "isLoading observer: Loading finished, showing RecyclerView. New visibility: ${binding.recyclerViewConversations.visibility}")
-                
+
                 // After loading, check if list is empty
                 val currentList = adapter.currentList
                 val hasRealConversations = currentList.any { it.threadId != -1L }
@@ -2357,25 +2377,25 @@ class MainActivity : AppCompatActivity() {
     private fun ensureLoadingStopped() {
         Log.d(TAG, "=== ensureLoadingStopped() ===")
         Log.d(TAG, "ensureLoadingStopped: isFragmentVisible=${isFragmentVisible()}")
-        
+
         // Clear loading state in ViewModel first
         viewModel.clearLoadingState()
-        
+
         // Don't update RecyclerView visibility if fragment is visible
         if (isFragmentVisible()) {
             Log.d(TAG, "ensureLoadingStopped: SKIPPING RecyclerView update - Fragment is visible")
-            // Still hide loading state and enable UI elements, but don't show RecyclerView
-            binding.layoutLoadingState.visibility = View.GONE
+            // Still hide shimmer and enable UI elements, but don't show RecyclerView
+            hideShimmer()
             binding.bottomNavigationView.visibility = View.VISIBLE
             binding.fabStartChat.visibility = View.VISIBLE
             enableSearchBar()
             enableTabs()
             return
         }
-        
+
         // Directly enable UI elements regardless of loading state
         // This ensures UI is always enabled when conversations are received
-        binding.layoutLoadingState.visibility = View.GONE
+        hideShimmer()
         binding.recyclerViewConversations.visibility = View.VISIBLE
         binding.bottomNavigationView.visibility = View.VISIBLE
         binding.fabStartChat.visibility = View.VISIBLE
@@ -2451,7 +2471,25 @@ class MainActivity : AppCompatActivity() {
             tab.alpha = 1.0f
         }
     }
-    
+
+    /**
+     * Show shimmer loading effect
+     */
+    private fun showShimmer() {
+        val shimmer = findViewById<ShimmerFrameLayout>(R.id.shimmerLayout)
+        shimmer?.visibility = View.VISIBLE
+        shimmer?.startShimmer()
+    }
+
+    /**
+     * Hide shimmer loading effect
+     */
+    private fun hideShimmer() {
+        val shimmer = findViewById<ShimmerFrameLayout>(R.id.shimmerLayout)
+        shimmer?.stopShimmer()
+        shimmer?.visibility = View.GONE
+    }
+
     /**
      * Start delayed loading indicator - only shows if loading takes more than 1 second
      * NOTE: This is kept for backward compatibility but loading now shows immediately

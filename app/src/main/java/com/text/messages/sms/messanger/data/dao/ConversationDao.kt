@@ -36,6 +36,12 @@ interface ConversationDao {
     
     @Query("UPDATE conversations SET snippet = :snippet, date = :date, unreadCount = unreadCount + 1 WHERE threadId = :threadId")
     suspend fun updateConversationSnippet(threadId: Long, snippet: String, date: Long)
+
+    @Query("UPDATE conversations SET snippet = :snippet, date = :date, unreadCount = unreadCount + 1, lastOtp = :lastOtp WHERE threadId = :threadId")
+    suspend fun updateConversationSnippetWithOtp(threadId: Long, snippet: String, date: Long, lastOtp: String?)
+
+    @Query("UPDATE conversations SET lastOtp = :lastOtp WHERE threadId = :threadId")
+    suspend fun updateLastOtp(threadId: Long, lastOtp: String?)
     
     @Query("UPDATE conversations SET unreadCount = :count WHERE threadId = :threadId")
     suspend fun updateUnreadCount(threadId: Long, count: Int)

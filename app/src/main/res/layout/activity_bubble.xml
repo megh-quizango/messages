@@ -107,175 +107,320 @@
             </LinearLayout>
 
             <!-- Color Selection Grid -->
+            <!-- ================= COLOR SELECTION GRID (4x3) ================= -->
+
+
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                <GridLayout
+                    android:id="@+id/colorGrid"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="16dp">
+                    android:columnCount="4"
+                    android:rowCount="3"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:alignmentMode="alignMargins"
+                    android:useDefaultMargins="true"
+                    android:gravity="center">
 
-                    <!-- Color Circle 1 - Light Blue -->
+                    <!-- 1 - Light Blue -->
                     <FrameLayout
                         android:id="@+id/colorCircle1"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:layout_marginEnd="16dp"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
                         android:clickable="true"
                         android:focusable="true">
 
                         <View
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="@drawable/bg_color_circle"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
                             android:backgroundTint="#B3E5FC"/>
 
                         <ImageView
                             android:id="@+id/iconSelected1"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_check_circle"
                             android:visibility="visible"
                             android:tint="#4CAF50"/>
                     </FrameLayout>
 
-                    <!-- Color Circle 2 - Light Purple -->
+                    <!-- 2 - Light Purple -->
                     <FrameLayout
                         android:id="@+id/colorCircle2"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:layout_marginEnd="16dp"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
                         android:clickable="true"
                         android:focusable="true">
 
                         <View
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="@drawable/bg_color_circle"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
                             android:backgroundTint="#CE93D8"/>
 
                         <ImageView
                             android:id="@+id/iconSelected2"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_check_circle"
                             android:visibility="gone"
                             android:tint="#4CAF50"/>
                     </FrameLayout>
 
-                    <!-- Color Circle 3 - Light Green -->
+                    <!-- 3 - Light Green -->
                     <FrameLayout
                         android:id="@+id/colorCircle3"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:layout_marginEnd="16dp"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
                         android:clickable="true"
                         android:focusable="true">
 
                         <View
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="@drawable/bg_color_circle"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
                             android:backgroundTint="#C5E1A5"/>
 
                         <ImageView
                             android:id="@+id/iconSelected3"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_check_circle"
                             android:visibility="gone"
                             android:tint="#4CAF50"/>
                     </FrameLayout>
 
-                    <!-- Color Circle 4 - Light Orange -->
+                    <!-- 4 - Light Orange -->
                     <FrameLayout
                         android:id="@+id/colorCircle4"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:layout_marginEnd="16dp"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
                         android:clickable="true"
                         android:focusable="true">
 
                         <View
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="@drawable/bg_color_circle"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
                             android:backgroundTint="#FFCC80"/>
 
                         <ImageView
                             android:id="@+id/iconSelected4"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_check_circle"
                             android:visibility="gone"
                             android:tint="#4CAF50"/>
                     </FrameLayout>
 
-                    <!-- Color Circle 5 - Light Yellow -->
+                    <!-- 5 - Light Yellow -->
                     <FrameLayout
                         android:id="@+id/colorCircle5"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
                         android:clickable="true"
                         android:focusable="true">
 
                         <View
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="@drawable/bg_color_circle"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
                             android:backgroundTint="#FFF59D"/>
 
                         <ImageView
                             android:id="@+id/iconSelected5"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_check_circle"
                             android:visibility="gone"
                             android:tint="#4CAF50"/>
                     </FrameLayout>
-                </LinearLayout>
 
-                <!-- Second Row of Colors -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <!-- Color Circle 6 - Light Gray -->
+                    <!-- 6 - Light Gray -->
                     <FrameLayout
                         android:id="@+id/colorCircle6"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
                         android:clickable="true"
                         android:focusable="true">
 
                         <View
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="@drawable/bg_color_circle"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
                             android:backgroundTint="#E0E0E0"/>
 
                         <ImageView
                             android:id="@+id/iconSelected6"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_check_circle"
                             android:visibility="gone"
                             android:tint="#4CAF50"/>
                     </FrameLayout>
-                </LinearLayout>
 
+                    <!-- 7 - Soft Blue -->
+                    <FrameLayout
+                        android:id="@+id/colorCircle7"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
+                            android:backgroundTint="#90CAF9"/>
+
+                        <ImageView
+                            android:id="@+id/iconSelected7"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_check_circle"
+                            android:visibility="gone"
+                            android:tint="#4CAF50"/>
+                    </FrameLayout>
+
+                    <!-- 8 - Soft Pink -->
+                    <FrameLayout
+                        android:id="@+id/colorCircle8"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
+                            android:backgroundTint="#F48FB1"/>
+
+                        <ImageView
+                            android:id="@+id/iconSelected8"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_check_circle"
+                            android:visibility="gone"
+                            android:tint="#4CAF50"/>
+                    </FrameLayout>
+
+                    <!-- 9 - Mint Green -->
+                    <FrameLayout
+                        android:id="@+id/colorCircle9"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
+                            android:backgroundTint="#A5D6A7"/>
+
+                        <ImageView
+                            android:id="@+id/iconSelected9"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_check_circle"
+                            android:visibility="gone"
+                            android:tint="#4CAF50"/>
+                    </FrameLayout>
+
+                    <!-- 10 - Peach -->
+                    <FrameLayout
+                        android:id="@+id/colorCircle10"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
+                            android:backgroundTint="#FFAB91"/>
+
+                        <ImageView
+                            android:id="@+id/iconSelected10"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_check_circle"
+                            android:visibility="gone"
+                            android:tint="#4CAF50"/>
+                    </FrameLayout>
+
+                    <!-- 11 - Soft Yellow -->
+                    <FrameLayout
+                        android:id="@+id/colorCircle11"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
+                            android:backgroundTint="#FFF176"/>
+
+                        <ImageView
+                            android:id="@+id/iconSelected11"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_check_circle"
+                            android:visibility="gone"
+                            android:tint="#4CAF50"/>
+                    </FrameLayout>
+
+                    <!-- 12 - Cool Gray -->
+                    <FrameLayout
+                        android:id="@+id/colorCircle12"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_color_square"
+                            android:backgroundTint="#B0BEC5"/>
+
+                        <ImageView
+                            android:id="@+id/iconSelected12"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_check_circle"
+                            android:visibility="gone"
+                            android:tint="#4CAF50"/>
+                    </FrameLayout>
+
+                </GridLayout>
             </LinearLayout>
+
+
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

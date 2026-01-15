@@ -1120,44 +1120,65 @@ object ThemeManager {
         val themeColor = getThemeColor(context)
         val density = context.resources.displayMetrics.density
         Log.d("ThemeManager", "Theme color: $themeColor, density: $density")
-        
-        // Use Material Switch's built-in tint system instead of custom drawables
-        // This is more reliable and works better with Material components
-        val thumbColors = android.content.res.ColorStateList(
-            arrayOf(
-                intArrayOf(android.R.attr.state_checked),
-                intArrayOf()
-            ),
-            intArrayOf(
-                themeColor,  // Checked: theme color
-                Color.parseColor("#9696A3")  // Unchecked: gray
-            )
-        )
-        
-        val trackColors = android.content.res.ColorStateList(
-            arrayOf(
-                intArrayOf(android.R.attr.state_checked),
-                intArrayOf()
-            ),
-            intArrayOf(
-                themeColor,  // Checked: theme color (Material will handle opacity)
-                Color.parseColor("#E0E0E0")  // Unchecked: light gray
-            )
-        )
-        
-        // Apply tints - Material Switch handles the styling
-        switchToggle.thumbTintList = thumbColors
-        switchToggle.trackTintList = trackColors
-        
-        // Don't override dimensions - let Material Switch use its defaults
-        // Material Switch automatically ensures thumb fits inside track
-        // The XML layouts already set switchMinWidth, which is sufficient
-        // Material will calculate thumb size based on track height automatically
-        
+
+        // Create custom thumb drawables with theme color
+        val thumbOn = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(themeColor)
+            setSize((18 * density).toInt(), (18 * density).toInt())
+        }
+
+        val thumbOff = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(Color.parseColor("#9696A3"))
+            setSize((18 * density).toInt(), (18 * density).toInt())
+        }
+
+        // Create thumb state list drawable
+        val thumbDrawable = StateListDrawable().apply {
+            addState(intArrayOf(android.R.attr.state_checked), thumbOn)
+            addState(intArrayOf(), thumbOff)
+        }
+
+        // Create custom track drawables - white fill with colored border
+        val trackOn = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 12 * density
+            setColor(Color.WHITE)
+            setStroke((2 * density).toInt(), themeColor)
+            setSize((44 * density).toInt(), (24 * density).toInt())
+        }
+
+        val trackOff = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 12 * density
+            setColor(Color.WHITE)
+            setStroke((2 * density).toInt(), Color.parseColor("#9696A3"))
+            setSize((44 * density).toInt(), (24 * density).toInt())
+        }
+
+        // Create track state list drawable
+        val trackDrawable = StateListDrawable().apply {
+            addState(intArrayOf(android.R.attr.state_checked), trackOn)
+            addState(intArrayOf(), trackOff)
+        }
+
+        // Apply custom drawables
+        switchToggle.thumbDrawable = thumbDrawable
+        switchToggle.trackDrawable = trackDrawable
+
+        // Clear any tints to use drawable colors directly
+        switchToggle.thumbTintList = null
+        switchToggle.trackTintList = null
+
+        // Set dimensions to match our custom design
+        switchToggle.switchMinWidth = (44 * density).toInt()
+        switchToggle.minimumHeight = (24 * density).toInt()
+
         // Force the Switch to redraw
         switchToggle.invalidate()
         switchToggle.requestLayout()
-        
+
         Log.d("ThemeManager", "After applyToggleTheme - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, width: ${switchToggle.width}, height: ${switchToggle.height}, minWidth: ${switchToggle.switchMinWidth}, minHeight: ${switchToggle.minHeight}")
     }
     

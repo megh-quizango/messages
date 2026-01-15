@@ -19,6 +19,7 @@ import com.text.messages.sms.messanger.util.CustomFilterStorage
 import com.text.messages.sms.messanger.util.PrivateConversationStorage
 import com.text.messages.sms.messanger.util.BlockedConversationStorage
 import com.text.messages.sms.messanger.util.ConversationCache
+import com.text.messages.sms.messanger.util.OtpHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -1110,18 +1111,9 @@ class MainViewModel : ViewModel() {
     }
     
     private fun isOTPMessage(bodyLower: String): Boolean {
-        // OTP keywords - case insensitive
-        return bodyLower.contains("otp") ||
-                bodyLower.contains("one time password") ||
-                bodyLower.contains("verification code") ||
-//                bodyLower.contains("verification") ||
-//                bodyLower.contains("verify") ||
-//                bodyLower.contains("code") ||
-//                bodyLower.contains("pin") ||
-//                bodyLower.contains("password") ||
-//                bodyLower.contains("authenticate") ||
-//                bodyLower.contains("activation") ||
-                bodyLower.matches(Regex(".*\\b\\d{4,8}\\b.*")) // Contains 4-8 digit number (common OTP pattern)
+        // Only show messages that have an actual extractable OTP
+        // This ensures only messages with copy-able OTP codes appear in the OTP filter
+        return OtpHelper.extractOTP(bodyLower) != null
     }
     
     private fun isOfferMessage(bodyLower: String): Boolean {

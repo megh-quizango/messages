@@ -105,12 +105,12 @@
                 <!-- Right Swipe Visual -->
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="76dp"
                     android:background="@drawable/bg_swipe_container">
 
                     <!-- Blue part on left - fills full height -->
                     <FrameLayout
-                        android:layout_width="68dp"
+                        android:layout_width="80dp"
                         android:layout_height="match_parent"
                         android:background="@drawable/bg_swipe_icon_left"
                         android:padding="12dp"
@@ -132,27 +132,27 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginStart="68dp"
+                        android:layout_marginStart="80dp"
                         android:layout_gravity="start|center_vertical">
 
                         <de.hdodenhof.circleimageview.CircleImageView
                             android:id="@+id/imagePersonRight"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
                             android:src="@drawable/ic_person"
                             app:civ_border_width="0dp"
                             app:civ_border_color="@android:color/transparent"/>
 
                         <View
-                            android:layout_width="16dp"
-                            android:layout_height="2dp"
+                            android:layout_width="56dp"
+                            android:layout_height="8dp"
                             android:background="#9696A3"
                             android:layout_marginStart="8dp"
                             android:alpha="0.6"/>
 
                         <View
-                            android:layout_width="16dp"
-                            android:layout_height="2dp"
+                            android:layout_width="56dp"
+                            android:layout_height="8dp"
                             android:background="#9696A3"
                             android:layout_marginStart="4dp"
                             android:alpha="0.6"/>
@@ -211,7 +211,7 @@
                 <!-- Left Swipe Visual -->
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="76dp"
                     android:background="@drawable/bg_swipe_container">
 
                     <!-- Person icon and lines on left -->
@@ -225,22 +225,22 @@
 
                         <de.hdodenhof.circleimageview.CircleImageView
                             android:id="@+id/imagePersonLeft"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
                             android:src="@drawable/ic_person"
                             app:civ_border_width="0dp"
                             app:civ_border_color="@android:color/transparent"/>
 
                         <View
-                            android:layout_width="16dp"
-                            android:layout_height="2dp"
+                            android:layout_width="56dp"
+                            android:layout_height="8dp"
                             android:background="#9696A3"
                             android:layout_marginStart="8dp"
                             android:alpha="0.6"/>
 
                         <View
-                            android:layout_width="16dp"
-                            android:layout_height="2dp"
+                            android:layout_width="56dp"
+                            android:layout_height="8dp"
                             android:background="#9696A3"
                             android:layout_marginStart="4dp"
                             android:alpha="0.6"/>
@@ -249,7 +249,7 @@
 
                     <!-- Blue part on right - fills full height -->
                     <FrameLayout
-                        android:layout_width="68dp"
+                        android:layout_width="80dp"
                         android:layout_height="match_parent"
                         android:background="@drawable/bg_swipe_icon_right"
                         android:padding="12dp"

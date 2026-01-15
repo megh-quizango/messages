@@ -78,32 +78,39 @@ class SmsReceiver : BroadcastReceiver() {
                 
                 // Create or update conversation
                 val existingConversation = conversationDao.getConversationByThreadId(threadId)
-                
+
+                // Detect and extract OTP from message FIRST
+                val detectedOtp = if (OtpHelper.isOTPMessage(body)) {
+                    OtpHelper.extractOTP(body)
+                } else {
+                    null
+                }
+
                 if (existingConversation == null) {
-                    // Create new conversation
-                    Log.d(TAG, "Creating new conversation for threadId: $threadId")
+                    // Create new conversation with OTP if detected
+                    Log.d(TAG, "Creating new conversation for threadId: $threadId, OTP: $detectedOtp")
                     conversationDao.insertConversation(
                         Conversation(
                             threadId = threadId,
                             address = address,
                             snippet = body,
                             date = timestamp,
-                            unreadCount = 1
+                            unreadCount = 1,
+                            lastOtp = detectedOtp
                         )
                     )
                 } else {
-                    // Update existing conversation
-                    Log.d(TAG, "Updating existing conversation for threadId: $threadId")
-                    conversationDao.updateConversationSnippet(threadId, body, timestamp)
+                    // Update existing conversation with snippet and OTP if detected
+                    Log.d(TAG, "Updating existing conversation for threadId: $threadId, OTP: $detectedOtp")
+                    if (detectedOtp != null) {
+                        // Update with new OTP
+                        conversationDao.updateConversationSnippetWithOtp(threadId, body, timestamp, detectedOtp)
+                    } else {
+                        // Keep existing OTP (don't overwrite with null)
+                        conversationDao.updateConversationSnippet(threadId, body, timestamp)
+                    }
                     val currentUnread = existingConversation.unreadCount
                     conversationDao.updateUnreadCount(threadId, currentUnread + 1)
-                }
-                
-                // Detect and extract OTP from message
-                val detectedOtp = if (OtpHelper.isOTPMessage(body)) {
-                    OtpHelper.extractOTP(body)
-                } else {
-                    null
                 }
                 
                 // Create message in database

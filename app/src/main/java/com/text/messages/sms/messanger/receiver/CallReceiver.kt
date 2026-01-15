@@ -10,7 +10,7 @@ import android.provider.CallLog
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.util.Log
-import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
+//import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
 import com.text.messages.sms.messanger.util.AfterCallNotificationHelper
 import com.text.messages.sms.messanger.util.CallerWidgetWindow
 
@@ -247,15 +247,15 @@ class CallReceiver : BroadcastReceiver() {
             val isIncoming = prefs.getBoolean(KEY_IS_INCOMING, false)
             val callStartTime = prefs.getLong(KEY_CALL_START_TIME, endTime)
             
-            val intent = Intent(context, CallAfterActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra("CALLER_NUMBER", number)
-                putExtra("CALL_END_TIME", endTime)
-                putExtra("CALL_START_TIME", callStartTime)
-                putExtra("CALL_TYPE", callType)
-                putExtra("IS_INCOMING", isIncoming)
-            }
-            context.startActivity(intent)
+//            val intent = Intent(context, CallAfterActivity::class.java).apply {
+//                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+//                putExtra("CALLER_NUMBER", number)
+//                putExtra("CALL_END_TIME", endTime)
+//                putExtra("CALL_START_TIME", callStartTime)
+//                putExtra("CALL_TYPE", callType)
+//                putExtra("IS_INCOMING", isIncoming)
+//            }
+//            context.startActivity(intent)
             Log.d(TAG, "CallAfterActivity started")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start CallAfterActivity", e)

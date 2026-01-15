@@ -30,4 +30,6 @@
     <string name="hindi">Hindi</string>
     <string name="spanish">Español</string>
     <string name="german">Deutsch</string>
+    <string name="facebook_app_id" translatable="false">3157593984414269</string>
+    <string name="facebook_client_token" translatable="false">480942a6ad5e01b43bada2e0c4dcda79</string>
 </resources>

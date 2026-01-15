@@ -10,10 +10,11 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import android.content.Context
+import com.facebook.FacebookSdk
+import com.facebook.appevents.AppEventsLogger
 import com.text.messages.sms.messanger.data.database.AppDatabase
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AppForegroundActivityTracker
-import com.text.messages.sms.messanger.util.AppOpenAdManager
 import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
 
@@ -29,15 +30,9 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
         lateinit var instance: MessagesApp
             private set
     }
-    
-    lateinit var appOpenAdManager: AppOpenAdManager
-    
-    // Flag to track when MainActivity is ready (CRITICAL for App Open Ad dismiss button)
+
+    // Flag to track when MainActivity is ready
     var isMainReady = false
-    
-    fun isAppOpenAdManagerInitialized(): Boolean {
-        return ::appOpenAdManager.isInitialized
-    }
     
     override fun onCreate() {
         super<Application>.onCreate()
@@ -66,11 +61,15 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
         // Initialize AdMob SDK
         MobileAds.initialize(this) {
             android.util.Log.d("MessagesApp", "AdMob SDK initialized")
-            // Initialize App Open Ad Manager after SDK is ready
-            appOpenAdManager = AppOpenAdManager(this)
-            val appOpenAdUnitId = RemoteConfigHelper.getAppOpenAdUnitId()
-            appOpenAdManager.loadAd(appOpenAdUnitId)
+            // App Open Ads are now handled by AppOpenAdManager singleton
+            // Called from LandingActivity after splash
         }
+
+        // Initialize Facebook SDK
+        FacebookSdk.sdkInitialize(applicationContext)
+
+        // Activate App Events for install tracking and analytics
+        AppEventsLogger.activateApp(this)
         
         initDatabaseSafely()
         com.text.messages.sms.messanger.util.NotificationHelper.initialize(this)
@@ -80,30 +79,7 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
     override fun onStart(owner: LifecycleOwner) {
         android.util.Log.d("MessagesApp", "=== onStart called ===")
         android.util.Log.d("MessagesApp", "isMainReady: $isMainReady")
-        android.util.Log.d("MessagesApp", "manager initialized: ${::appOpenAdManager.isInitialized}")
-        
-        val app = this
-        
-        // CRITICAL: Only show App Open Ad when MainActivity is ready
-        // Never show on LandingActivity, permission screens, or setup flows
-        if (!app.isMainReady) {
-            android.util.Log.d("MessagesApp", "MainActivity not ready yet, skipping App Open Ad")
-            android.util.Log.d("MessagesApp", "App Open Ads must only show on stable MainActivity")
-            return
-        }
-        
-//        // Only show ad if manager is initialized and we're on MainActivity
-//        if (::appOpenAdManager.isInitialized) {
-//            val activity = AppForegroundActivityTracker.currentActivity
-//            if (activity is com.text.messages.sms.messanger.ui.main.MainActivity) {
-//                android.util.Log.d("MessagesApp", "MainActivity ready and active - showing App Open Ad")
-//                appOpenAdManager.loadAndShowAppOpenAd(activity)
-//            } else {
-//                android.util.Log.d("MessagesApp", "Current activity is not MainActivity: ${activity?.javaClass?.simpleName}")
-//            }
-//        } else {
-//            android.util.Log.d("MessagesApp", "Ad manager not initialized yet")
-//        }
+        // App Open Ads are handled by AppOpenAdManager singleton from LandingActivity
     }
     
     private fun initDatabaseSafely() {

@@ -17,22 +17,29 @@ import com.text.messages.sms.messanger.data.model.MmsPart
 
 @Database(
     entities = [Message::class, Conversation::class, Contact::class, MmsPart::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-    
+
     abstract fun messageDao(): MessageDao
     abstract fun conversationDao(): ConversationDao
     abstract fun contactDao(): ContactDao
     abstract fun mmsPartDao(): MmsPartDao
-    
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
-        
+
         private const val DATABASE_NAME = "messages_database"
-        
+
+        // Migration from version 1 to 2: Add lastOtp column to conversations table
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE conversations ADD COLUMN lastOtp TEXT DEFAULT NULL")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -40,7 +47,8 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .fallbackToDestructiveMigration() // For now, allow destructive migration from Realm
+                    .addMigrations(MIGRATION_1_2)
+                    .fallbackToDestructiveMigration() // Fallback if migration fails
                     .build()
                 INSTANCE = instance
                 instance

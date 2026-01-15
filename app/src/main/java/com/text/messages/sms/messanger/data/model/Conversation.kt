@@ -14,5 +14,6 @@ data class Conversation(
     val unreadCount: Int = 0,
     val archived: Boolean = false,
     val blocked: Boolean = false,
-    val photoUri: String? = null
+    val photoUri: String? = null,
+    val lastOtp: String? = null  // Last OTP found in any message of this conversation
 )

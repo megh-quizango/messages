@@ -643,7 +643,7 @@
         android:paddingBottom="8dp"
         android:minHeight="0dp"
         style="@style/BottomNavStyle"
-        app:itemIconSize="24dp"
+        app:itemIconSize="28dp"
         app:itemIconTint="@color/bottom_nav_item_selector"
         app:itemTextColor="@color/bottom_nav_item_selector"
         app:labelVisibilityMode="labeled"

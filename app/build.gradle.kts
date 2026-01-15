@@ -109,6 +109,9 @@ dependencies {
     
     // AdMob
     implementation("com.google.android.gms:play-services-ads:23.5.0")
+
+    // Core Facebook SDK for App Ads and Tracking
+    implementation(libs.facebook.android.sdk)
     
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
@@ -118,7 +121,10 @@ dependencies {
     
     // Material Components
     implementation("com.google.android.material:material:1.12.0")
-    
+
+    // Shimmer Effect for Loading
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+
     // Google Fonts
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
     

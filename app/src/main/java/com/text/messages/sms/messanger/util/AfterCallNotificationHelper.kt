@@ -12,7 +12,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.text.messages.sms.messanger.R
-import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
+//import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
 
 object AfterCallNotificationHelper {
     
@@ -64,58 +64,58 @@ object AfterCallNotificationHelper {
             }
             
             // Create intent to open CallAfterActivity
-            val intent = Intent(context, CallAfterActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra("CALLER_NUMBER", phoneNumber)
-                putExtra("CALL_END_TIME", System.currentTimeMillis())
-                putExtra("CALL_TYPE", callType)
-            }
+//            val intent = Intent(context, CallAfterActivity::class.java).apply {
+//                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+//                putExtra("CALLER_NUMBER", phoneNumber)
+//                putExtra("CALL_END_TIME", System.currentTimeMillis())
+//                putExtra("CALL_TYPE", callType)
+//            }
             
-            val pendingIntent = PendingIntent.getActivity(
-                context,
-                System.currentTimeMillis().toInt(),
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
+//            val pendingIntent = PendingIntent.getActivity(
+//                context,
+//                System.currentTimeMillis().toInt(),
+//                intent,
+//                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//            )
             
             // Build notification
-            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_call)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setDefaults(NotificationCompat.DEFAULT_ALL)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .setCategory(NotificationCompat.CATEGORY_CALL)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setShowWhen(true)
-                .setWhen(System.currentTimeMillis())
+//            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+//                .setSmallIcon(R.drawable.ic_call)
+//                .setContentTitle(title)
+//                .setContentText(text)
+//                .setPriority(NotificationCompat.PRIORITY_HIGH)
+//                .setDefaults(NotificationCompat.DEFAULT_ALL)
+//                .setAutoCancel(true)
+//                .setContentIntent(pendingIntent)
+//                .setCategory(NotificationCompat.CATEGORY_CALL)
+//                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+//                .setShowWhen(true)
+//                .setWhen(System.currentTimeMillis())
             
             // Add action to request overlay permission
-            if (!Settings.canDrawOverlays(context)) {
-                val permissionIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
-                    data = android.net.Uri.parse("package:${context.packageName}")
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                
-                val permissionPendingIntent = PendingIntent.getActivity(
-                    context,
-                    System.currentTimeMillis().toInt() + 1,
-                    permissionIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                
-                builder.addAction(
-                    R.drawable.ic_info,
-                    "Enable Overlay",
-                    permissionPendingIntent
-                )
-            }
-            
-            // Show notification
-            val notificationManager = NotificationManagerCompat.from(context)
-            notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+//            if (!Settings.canDrawOverlays(context)) {
+//                val permissionIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
+//                    data = android.net.Uri.parse("package:${context.packageName}")
+//                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//                }
+//
+//                val permissionPendingIntent = PendingIntent.getActivity(
+//                    context,
+//                    System.currentTimeMillis().toInt() + 1,
+//                    permissionIntent,
+//                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//                )
+//
+//                builder.addAction(
+//                    R.drawable.ic_info,
+//                    "Enable Overlay",
+//                    permissionPendingIntent
+//                )
+//            }
+//
+//            // Show notification
+//            val notificationManager = NotificationManagerCompat.from(context)
+//            notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
             
             Log.d(TAG, "Notification shown for call: $callType, number: $phoneNumber")
         } catch (e: Exception) {

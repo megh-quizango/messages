@@ -25,13 +25,11 @@ class BubbleActivity : AppCompatActivity() {
     
     // Color values for each circle
     private val colors = listOf(
-        "#B3E5FC",  // Light Blue
-        "#CE93D8",  // Light Purple
-        "#C5E1A5",  // Light Green
-        "#FFCC80",  // Light Orange
-        "#FFF59D",  // Light Yellow
-        "#E0E0E0"   // Light Gray
+        "#B3E5FC", "#CE93D8", "#C5E1A5", "#FFCC80",
+        "#FFF59D", "#E0E0E0", "#90CAF9", "#F48FB1",
+        "#A5D6A7", "#FFAB91", "#FFF176", "#B0BEC5"
     )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

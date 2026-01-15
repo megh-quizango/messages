@@ -6,6 +6,8 @@
         <item name="android:paddingTop">0dp</item>
         <item name="android:paddingBottom">0dp</item>
         <item name="android:minHeight">0dp</item>
+        <item name="itemPaddingTop">8dp</item>
+        <item name="itemPaddingBottom">8dp</item>
     </style>
     <style name="BottomNavText">
         <item name="android:textSize">12sp</item>

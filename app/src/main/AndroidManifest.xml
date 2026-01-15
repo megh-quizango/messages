@@ -60,6 +60,11 @@
             android:resource="@xml/gma_ad_services_config"
             tools:replace="android:resource" />
 
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+        <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>
+
+        <!-- Required for Facebook App Ads -->
+
         <!-- LandingActivity (Splash Screen) - LAUNCHER -->
         <activity
             android:name=".ui.splash.LandingActivity"
