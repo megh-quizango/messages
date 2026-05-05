@@ -13,7 +13,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,7 +32,7 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class CustomBlockingActivity : AppCompatActivity() {
+class CustomBlockingActivity : BaseActivity() {
 
     private lateinit var binding: ActivityCustomBlockingBinding
     private lateinit var sharedPreferences: SharedPreferences
@@ -382,6 +382,7 @@ class CustomBlockingActivity : AppCompatActivity() {
 
         dialogBinding.optionConversationList.setOnClickListener {
             dialog.dismiss()
+            @Suppress("DEPRECATION")
             startActivityForResult(
                 Intent(this, ConversationSelectionActivity::class.java),
                 REQUEST_CODE_SELECT_CONVERSATIONS
@@ -390,6 +391,7 @@ class CustomBlockingActivity : AppCompatActivity() {
 
         dialogBinding.optionContactsList.setOnClickListener {
             dialog.dismiss()
+            @Suppress("DEPRECATION")
             startActivityForResult(
                 Intent(this, ContactSelectionActivity::class.java),
                 REQUEST_CODE_SELECT_CONTACTS
@@ -468,6 +470,7 @@ class CustomBlockingActivity : AppCompatActivity() {
         binding.adViewBanner.loadBannerAdWithRemoteConfig()
     }
 
+    @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {

@@ -1,50 +1,96 @@
 package com.text.messages.sms.messanger.ui.defaultsms
 
+import android.Manifest
+import android.app.AlertDialog
 import android.app.role.RoleManager
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.provider.Telephony
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.text.messages.sms.messanger.databinding.ActivityDefaultSmsBinding
+import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
+import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class DefaultSmsActivity : AppCompatActivity() {
+class DefaultSmsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityDefaultSmsBinding
     private var isFromSettings = false
     private var hasLaunchedIntent = false
+    private lateinit var sharedPreferences: SharedPreferences
+    private var permissionsRequested = false
     
     // ActivityResultLauncher for RoleManager (Android 10+)
-    private val roleRequestLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    private val roleRequestLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
         hasLaunchedIntent = false
         
-        // Check if app is now default SMS
-        val isDefault = packageName == Telephony.Sms.getDefaultSmsPackage(this)
+        // Check if app is now default SMS using proper method
+        val isDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = getSystemService(RoleManager::class.java)
+            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
+        } else {
+            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
+            defaultSmsPackage != null && packageName == defaultSmsPackage
+        }
         
         if (isDefault) {
             getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
                 .edit()
                 .putBoolean("IS_DEFAULT_SMS_SET", true)
                 .apply()
+            
+            // Now request runtime permissions (SMS/Phone) after default handler is set
+            // This complies with Google Play policy: default handler prompt must come before runtime permissions
+            requestRuntimePermissions()
         }
-        
-        if (isFromSettings) {
-            finish()
+        // If not default, activity remains open - user must set it as default
+    }
+    
+    // Permission launcher for SMS and Phone permissions
+    private val requestPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        Log.d("DefaultSmsActivity", "Permission request result: $permissions")
+        val allGranted = permissions.all { it.value }
+        if (allGranted) {
+            // All runtime permissions granted, proceed to next screen
+            Log.d("DefaultSmsActivity", "All permissions granted")
+            onPermissionsGranted()
         } else {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+            // Some permissions denied
+            val deniedPermissions = permissions.filter { !it.value }
+            val firstDenied = deniedPermissions.keys.firstOrNull() ?: ""
+            Log.d("DefaultSmsActivity", "Some permissions denied: $deniedPermissions")
+            
+            if (firstDenied.isNotEmpty() && 
+                ActivityCompat.shouldShowRequestPermissionRationale(this, firstDenied)) {
+                // User denied but can still grant, show dialog again
+                permissionsRequested = false
+                requestRuntimePermissions()
+            } else {
+                // User permanently denied, show settings dialog
+                showPermissionSettingsDialog()
+            }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        sharedPreferences = getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
         
         // Check if opened from Settings
         isFromSettings = intent.getBooleanExtra("from_settings", false)
@@ -66,21 +112,21 @@ class DefaultSmsActivity : AppCompatActivity() {
         Log.d("DefaultSmsActivity", "onCreate - isFromSettings: $isFromSettings")
         
         if (isAlreadyDefault) {
-            // App is already default - update SharedPreferences and navigate away immediately
-            Log.d("DefaultSmsActivity", "App is already default - navigating away")
-            getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
-                .edit()
-                .putBoolean("IS_DEFAULT_SMS_SET", true)
-                .apply()
+            // App is already default - update SharedPreferences
+            Log.d("DefaultSmsActivity", "App is already default - checking permissions")
+            sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
             
-            // Navigate away immediately without showing the activity
-            if (isFromSettings) {
-                finish() // Return to SettingsActivity
+            // Check if we need to request permissions
+            if (!hasAllRequiredPermissions()) {
+                // Need to request permissions, show activity and request them
+                Log.d("DefaultSmsActivity", "App is default but missing permissions - requesting")
+                // Continue to show activity and request permissions
             } else {
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
+                // Already have permissions, navigate away immediately
+                Log.d("DefaultSmsActivity", "App is default and has permissions - navigating away")
+                onPermissionsGranted()
+                return // Exit early - don't show the activity
             }
-            return // Exit early - don't show the activity
         }
         
         Log.d("DefaultSmsActivity", "App is NOT default - showing activity")
@@ -103,6 +149,24 @@ class DefaultSmsActivity : AppCompatActivity() {
         }
         
         setupButton()
+        
+        // If app is already default and we need to request permissions, do it after UI is set up
+        if (::binding.isInitialized) {
+            val isDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val roleManager = getSystemService(RoleManager::class.java)
+                roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
+            } else {
+                val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
+                defaultSmsPackage != null && packageName == defaultSmsPackage
+            }
+            
+            if (isDefault && !hasAllRequiredPermissions()) {
+                // Small delay to ensure UI is ready, then request permissions
+                binding.root.post {
+                    requestRuntimePermissions()
+                }
+            }
+        }
     }
     
     override fun onResume() {
@@ -123,20 +187,61 @@ class DefaultSmsActivity : AppCompatActivity() {
             
             if (isDefault) {
                 // Mark default SMS as set
-                getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
-                    .edit()
-                    .putBoolean("IS_DEFAULT_SMS_SET", true)
-                    .apply()
+                sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
+                
+                // Request runtime permissions after default handler is set
+                requestRuntimePermissions()
             }
+            // If not default, activity remains open - user must set it as default
+            return
+        }
+        
+        // Check permissions again when returning from settings
+        if (permissionsRequested) {
+            if (hasAllRequiredPermissions()) {
+                onPermissionsGranted()
+            }
+            return
+        }
+        
+        // Always check in onResume if app became default (e.g., from system settings)
+        val isDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = getSystemService(RoleManager::class.java)
+            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
+        } else {
+            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
+            defaultSmsPackage != null && packageName == defaultSmsPackage
+        }
+        
+        if (isDefault) {
+            sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
             
-            // Navigate based on where we came from
-            if (isFromSettings) {
-                finish() // Return to SettingsActivity
+            // Check if we need to request permissions
+            if (!hasAllRequiredPermissions()) {
+                requestRuntimePermissions()
             } else {
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
+                // Already have permissions, navigate to next screen
+                onPermissionsGranted()
             }
         }
+    }
+    
+    @Suppress("DEPRECATION")
+    override fun onBackPressed() {
+        // Check if app is default SMS before allowing back press
+        val isDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = getSystemService(RoleManager::class.java)
+            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
+        } else {
+            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
+            defaultSmsPackage != null && packageName == defaultSmsPackage
+        }
+        
+        // Only allow back press if app is set as default SMS
+        if (isDefault) {
+            super.onBackPressed()
+        }
+        // Otherwise, do nothing - prevent dismissing the activity
     }
     
     private fun setupButton() {
@@ -150,17 +255,13 @@ class DefaultSmsActivity : AppCompatActivity() {
         }
         
         if (isAlreadyDefault) {
-            // App became default - navigate away immediately
-            getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
-                .edit()
-                .putBoolean("IS_DEFAULT_SMS_SET", true)
-                .apply()
+            // App became default - check permissions
+            sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
             
-            if (isFromSettings) {
-                finish()
+            if (!hasAllRequiredPermissions()) {
+                requestRuntimePermissions()
             } else {
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
+                onPermissionsGranted()
             }
             return
         }
@@ -181,17 +282,13 @@ class DefaultSmsActivity : AppCompatActivity() {
         }
         
         if (isAlreadyDefault) {
-            // App is already default - navigate away
-            getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
-                .edit()
-                .putBoolean("IS_DEFAULT_SMS_SET", true)
-                .apply()
+            // App is already default - check permissions
+            sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
             
-            if (isFromSettings) {
-                finish()
+            if (!hasAllRequiredPermissions()) {
+                requestRuntimePermissions()
             } else {
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
+                onPermissionsGranted()
             }
             return
         }
@@ -207,18 +304,9 @@ class DefaultSmsActivity : AppCompatActivity() {
                 roleRequestLauncher.launch(intent)
                 hasLaunchedIntent = true
             } else if (roleManager.isRoleHeld(RoleManager.ROLE_SMS)) {
-                // Already the default SMS app - navigate away
-                getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
-                    .edit()
-                    .putBoolean("IS_DEFAULT_SMS_SET", true)
-                    .apply()
-                
-                if (isFromSettings) {
-                    finish()
-                } else {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                }
+                // Already the default SMS app - request permissions
+                sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
+                requestRuntimePermissions()
             }
         } else {
             // Android 9 and below - Use ACTION_CHANGE_DEFAULT
@@ -226,6 +314,99 @@ class DefaultSmsActivity : AppCompatActivity() {
             intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, packageName)
             startActivity(intent)
             hasLaunchedIntent = true
+        }
+    }
+    
+    private fun hasAllRequiredPermissions(): Boolean {
+        return getRequiredRuntimePermissions().isEmpty()
+    }
+    
+    private fun getAllRequiredPermissions(): List<String> {
+        // Only SMS permissions - these must be requested AFTER default handler is set
+        // POST_NOTIFICATIONS and READ_PHONE_STATE are requested in WelcomeActivity
+        val requiredPermissions = mutableListOf<String>()
+        
+        // SMS permissions - request these after app becomes default SMS handler
+        requiredPermissions.add(Manifest.permission.READ_SMS)
+        requiredPermissions.add(Manifest.permission.SEND_SMS)
+        requiredPermissions.add(Manifest.permission.RECEIVE_SMS)
+        
+        return requiredPermissions
+    }
+    
+    private fun getRequiredRuntimePermissions(): List<String> {
+        // Return only permissions that are NOT granted
+        val allPermissions = getAllRequiredPermissions()
+        return allPermissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+    }
+    
+    private fun requestRuntimePermissions() {
+        val allPermissions = getAllRequiredPermissions()
+        val missingPermissions = getRequiredRuntimePermissions()
+        
+        Log.d("DefaultSmsActivity", "Requesting permissions - All: $allPermissions")
+        Log.d("DefaultSmsActivity", "Missing permissions: $missingPermissions")
+        
+        // Check current permission status for debugging
+        allPermissions.forEach { permission ->
+            val isGranted = ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+            Log.d("DefaultSmsActivity", "Permission $permission: ${if (isGranted) "GRANTED" else "NOT GRANTED"}")
+        }
+        
+        // IMPORTANT: Always request permissions explicitly, even if already granted
+        // This ensures Google Play compliance - we must go through the permission request flow
+        // Android will handle already-granted permissions gracefully:
+        // - If permissions are auto-granted (when app becomes default SMS handler), Android will
+        //   immediately return granted status in the callback without showing a dialog
+        // - If permissions are not granted, Android will show the permission dialog
+        // This demonstrates proper permission request flow to Google Play reviewers
+        if (!permissionsRequested) {
+            permissionsRequested = true
+            
+            if (missingPermissions.isEmpty()) {
+                // All permissions already granted (likely auto-granted when set as default SMS handler)
+                // Still request them explicitly to go through the proper flow
+                Log.d("DefaultSmsActivity", "All permissions already granted (auto-granted), but requesting explicitly for compliance")
+                // Request all permissions - Android will immediately return granted in callback
+                requestPermissionsLauncher.launch(allPermissions.toTypedArray())
+            } else {
+                // Some permissions missing - request them (Android will show dialog)
+                Log.d("DefaultSmsActivity", "Launching permission request dialog for: $missingPermissions")
+                requestPermissionsLauncher.launch(missingPermissions.toTypedArray())
+            }
+        }
+    }
+    
+    private fun showPermissionSettingsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Permissions Required")
+            .setMessage("SMS and Phone permissions are required for the app to function properly. Please enable them in app settings.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", packageName, null)
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                // User cancelled, check again (might have granted manually)
+                permissionsRequested = false
+            }
+            .setCancelable(false)
+            .show()
+    }
+    
+    private fun onPermissionsGranted() {
+        // All permissions granted, navigate to next screen
+        if (isFromSettings) {
+            // If opened from settings, just finish (user can continue from MainActivity)
+            finish()
+        } else {
+            // Navigate to overlay permission screen
+            // OverlayPermissionActivity will handle language check and navigation
+            startActivity(Intent(this, OverlayPermissionActivity::class.java))
+            finish()
         }
     }
 }

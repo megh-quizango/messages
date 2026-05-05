@@ -2,12 +2,13 @@ package com.text.messages.sms.messanger.ui.conversation
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -19,7 +20,7 @@ import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityEditQuickResponseBinding
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class EditQuickResponseActivity : AppCompatActivity() {
+class EditQuickResponseActivity : BaseActivity() {
 
     private lateinit var binding: ActivityEditQuickResponseBinding
     private lateinit var adapter: EditQuickMessageAdapter
@@ -28,8 +29,9 @@ class EditQuickResponseActivity : AppCompatActivity() {
     private val selectedItems = mutableSetOf<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        
+
         binding = ActivityEditQuickResponseBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
@@ -85,7 +87,9 @@ class EditQuickResponseActivity : AppCompatActivity() {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
+                @Suppress("DEPRECATION")
                 val from = viewHolder.adapterPosition
+                @Suppress("DEPRECATION")
                 val to = target.adapterPosition
                 adapter.moveItem(from, to)
                 return true

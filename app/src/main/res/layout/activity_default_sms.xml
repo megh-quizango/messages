@@ -12,17 +12,22 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="24dp"
             android:gravity="center_horizontal">
+
+            <!-- Top spacer to center content vertically -->
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
             <!-- Phone Illustration Placeholder -->
             <ImageView
                 android:id="@+id/imagePhone"
                 android:layout_width="200dp"
                 android:layout_height="200dp"
-                android:layout_marginTop="40dp"
                 android:src="@drawable/sms"
                 android:contentDescription="Phone illustration"
                  />
@@ -32,7 +37,7 @@
                 android:id="@+id/textHeading"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="24dp"
                 android:text="Set message as your default to work properly"
                 android:textColor="@color/black"
                 android:textSize="28sp"
@@ -169,6 +174,12 @@
                     android:padding="8dp" />
 
             </LinearLayout>
+
+            <!-- Bottom spacer to center content vertically -->
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
         </LinearLayout>
 

@@ -35,7 +35,7 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.content.ContextCompat
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.ViewCompat
@@ -67,7 +67,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class ConversationDetailActivity : AppCompatActivity() {
+class ConversationDetailActivity : BaseActivity() {
 
     companion object {
         private const val TAG = "ConversationDetail"
@@ -204,6 +204,7 @@ class ConversationDetailActivity : AppCompatActivity() {
         ThemeManager.setupNavigationBar(this)
         
         // Configure window to adjust for keyboard
+        @Suppress("DEPRECATION")
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -218,6 +219,7 @@ class ConversationDetailActivity : AppCompatActivity() {
         
         // Handle IME (keyboard) insets on the input area to push it up
         ViewCompat.setOnApplyWindowInsetsListener(binding.layoutInput) { view, insets ->
+            @Suppress("UNUSED_VARIABLE")
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             val layoutParams = view.layoutParams as? androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
@@ -515,7 +517,7 @@ class ConversationDetailActivity : AppCompatActivity() {
         // Get current messages to find selected ones
         val currentMessages = viewModel.messages.value ?: emptyList()
         val messagesToStar = currentMessages.filter { item ->
-            item is MessageListItem.MessageItem && selectedIds.contains((item as MessageListItem.MessageItem).message.id)
+            item is MessageListItem.MessageItem && selectedIds.contains(item.message.id)
         }.mapNotNull { item ->
             val msg = (item as MessageListItem.MessageItem).message
             if (!starredMessageIds.contains(msg.id)) {
@@ -660,6 +662,8 @@ class ConversationDetailActivity : AppCompatActivity() {
         binding.adViewBanner.loadBannerAdWithRemoteConfig()
     }
 
+    private var isFirstLoad = true
+    
     private fun observeMessages() {
         viewModel.messages.observe(this) { newMessages ->
             val currentList = adapter.currentList
@@ -669,8 +673,28 @@ class ConversationDetailActivity : AppCompatActivity() {
                 loadStarredMessages() // Refresh starred status when messages load
                 
                 if (newMessages.isNotEmpty()) {
-                    // If list was empty or new messages were added, scroll to bottom
-                    if (wasEmpty || newMessages.size > currentList.size) {
+                    // Always scroll to bottom on first load (when conversation is opened)
+                    // Use instant scroll to avoid visible scrolling animation from top to bottom
+                    if (isFirstLoad && wasEmpty) {
+                        // Scroll to bottom immediately when conversation is first opened
+                        // Use post to ensure RecyclerView is ready, then scroll instantly
+                        binding.recyclerViewMessages.post {
+                            // Check if RecyclerView is laid out, if not wait for layout
+                            if (binding.recyclerViewMessages.isLaidOut) {
+                                binding.recyclerViewMessages.scrollToPosition(newMessages.size - 1)
+                            } else {
+                                binding.recyclerViewMessages.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                                    override fun onGlobalLayout() {
+                                        binding.recyclerViewMessages.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                        binding.recyclerViewMessages.scrollToPosition(newMessages.size - 1)
+                                    }
+                                })
+                            }
+                        }
+                        isFirstLoad = false
+                    } 
+                    // For subsequent updates (new messages), use smooth scroll
+                    else if (newMessages.size > currentList.size) {
                         binding.recyclerViewMessages.post {
                             binding.recyclerViewMessages.smoothScrollToPosition(newMessages.size - 1)
                         }
@@ -734,8 +758,7 @@ class ConversationDetailActivity : AppCompatActivity() {
         
         // Use ViewTreeObserver to catch views as they're added
         datePicker.dialog?.window?.decorView?.let { decorView ->
-            var layoutListener: android.view.ViewTreeObserver.OnGlobalLayoutListener? = null
-            layoutListener = object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+            val layoutListener = object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     applyPickerTheme()
                     // Keep listening for layout changes
@@ -800,8 +823,7 @@ class ConversationDetailActivity : AppCompatActivity() {
         
         // Use ViewTreeObserver to catch views as they're added and when user interacts
         timePicker.dialog?.window?.decorView?.let { decorView ->
-            var layoutListener: android.view.ViewTreeObserver.OnGlobalLayoutListener? = null
-            layoutListener = object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+            val layoutListener = object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     applyPickerTheme()
                     // Keep listening for layout changes (e.g., when user changes hour/minute)

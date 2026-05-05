@@ -2,7 +2,7 @@
 <resources>
     <style name="Theme.Messages" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:navigationBarColor">@android:color/white</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
@@ -10,6 +10,15 @@
         <item name="android:windowBackground">@color/background_dark</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.Messages.Home" parent="Theme.Messages">
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
     </style>
 
     <style name="Theme.Messages.Dialog" parent="Theme.Material3.DayNight.Dialog">

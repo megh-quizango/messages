@@ -16,9 +16,10 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -48,7 +49,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var adapter: SettingsAdapter
@@ -69,6 +70,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         android.util.Log.d("SettingsActivity", "=== SettingsActivity.onCreate() ===")
         AnalyticsHelper.logScreenView("SettingsActivity", "SettingsActivity")
@@ -89,7 +91,7 @@ class SettingsActivity : AppCompatActivity() {
         }
         
         // Bottom navigation should not have extra padding from window insets
-        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigationView) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigationView) { _, insets ->
             // Don't add padding - we want it to be exactly the size of its content
             insets
         }
@@ -155,8 +157,8 @@ class SettingsActivity : AppCompatActivity() {
             
             return try {
                 // Try multiple approaches to find the resource
-                var resourceId = 0
-                
+                var resourceId: Int
+
                 // First try: direct name (for files in main drawable folder or flattened from subfolders)
                 resourceId = resources.getIdentifier(name, "drawable", packageName)
                 android.util.Log.d("SettingsActivity", "getIcon($name): Direct lookup = $resourceId")
@@ -192,6 +194,7 @@ class SettingsActivity : AppCompatActivity() {
                 // Third try: List all drawable resources to see what's available
                 if (resourceId == 0) {
                     android.util.Log.w("SettingsActivity", "getIcon($name): Resource not found! Listing available drawables...")
+                    @Suppress("UNUSED_VARIABLE")
                     val packageName = packageName
                     val drawableFields = R.drawable::class.java.fields
                     val matchingDrawables = drawableFields.filter { 
@@ -298,18 +301,21 @@ class SettingsActivity : AppCompatActivity() {
             
             when (item.itemId) {
                 R.id.nav_messages -> {
+                    @Suppress("DEPRECATION")
                     overridePendingTransition(0, 0)
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                     true
                 }
                 R.id.nav_contacts -> {
+                    @Suppress("DEPRECATION")
                     overridePendingTransition(0, 0)
                     startActivity(Intent(this, ContactsActivity::class.java))
                     finish()
                     true
                 }
                 R.id.nav_personalize -> {
+                    @Suppress("DEPRECATION")
                     overridePendingTransition(0, 0)
                     startActivity(Intent(this, PersonalizeActivity::class.java))
                     finish()
@@ -452,6 +458,7 @@ class SettingsActivity : AppCompatActivity() {
             val defaultFileName = "messages_backup_$timestamp.zip"
             
             // Create intent to open file picker with Downloads folder suggestion
+            @Suppress("UNUSED_VARIABLE")
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/zip"
@@ -460,6 +467,7 @@ class SettingsActivity : AppCompatActivity() {
                 // Try to set initial URI to Downloads folder (Android 10+)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     try {
+                        @Suppress("UNUSED_VARIABLE")
                         val downloadsUri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                         val treeUri = DocumentsContract.buildDocumentUri(
                             "com.android.externalstorage.documents",
@@ -482,6 +490,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun importMessages() {
         try {
             // Create intent to open file picker with Downloads folder suggestion
+            @Suppress("UNUSED_VARIABLE")
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/zip"

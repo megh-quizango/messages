@@ -3,6 +3,7 @@ package com.text.messages.sms.messanger.ui.conversation
 import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Context
+import androidx.activity.enableEdgeToEdge
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
@@ -15,7 +16,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.gson.Gson
@@ -35,7 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ConversationDetailsActivity : AppCompatActivity() {
+class ConversationDetailsActivity : BaseActivity() {
 
     companion object {
         private const val TAG = "ConversationDetails"
@@ -47,6 +48,7 @@ class ConversationDetailsActivity : AppCompatActivity() {
     private var contactName: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         threadId = intent.getLongExtra("thread_id", -1)

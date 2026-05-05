@@ -2,8 +2,9 @@ package com.text.messages.sms.messanger.ui.caller
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
@@ -14,7 +15,7 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class CallerSettingsActivity : AppCompatActivity() {
+class CallerSettingsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityCallerSettingsBinding
     private lateinit var prefs: SharedPreferences
@@ -30,8 +31,9 @@ class CallerSettingsActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        
+
         binding = ActivityCallerSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         

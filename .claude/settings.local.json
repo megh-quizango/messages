@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(xargs grep:*)",
+      "Bash(while read f)",
+      "Bash(do ls -lh \"$f\")",
+      "Bash(where cwebp:*)",
+      "Bash(cat:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(echo:*)"
+    ]
+  }
+}

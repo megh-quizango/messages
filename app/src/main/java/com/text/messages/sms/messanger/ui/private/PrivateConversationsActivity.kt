@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
@@ -22,7 +22,7 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class PrivateConversationsActivity : AppCompatActivity() {
+class PrivateConversationsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityPrivateConversationsBinding
     private lateinit var viewModel: MainViewModel

@@ -259,16 +259,25 @@ class SettingsFragment : Fragment() {
     private fun openPlayStoreForSharing() {
         try {
             val packageName = requireContext().packageName
-            val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
-            try {
-                startActivity(marketIntent)
-            } catch (e: android.content.ActivityNotFoundException) {
-                // If Play Store app is not available, open in browser
-                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
-                startActivity(webIntent)
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    "Check out Messages App on Play Store: https://play.google.com/store/apps/details?id=$packageName"
+                )
             }
+            context?.startActivity(Intent.createChooser(shareIntent, "Share App"))
+//            val packageName = requireContext().packageName
+//            val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
+//            try {
+//                startActivity(marketIntent)
+//            } catch (e: android.content.ActivityNotFoundException) {
+//                // If Play Store app is not available, open in browser
+//                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+//                startActivity(webIntent)
+//            }
         } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Unable to open Play Store", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Unable to share Play Store link", Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -334,11 +343,12 @@ class SettingsFragment : Fragment() {
             val defaultFileName = "messages_backup_$timestamp.zip"
             
             // Create intent to open file picker with Downloads folder suggestion
+            @Suppress("UNUSED_VARIABLE")
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/zip"
                 putExtra(Intent.EXTRA_TITLE, defaultFileName)
-                
+
                 // Try to set initial URI to Downloads folder (Android 10+)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     try {
@@ -352,7 +362,7 @@ class SettingsFragment : Fragment() {
                     }
                 }
             }
-            
+
             exportFileLauncher.launch(defaultFileName)
         } catch (e: Exception) {
             Log.e("SettingsFragment", "Error launching export file picker", e)
@@ -363,6 +373,7 @@ class SettingsFragment : Fragment() {
     private fun importMessages() {
         try {
             // Create intent to open file picker with Downloads folder suggestion
+            @Suppress("UNUSED_VARIABLE")
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/zip"

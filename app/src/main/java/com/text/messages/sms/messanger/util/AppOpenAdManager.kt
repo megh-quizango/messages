@@ -43,8 +43,7 @@ object AppOpenAdManager {
 
     private const val TAG = "NativeVideoAdManager"
     @SuppressLint("StaticFieldLeak")
-    private const val NATIVE_VIDEO_AD_UNIT_ID = "ca-app-pub-3940256099942544/1044960115"
-    private const val VIDEO_DURATION_MS = 30000L // Estimated video duration
+    private const val VIDEO_DURATION_MS = 50000L // Estimated video duration
     private const val NON_VIDEO_DURATION_MS = 5000L // Duration for non-video ads
 
     private var currentNativeAd: NativeAd? = null
@@ -67,10 +66,26 @@ object AppOpenAdManager {
      * @param activity The activity context to show the ad
      * @param onFinish Callback invoked when all ads are finished or if any ad fails
      */
+    private const val MIN_AD_DELAY_MS = 2500L
+
     fun showDoubleAppOpenIfDebug(activity: Activity, onFinish: () -> Unit) {
         val isDebug = (activity.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         val adsToShow = if (isDebug) 2 else 1
         Log.d(TAG, "Starting native video ad sequence. Build type: ${if (isDebug) "DEBUG" else "RELEASE"}, ads to show: $adsToShow")
+
+        // Enforce minimum 2.5s delay from cold start before showing ads
+        val coldStart = com.text.messages.sms.messanger.ui.splash.LandingActivity.coldStartTimestampMs
+        if (coldStart > 0L) {
+            val elapsed = android.os.SystemClock.elapsedRealtime() - coldStart
+            val remainingDelay = (MIN_AD_DELAY_MS - elapsed).coerceAtLeast(0L)
+            if (remainingDelay > 0) {
+                Log.d(TAG, "Delaying ads by ${remainingDelay}ms to meet 2.5s minimum")
+                handler.postDelayed({
+                    showAdSequence(activity, adsToShow, 0, onFinish)
+                }, remainingDelay)
+                return
+            }
+        }
 
         showAdSequence(activity, adsToShow, 0, onFinish)
     }
@@ -156,7 +171,8 @@ object AppOpenAdManager {
             .setMediaAspectRatio(NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_LANDSCAPE)
             .build()
 
-        val adLoader = AdLoader.Builder(activity, NATIVE_VIDEO_AD_UNIT_ID)
+        val nativeVideoAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeVideoAdUnitId()
+        val adLoader = AdLoader.Builder(activity, nativeVideoAdUnitId)
             .forNativeAd { nativeAd ->
                 Log.d(TAG, "Native ad #$adNumber loaded successfully")
 
@@ -272,6 +288,7 @@ object AppOpenAdManager {
 
                 // Handle system bars properly
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    @Suppress("DEPRECATION")
                     setDecorFitsSystemWindows(false)
                     insetsController?.let { controller ->
                         controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
@@ -401,7 +418,8 @@ object AppOpenAdManager {
             .setMediaAspectRatio(NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_LANDSCAPE)
             .build()
 
-        val adLoader = AdLoader.Builder(activity, NATIVE_VIDEO_AD_UNIT_ID)
+        val nativeVideoAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeVideoAdUnitId()
+        val adLoader = AdLoader.Builder(activity, nativeVideoAdUnitId)
             .forNativeAd { nativeAd ->
                 Log.d(TAG, "Next ad #$nextAdNumber preloaded successfully")
                 nextNativeAd = nativeAd

@@ -6,8 +6,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -16,7 +17,7 @@ import com.text.messages.sms.messanger.databinding.ActivityThemesBinding
 import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class ThemesActivity : AppCompatActivity() {
+class ThemesActivity : BaseActivity() {
 
     private lateinit var binding: ActivityThemesBinding
     private var selectedCardId: Int? = null
@@ -48,8 +49,9 @@ class ThemesActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        
+
         binding = ActivityThemesBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
@@ -217,7 +219,7 @@ class ThemesActivity : AppCompatActivity() {
         }
         
         // Also register for direct callback updates
-        themeUpdateCallback = { ctx: Context, view: View ->
+        themeUpdateCallback = { ctx: Context, _: View ->
             if (ctx == this@ThemesActivity) {
                 ThemeManager.applyThemeImmediate(this@ThemesActivity, binding.root)
                 ThemeManager.applyThemeImmediate(this@ThemesActivity, binding.buttonBack)

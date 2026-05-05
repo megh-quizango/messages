@@ -90,6 +90,7 @@ object MmsReceiverService {
                     val threadId = it.getLong(it.getColumnIndexOrThrow(Telephony.Mms.THREAD_ID))
                     val date = it.getLong(it.getColumnIndexOrThrow(Telephony.Mms.DATE)) * 1000 // Convert to milliseconds
                     val read = it.getInt(it.getColumnIndexOrThrow(Telephony.Mms.READ)) == 1
+                    @Suppress("UNUSED_VARIABLE")
                     val msgBox = it.getInt(it.getColumnIndexOrThrow(Telephony.Mms.MESSAGE_BOX))
                     val subject = it.getString(it.getColumnIndexOrThrow(Telephony.Mms.SUBJECT))
                     
@@ -193,6 +194,7 @@ object MmsReceiverService {
                 )
                 
                 // Download MMS
+                @Suppress("DEPRECATION")
                 val smsManager = SmsManager.getDefault()
                 smsManager.downloadMultimediaMessage(
                     context,
@@ -274,6 +276,7 @@ object MmsReceiverService {
         }
     }
     
+    @Suppress("UNUSED_PARAMETER")
     private suspend fun getOrCreateConversation(context: Context, threadId: Long, address: String): Conversation {
         val database = MessagesApp.database
         val conversationDao = database.conversationDao()
@@ -294,6 +297,7 @@ object MmsReceiverService {
         }
     }
     
+    @Suppress("UNUSED_PARAMETER")
     private suspend fun updateConversation(context: Context, conversation: Conversation, message: Message) {
         val database = MessagesApp.database
         val conversationDao = database.conversationDao()
@@ -313,6 +317,7 @@ object MmsReceiverService {
         )
     }
     
+    @Suppress("UNUSED_PARAMETER")
     private suspend fun markConversationUnarchived(context: Context, threadId: Long) {
         val database = MessagesApp.database
         val conversationDao = database.conversationDao()

@@ -3,6 +3,7 @@ package com.text.messages.sms.messanger.ui.personalize
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.activity.enableEdgeToEdge
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -13,7 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.text.messages.sms.messanger.R
@@ -21,7 +22,7 @@ import com.text.messages.sms.messanger.databinding.ActivityRingtoneBinding
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class RingtoneActivity : AppCompatActivity() {
+class RingtoneActivity : BaseActivity() {
 
     private lateinit var binding: ActivityRingtoneBinding
     private var selectedCard: View? = null
@@ -37,8 +38,9 @@ class RingtoneActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        
+
         binding = ActivityRingtoneBinding.inflate(layoutInflater)
         setContentView(binding.root)
         

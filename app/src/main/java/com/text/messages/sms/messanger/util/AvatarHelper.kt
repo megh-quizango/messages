@@ -1,8 +1,10 @@
 package com.text.messages.sms.messanger.util
 
 import android.graphics.Color
+import android.graphics.Paint
 import android.net.Uri
 import android.util.Log
+import android.util.TypedValue
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.squareup.picasso.Picasso
@@ -188,13 +190,36 @@ object AvatarHelper {
                         val finalLetter = if (letter.isNotEmpty()) letter else "#"
                         Log.d(TAG, "loadFallbackAvatar: Setting text to '$finalLetter' (from firstLetter='$firstLetter')")
                         
+                        // Ensure proper centering
+                        textView.gravity = android.view.Gravity.CENTER
+                        textView.textAlignment = android.view.View.TEXT_ALIGNMENT_CENTER
+                        
                         // Set text first - use setText with BufferType to ensure it's set
                         textView.setText(finalLetter, android.widget.TextView.BufferType.NORMAL)
                         // Set text color to dark grey (matching XML @color/gray_dark)
                         val darkGreyColor = ContextCompat.getColor(context, R.color.gray_dark)
                         textView.setTextColor(darkGreyColor)
-                        // Set text size to fit in 56dp circle (14sp for better fit)
-                        textView.textSize = 14f * context.resources.displayMetrics.scaledDensity
+                        
+                        // Ensure includeFontPadding is false for better centering
+                        textView.includeFontPadding = false
+                        
+                        // Calculate text size based on actual circle size to ensure it fits
+                        // Use imageView dimensions as they should match textView dimensions
+                        val circleSize = (imageView.width.coerceAtLeast(imageView.height))
+                            .coerceAtLeast(textView.width.coerceAtLeast(textView.height))
+                        val calculatedTextSize = if (circleSize > 0) {
+                            calculateOptimalTextSize(textView, finalLetter, circleSize, context)
+                        } else {
+                            // Fallback: use 40% of typical 56dp circle size (56dp = ~210px on mdpi)
+                            val defaultCircleSizeDp = 56f
+                            val defaultCircleSizePx = TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                defaultCircleSizeDp,
+                                context.resources.displayMetrics
+                            )
+                            calculateOptimalTextSize(textView, finalLetter, defaultCircleSizePx.toInt(), context)
+                        }
+                        textView.textSize = calculatedTextSize
                         
                         // Create a circular drawable with the background color for the TextView
                         val drawable = android.graphics.drawable.GradientDrawable().apply {
@@ -223,6 +248,21 @@ object AvatarHelper {
                         
                         // Post again to ensure everything is laid out and visible
                         textView.post {
+                            // Recalculate text size now that views should have proper dimensions
+                            val finalCircleSize = (imageView.width.coerceAtLeast(imageView.height))
+                                .coerceAtLeast(textView.width.coerceAtLeast(textView.height))
+                            if (finalCircleSize > 0) {
+                                val recalculatedTextSize = calculateOptimalTextSize(textView, finalLetter, finalCircleSize, context)
+                                textView.textSize = recalculatedTextSize
+                                
+                                // Ensure centering is still applied
+                                textView.gravity = android.view.Gravity.CENTER
+                                textView.textAlignment = android.view.View.TEXT_ALIGNMENT_CENTER
+                                textView.includeFontPadding = false
+                                
+                                Log.d(TAG, "loadFallbackAvatar: Recalculated text size to $recalculatedTextSize for circle size $finalCircleSize")
+                            }
+                            
                             // Force a complete redraw
                             textView.invalidate()
                             textView.requestLayout()
@@ -234,7 +274,7 @@ object AvatarHelper {
                             imageView.invalidate()
                             
                             // Log detailed state
-                            Log.d(TAG, "loadFallbackAvatar: TextView after post - visibility=${textView.visibility}, text='${textView.text}', textColor=${textView.currentTextColor}, width=${textView.width}, height=${textView.height}, alpha=${textView.alpha}, isShown=${textView.isShown}, hasFocus=${textView.hasFocus()}")
+                            Log.d(TAG, "loadFallbackAvatar: TextView after post - visibility=${textView.visibility}, text='${textView.text}', textColor=${textView.currentTextColor}, width=${textView.width}, height=${textView.height}, textSize=${textView.textSize}, gravity=${textView.gravity}, alpha=${textView.alpha}, isShown=${textView.isShown}, hasFocus=${textView.hasFocus()}")
                             
                             // Try to force a draw by calling onDraw
                             textView.postDelayed({
@@ -286,6 +326,75 @@ object AvatarHelper {
             }
             viewTreeObserver.addOnGlobalLayoutListener(listener)
         }
+    }
+    
+    /**
+     * Calculate optimal text size that fits within the circle
+     * @param textView The TextView to measure
+     * @param text The text to measure
+     * @param circleSize The diameter of the circle in pixels
+     * @param context Context for resources
+     * @return Optimal text size in pixels
+     */
+    private fun calculateOptimalTextSize(
+        textView: TextView,
+        text: String,
+        circleSize: Int,
+        context: android.content.Context
+    ): Float {
+        if (circleSize <= 0) {
+            // Fallback to a reasonable default
+            return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                20f,
+                context.resources.displayMetrics
+            )
+        }
+        
+        // Start with 65% of circle diameter as initial size (larger for better visibility)
+        var textSize = circleSize * 0.15f
+        
+        // Create a Paint object to measure text bounds with same settings as TextView
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = textView.typeface ?: android.graphics.Typeface.DEFAULT
+            textSize = textSize
+            isFakeBoldText = textView.typeface?.isBold ?: false
+        }
+        
+        // Measure text width using measureText (more accurate than getTextBounds)
+        val textWidth = paint.measureText(text)
+        
+        // Measure text height using font metrics (excluding font padding for better centering)
+        val fontMetrics = paint.fontMetrics
+        val textHeight = kotlin.math.abs(fontMetrics.descent - fontMetrics.ascent)
+        
+        // Calculate the diagonal (hypotenuse) of the text bounds
+        val textDiagonal = kotlin.math.sqrt((textWidth * textWidth) + (textHeight * textHeight))
+        
+        // We want the text to fit within 85% of the circle diameter to maximize size while leaving padding
+        val maxTextDiagonal = circleSize * 0.55f
+        
+        // If text is too large, scale it down proportionally
+        if (textDiagonal > maxTextDiagonal && textDiagonal > 0) {
+            val scaleFactor = maxTextDiagonal / textDiagonal
+            textSize = textSize * scaleFactor
+        }
+        
+        // Ensure minimum readable size (at least 16sp converted to pixels)
+        val minSize = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_SP,
+            10f,
+            context.resources.displayMetrics
+        )
+        textSize = textSize.coerceAtLeast(minSize)
+        
+        // Ensure maximum size doesn't exceed 70% of circle (safety check to prevent overflow)
+        val maxSize = circleSize * 0.50f
+        textSize = textSize.coerceAtMost(maxSize)
+        
+        Log.d(TAG, "calculateOptimalTextSize: circleSize=$circleSize, text='$text', textWidth=$textWidth, textHeight=$textHeight, textDiagonal=$textDiagonal, calculatedSize=$textSize")
+        
+        return textSize
     }
 }
 

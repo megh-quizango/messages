@@ -2,8 +2,9 @@ package com.text.messages.sms.messanger.ui.archive
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,7 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class ArchiveActivity : AppCompatActivity() {
+class ArchiveActivity : BaseActivity() {
 
     private lateinit var binding: ActivityArchiveBinding
     private lateinit var adapter: ArchiveMessageAdapter
@@ -32,6 +33,7 @@ class ArchiveActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         AnalyticsHelper.logScreenView("ArchiveActivity", "ArchiveActivity")
         

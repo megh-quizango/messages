@@ -3,6 +3,7 @@ package com.text.messages.sms.messanger.ui.contacts
 import android.Manifest
 import android.content.ContentResolver
 import android.content.Intent
+import androidx.activity.enableEdgeToEdge
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.os.Bundle
@@ -14,7 +15,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -38,7 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ContactsActivity : AppCompatActivity() {
+class ContactsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityContactsBinding
     private lateinit var adapter: ContactAdapter
@@ -61,6 +62,7 @@ class ContactsActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         android.util.Log.d("ContactsActivity", "=== ContactsActivity.onCreate() ===")
         AnalyticsHelper.logScreenView("ContactsActivity", "ContactsActivity")
@@ -85,10 +87,10 @@ class ContactsActivity : AppCompatActivity() {
             
             // Update RecyclerView constraint to fill the space using ConstraintSet
             val constraintSet = ConstraintSet()
-            constraintSet.clone(binding.root as ConstraintLayout)
+            constraintSet.clone(binding.root)
             constraintSet.clear(binding.recyclerViewContacts.id, ConstraintSet.BOTTOM)
             constraintSet.connect(binding.recyclerViewContacts.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
-            constraintSet.applyTo(binding.root as ConstraintLayout)
+            constraintSet.applyTo(binding.root)
         }
         
         // Handle window insets - same as MainActivity
@@ -100,7 +102,7 @@ class ContactsActivity : AppCompatActivity() {
         }
         
         // Bottom navigation should not have extra padding from window insets
-        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigationView) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigationView) { _, insets ->
             // Don't add padding - we want it to be exactly the size of its content
             insets
         }
@@ -192,6 +194,7 @@ class ContactsActivity : AppCompatActivity() {
             
             when (item.itemId) {
                 R.id.nav_messages -> {
+                    @Suppress("DEPRECATION")
                     overridePendingTransition(0, 0)
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
@@ -202,12 +205,14 @@ class ContactsActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_personalize -> {
+                    @Suppress("DEPRECATION")
                     overridePendingTransition(0, 0)
                     startActivity(Intent(this, PersonalizeActivity::class.java))
                     finish()
                     true
                 }
                 R.id.nav_settings -> {
+                    @Suppress("DEPRECATION")
                     overridePendingTransition(0, 0)
                     startActivity(Intent(this, SettingsActivity::class.java))
                     finish()

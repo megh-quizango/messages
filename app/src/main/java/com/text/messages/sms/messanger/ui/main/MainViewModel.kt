@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.isActive
 
+@Suppress("NullSafeMutableLiveData")
 class MainViewModel : ViewModel() {
     
     companion object {
@@ -65,20 +66,20 @@ class MainViewModel : ViewModel() {
                     if (showLoading) {
                         viewModelScope.launch {
                             _isLoading.postValue(true)
-                            _conversations.postValue(cached!!)
+                            _conversations.postValue(cached)
                             // Small delay to ensure loading state is visible briefly
                             kotlinx.coroutines.delay(100)
                             _isLoading.postValue(false)
                         }
                     } else {
-                        _conversations.postValue(cached!!)
+                        _conversations.postValue(cached)
                         // Still refresh in background to ensure cache is up to date
                         loadConversationsInBackground(category, timeFilter, startDate, endDate)
                     }
                     return
                 } else {
                     // Force refresh: show cache now, refresh from device below
-                    _conversations.postValue(cached!!)
+                    _conversations.postValue(cached)
                 }
             }
         }
@@ -144,14 +145,17 @@ class MainViewModel : ViewModel() {
         context: android.content.Context, 
         filterId: String,
         useCache: Boolean = true,
-        forceRefresh: Boolean = false
+        forceRefresh: Boolean = false,
+        timeFilter: String? = null,
+        startDate: Long? = null,
+        endDate: Long? = null
     ) {
         // Cancel previous filter loading job
         currentFilterLoadJob?.cancel()
         
         // Try cache first if enabled (even if forcing refresh).
-        // If forceRefresh=true, we still post cache immediately for instant UI, then load from device.
-        if (useCache) {
+        // Don't use cache when time filter is active - cache doesn't store time-filtered results.
+        if (useCache && timeFilter == null) {
             val cached = ConversationCache.getCachedForFilter(filterId)
             if (cached != null) {
                 Log.d(TAG, "Using cached conversations for filter: $filterId (${cached.size} items, forceRefresh=$forceRefresh)")
@@ -159,16 +163,16 @@ class MainViewModel : ViewModel() {
                     // Briefly show loading state for better UX
                     viewModelScope.launch {
                         _isLoading.postValue(true)
-                        _conversations.postValue(cached!!)
+                        _conversations.postValue(cached)
                         // Small delay to ensure loading state is visible briefly
                         kotlinx.coroutines.delay(100)
                         _isLoading.postValue(false)
                         // Still refresh in background
-                        loadConversationsForCustomFilterInBackground(context, filterId)
+                        loadConversationsForCustomFilterInBackground(context, filterId, timeFilter, startDate, endDate)
                     }
                     return
                 } else {
-                    _conversations.postValue(cached!!)
+                    _conversations.postValue(cached)
                 }
             }
         }
@@ -181,12 +185,14 @@ class MainViewModel : ViewModel() {
                     if (!isActive) {
                         return@withContext emptyList<Conversation>()
                     }
-                    loadConversationsForCustomFilterFromDevice(context, filterId)
+                    loadConversationsForCustomFilterFromDevice(context, filterId, timeFilter, startDate, endDate)
                 }
                 
                 if (isActive) {
                     _conversations.postValue(conversations)
-                    ConversationCache.cacheForFilter(filterId, conversations)
+                    if (timeFilter == null) {
+                        ConversationCache.cacheForFilter(filterId, conversations)
+                    }
                 }
             } catch (e: Exception) {
                 if (isActive) {
@@ -203,15 +209,18 @@ class MainViewModel : ViewModel() {
     
     private fun loadConversationsForCustomFilterInBackground(
         context: android.content.Context,
-        filterId: String
+        filterId: String,
+        timeFilter: String? = null,
+        startDate: Long? = null,
+        endDate: Long? = null
     ) {
         viewModelScope.launch {
             try {
                 val conversations = withContext(Dispatchers.IO) {
                     if (!isActive) return@withContext emptyList<Conversation>()
-                    loadConversationsForCustomFilterFromDevice(context, filterId)
+                    loadConversationsForCustomFilterFromDevice(context, filterId, timeFilter, startDate, endDate)
                 }
-                if (isActive) {
+                if (isActive && timeFilter == null) {
                     ConversationCache.cacheForFilter(filterId, conversations)
                 }
             } catch (e: Exception) {
@@ -599,8 +608,14 @@ class MainViewModel : ViewModel() {
         return sortedConversations
     }
     
-    private fun loadConversationsForCustomFilterFromDevice(context: android.content.Context, filterId: String): List<Conversation> {
-        Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Starting for filterId: $filterId")
+    private fun loadConversationsForCustomFilterFromDevice(
+        context: android.content.Context,
+        filterId: String,
+        timeFilter: String? = null,
+        startDate: Long? = null,
+        endDate: Long? = null
+    ): List<Conversation> {
+        Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Starting for filterId: $filterId, timeFilter: $timeFilter")
         val filter = CustomFilterStorage.getFilter(context, filterId)
         if (filter == null || filter.threadIds.isEmpty()) {
             Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Filter not found or empty")
@@ -622,8 +637,18 @@ class MainViewModel : ViewModel() {
             Telephony.Sms.TYPE
         )
         
-        val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIdSet.joinToString(",") { "?" }})"
-        val selectionArgs = threadIdSet.map { it.toString() }.toTypedArray()
+        val threadSelection = "${Telephony.Sms.THREAD_ID} IN (${threadIdSet.joinToString(",") { "?" }})"
+        val timeFilterSelection = buildTimeFilterSelection(timeFilter, startDate, endDate)
+        val selection = when {
+            timeFilterSelection != null -> "$threadSelection AND $timeFilterSelection"
+            else -> threadSelection
+        }
+        val timeFilterArgs = buildTimeFilterArgs(timeFilter, startDate, endDate)
+        val selectionArgs = if (timeFilterArgs != null) {
+            threadIdSet.map { it.toString() }.toTypedArray() + timeFilterArgs
+        } else {
+            threadIdSet.map { it.toString() }.toTypedArray()
+        }
         val sortOrder = "${Telephony.Sms.DATE} DESC"
         
         Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Querying ${threadIdSet.size} thread IDs")
@@ -765,10 +790,10 @@ class MainViewModel : ViewModel() {
             else -> null // Load all for "All" and "Personal" (Personal needs all to check contacts)
         }
         
-        // Combine category and time filters
+        // Combine category and time filters (wrap in parentheses for correct SQL precedence - OR has lower precedence than AND)
         val selection = when {
             categorySelection != null && timeFilterSelection != null -> {
-                "$categorySelection AND $timeFilterSelection"
+                "($categorySelection) AND ($timeFilterSelection)"
             }
             categorySelection != null -> categorySelection
             timeFilterSelection != null -> timeFilterSelection
@@ -927,6 +952,7 @@ class MainViewModel : ViewModel() {
             Log.d(TAG, "loadMmsConversationsFromRealm: Found ${mmsMessages.size} MMS messages in database")
             
             mmsMessages.forEach { msg ->
+                @Suppress("KotlinConstantConditions")
                 if (msg == null) return@forEach
                     
                     val threadId = msg.threadId
@@ -1258,6 +1284,7 @@ class MainViewModel : ViewModel() {
                 calendar.set(java.util.Calendar.MINUTE, 0)
                 calendar.set(java.util.Calendar.SECOND, 0)
                 calendar.set(java.util.Calendar.MILLISECOND, 0)
+                @Suppress("UNUSED_VARIABLE")
                 val startOfDay = calendar.timeInMillis
                 "${Telephony.Sms.DATE} >= ?"
             }
@@ -1268,6 +1295,7 @@ class MainViewModel : ViewModel() {
                 calendar.set(java.util.Calendar.MINUTE, 0)
                 calendar.set(java.util.Calendar.SECOND, 0)
                 calendar.set(java.util.Calendar.MILLISECOND, 0)
+                @Suppress("UNUSED_VARIABLE")
                 val startOfMonth = calendar.timeInMillis
                 "${Telephony.Sms.DATE} >= ?"
             }
@@ -1278,6 +1306,7 @@ class MainViewModel : ViewModel() {
                 calendar.set(java.util.Calendar.MINUTE, 0)
                 calendar.set(java.util.Calendar.SECOND, 0)
                 calendar.set(java.util.Calendar.MILLISECOND, 0)
+                @Suppress("UNUSED_VARIABLE")
                 val startOfYear = calendar.timeInMillis
                 "${Telephony.Sms.DATE} >= ?"
             }
@@ -1342,6 +1371,7 @@ class MainViewModel : ViewModel() {
      * Pre-cache all categories in the background for instant filter switching.
      * This is called after the initial "All" conversations are loaded.
      */
+    @Suppress("UNUSED_PARAMETER")
     fun preCacheAllCategories(context: Context) {
         viewModelScope.launch {
             try {

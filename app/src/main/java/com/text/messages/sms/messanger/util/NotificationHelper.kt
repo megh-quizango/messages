@@ -284,7 +284,7 @@ object NotificationHelper {
         Log.d(TAG, "Building standard notification with ${actions.size} actions")
         
         // Add all standard action buttons
-        actions.forEachIndexed { index, (actionName, buttonNumber) ->
+        actions.forEachIndexed { _, (actionName, buttonNumber) ->
             val action = ButtonAction.values().find { it.name == actionName }
             if (action != null && action != ButtonAction.NONE) {
                 // Handle REPLY separately with RemoteInput for inline reply
@@ -675,7 +675,7 @@ object NotificationHelper {
     private fun showSimpleNotification(
         context: Context,
         threadId: Long,
-        address: String,
+        @Suppress("UNUSED_PARAMETER") address: String,
         contactName: String,
         messageText: String,
         largeIcon: Bitmap?,

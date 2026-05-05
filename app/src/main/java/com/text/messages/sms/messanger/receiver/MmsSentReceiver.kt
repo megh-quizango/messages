@@ -34,7 +34,9 @@ class MmsSentReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val messageId = intent.getLongExtra("id", 0)
         val contentUriStr = intent.getStringExtra("content_uri")
+        @Suppress("UNUSED_VARIABLE")
         val threadId = intent.getLongExtra("thread_id", -1)
+        @Suppress("UNUSED_VARIABLE")
         val address = intent.getStringExtra("address") ?: ""
         val filePath = intent.getStringExtra("file_path")
         

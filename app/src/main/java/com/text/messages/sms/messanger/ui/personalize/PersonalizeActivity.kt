@@ -4,10 +4,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
@@ -26,7 +27,7 @@ import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class PersonalizeActivity : AppCompatActivity() {
+class PersonalizeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityPersonalizeBinding
     private var isSettingSelectedItem = false
@@ -34,6 +35,7 @@ class PersonalizeActivity : AppCompatActivity() {
     private var themeUpdateCallback: ((Context, View) -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         android.util.Log.d("PersonalizeActivity", "=== PersonalizeActivity.onCreate() ===")
         AnalyticsHelper.logScreenView("PersonalizeActivity", "PersonalizeActivity")
@@ -57,7 +59,7 @@ class PersonalizeActivity : AppCompatActivity() {
         }
         
         // Bottom navigation should not have extra padding from window insets
-        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigationView) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigationView) { _, insets ->
             // Don't add padding - we want it to be exactly the size of its content
             insets
         }
@@ -121,7 +123,7 @@ class PersonalizeActivity : AppCompatActivity() {
         }
         
         // Also register for direct callback updates
-        themeUpdateCallback = { ctx: Context, view: View ->
+        themeUpdateCallback = { ctx: Context, _: View ->
             if (ctx == this@PersonalizeActivity) {
                 // Apply theme IMMEDIATELY to all containers
                 updatePersonalizeContainersTheme()
@@ -208,12 +210,14 @@ class PersonalizeActivity : AppCompatActivity() {
             
             when (item.itemId) {
                 R.id.nav_messages -> {
+                    @Suppress("DEPRECATION")
                     overridePendingTransition(0, 0)
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                     true
                 }
                 R.id.nav_contacts -> {
+                    @Suppress("DEPRECATION")
                     overridePendingTransition(0, 0)
                     startActivity(Intent(this, ContactsActivity::class.java))
                     finish()
@@ -224,6 +228,7 @@ class PersonalizeActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_settings -> {
+                    @Suppress("DEPRECATION")
                     overridePendingTransition(0, 0)
                     startActivity(Intent(this, SettingsActivity::class.java))
                     finish()

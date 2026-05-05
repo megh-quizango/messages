@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
@@ -20,7 +20,7 @@ import com.text.messages.sms.messanger.util.BlockedConversationStorage
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class BlockedConversationsActivity : AppCompatActivity() {
+class BlockedConversationsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityBlockedConversationsBinding
     private lateinit var viewModel: MainViewModel
@@ -73,6 +73,7 @@ class BlockedConversationsActivity : AppCompatActivity() {
 
     private fun setupAddButton() {
         binding.imageAddBlocked.setOnClickListener {
+            @Suppress("DEPRECATION")
             startActivityForResult(
                 Intent(this, ConversationSelectionActivity::class.java),
                 REQUEST_CODE_SELECT_CONVERSATIONS
@@ -128,6 +129,7 @@ class BlockedConversationsActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_SELECT_CONVERSATIONS) {

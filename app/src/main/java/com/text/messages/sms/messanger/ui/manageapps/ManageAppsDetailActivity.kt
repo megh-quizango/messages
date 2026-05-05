@@ -9,7 +9,7 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,7 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ManageAppsDetailActivity : AppCompatActivity() {
+class ManageAppsDetailActivity : BaseActivity() {
 
     private lateinit var binding: ActivityManageAppsDetailBinding
     private lateinit var adapter: BackgroundAppsAdapter

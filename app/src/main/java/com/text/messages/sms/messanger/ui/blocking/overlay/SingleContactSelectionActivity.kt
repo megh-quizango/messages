@@ -10,7 +10,7 @@ import android.provider.ContactsContract
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,7 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class SingleContactSelectionActivity : AppCompatActivity() {
+class SingleContactSelectionActivity : BaseActivity() {
 
     private lateinit var binding: ActivityContactSelectionBinding
     private lateinit var adapter: SingleContactSelectionAdapter

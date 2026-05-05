@@ -5,7 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,7 +19,7 @@ import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
 import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class LanguageActivity : AppCompatActivity() {
+class LanguageActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLanguageBinding
     private lateinit var sharedPreferences: SharedPreferences
@@ -29,10 +29,6 @@ class LanguageActivity : AppCompatActivity() {
     private var isFromSettings: Boolean = false
     private var nativeAdView: NativeAdView? = null
     
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(LocaleHelper.onAttach(newBase))
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         com.text.messages.sms.messanger.util.AnalyticsHelper.logScreenView("LanguageActivity", "LanguageActivity")

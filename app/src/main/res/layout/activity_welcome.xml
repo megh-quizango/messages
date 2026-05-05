@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- Scroll View for content -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/adViewBanner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
+
+            <!-- Welcome to Messages Heading -->
+            <TextView
+                android:id="@+id/textWelcomeTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Welcome to"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:fontFamily="@font/poppins"
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/textMessagesTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Messages"
+                android:textColor="@color/black"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins"
+                android:layout_marginTop="4dp"
+                app:layout_constraintTop_toBottomOf="@+id/textWelcomeTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Welcome Logo -->
+            <ImageView
+                android:id="@+id/imageWelcomeLogo"
+                android:layout_width="0dp"
+                android:layout_height="200dp"
+                android:layout_marginTop="24dp"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="Welcome Logo"
+                app:srcCompat="@drawable/welcome"
+                app:layout_constraintTop_toBottomOf="@+id/textMessagesTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.9" />
+
+            <!-- Privacy Section -->
+            <TextView
+                android:id="@+id/textPrivacyMatters"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YOUR PRIVACY MATTERS."
+                android:textColor="@color/primary_blue"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins"
+                android:layout_marginTop="32dp"
+                app:layout_constraintTop_toBottomOf="@+id/imageWelcomeLogo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/textNoUnnecessaryPermissions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Unnecessary Permissions."
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/textPrivacyMatters"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/textPermissionDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Allow call and notification access to make messaging faster and more reliable."
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:fontFamily="@font/poppins"
+                android:gravity="center"
+                android:layout_marginTop="12dp"
+                app:layout_constraintTop_toBottomOf="@+id/textNoUnnecessaryPermissions"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Checkbox with Privacy Policy -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/containerCheckbox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="34dp"
+                app:layout_constraintTop_toBottomOf="@+id/textPermissionDescription"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <CheckBox
+                    android:id="@+id/checkboxPrivacy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:buttonTint="@color/primary_blue"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <TextView
+                    android:id="@+id/textCheckboxLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="By tapping Agree &amp; continue, you indicate that you have read our "
+                    android:textColor="@color/black"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="4dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/checkboxPrivacy"
+                    app:layout_constraintEnd_toStartOf="@+id/textPrivacyPolicy"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <TextView
+                    android:id="@+id/textPrivacyPolicy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Privacy Policy"
+                    android:textColor="@color/primary_blue"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/poppins"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/textCheckboxLabel"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Agree & Continue Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonAgreeContinue"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="42dp"
+                android:layout_marginBottom="16dp"
+                android:text="Agree &amp; Continue"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins"
+                android:backgroundTint="@color/primary_blue"
+                android:enabled="false"
+                android:stateListAnimator="@null"
+                app:cornerRadius="28dp"
+                app:layout_constraintTop_toBottomOf="@+id/containerCheckbox"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- ================= BANNER AD ================= -->
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adViewBanner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

@@ -109,6 +109,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
         }
     }
     
+    @Suppress("UNUSED_PARAMETER")
     private fun handleArchive(context: Context, threadId: Long) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -361,6 +362,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 Log.d(TAG, "handleInlineReply: Starting - threadId=$threadId, address=$address, text='$replyText'")
                 
                 val messageId = System.currentTimeMillis()
+                @Suppress("DEPRECATION")
                 val smsManager = SmsManager.getDefault()
                 val parts = smsManager.divideMessage(replyText)
                 Log.d(TAG, "Message divided into ${parts.size} parts")

@@ -7,29 +7,32 @@ import com.google.firebase.ktx.Firebase
 
 object AnalyticsHelper {
     private const val TAG = "AnalyticsHelper"
-    private lateinit var firebaseAnalytics: FirebaseAnalytics
-    
+    @Volatile
+    private var firebaseAnalytics: FirebaseAnalytics? = null
+
     fun initialize(analyticsInstance: FirebaseAnalytics) {
         firebaseAnalytics = analyticsInstance
         Log.d(TAG, "Analytics initialized")
     }
-    
+
     // Screen tracking
     fun logScreenView(screenName: String, screenClass: String? = null) {
+        val analytics = firebaseAnalytics ?: return
         try {
             val bundle = android.os.Bundle().apply {
                 putString(FirebaseAnalytics.Param.SCREEN_NAME, screenName)
                 screenClass?.let { putString(FirebaseAnalytics.Param.SCREEN_CLASS, it) }
             }
-            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+            analytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
             Log.d(TAG, "Screen view logged: $screenName")
         } catch (e: Exception) {
             Log.e(TAG, "Error logging screen view", e)
         }
     }
-    
+
     // User actions
     fun logEvent(eventName: String, parameters: Map<String, Any>? = null) {
+        val analytics = firebaseAnalytics ?: return
         try {
             val bundle = parameters?.let { params ->
                 android.os.Bundle().apply {
@@ -45,7 +48,7 @@ object AnalyticsHelper {
                     }
                 }
             } ?: android.os.Bundle()
-            firebaseAnalytics.logEvent(eventName, bundle)
+            analytics.logEvent(eventName, bundle)
             Log.d(TAG, "Event logged: $eventName")
         } catch (e: Exception) {
             Log.e(TAG, "Error logging event: $eventName", e)
@@ -125,8 +128,9 @@ object AnalyticsHelper {
     
     // User properties
     fun setUserProperty(name: String, value: String) {
+        val analytics = firebaseAnalytics ?: return
         try {
-            firebaseAnalytics.setUserProperty(name, value)
+            analytics.setUserProperty(name, value)
             Log.d(TAG, "User property set: $name = $value")
         } catch (e: Exception) {
             Log.e(TAG, "Error setting user property", e)

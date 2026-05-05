@@ -2,8 +2,9 @@ package com.text.messages.sms.messanger.ui.starred
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,7 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class StarredActivity : AppCompatActivity() {
+class StarredActivity : BaseActivity() {
 
     private lateinit var binding: ActivityStarredBinding
     private lateinit var adapter: StarredMessageAdapter
@@ -34,8 +35,9 @@ class StarredActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        
+
         binding = ActivityStarredBinding.inflate(layoutInflater)
         setContentView(binding.root)
         

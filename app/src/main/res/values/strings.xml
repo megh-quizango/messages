@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Messages</string>
+    <string name="app_name">#Messages</string>
     <string name="languages">Languages</string>
     <string name="next">NEXT</string>
     <string name="messages">Messages</string>
@@ -19,7 +19,7 @@
     <string name="missed_call">Missed Call</string>
     <string name="no_answer">No Answer</string>
     <string name="call_ended">Call Ended</string>
-    <string name="unknown_number">Unknown Number</string>
+    <string name="unknown_number">Private Number</string>
     <string name="invalid_number">Invalid number</string>
     <string name="call_failed">Failed to make call</string>
     <string name="message_failed">Failed to open message</string>
@@ -32,4 +32,26 @@
     <string name="german">Deutsch</string>
     <string name="facebook_app_id" translatable="false">3157593984414269</string>
     <string name="facebook_client_token" translatable="false">480942a6ad5e01b43bada2e0c4dcda79</string>
+    <string name="contact_already_exists" translatable="false">Contact already exists</string>
+
+    <!-- Call After Screen -->
+    <string name="call_action" translatable="false">CALL</string>
+    <string name="message_action" translatable="false">MESSAGE</string>
+    <string name="add_contact_action">ADD CONTACT</string>
+    <string name="quick_responses" translatable="false">Quick Response</string>
+    <string name="write_personal_message">Write personal message</string>
+    <string name="send">Send</string>
+    <string name="select">Select</string>
+    <string name="loading_ad">Loading...</string>
+    <string name="ad">Ad</string>
+    <string name="ad_icon">Ad icon</string>
+    <string name="open">OPEN</string>
+    <string name="quick_response_1">Sorry, I can\'t talk right now</string>
+    <string name="quick_response_2">Can I call you later?</string>
+    <string name="quick_response_3">I\'m on my way</string>
+    <string name="sms_sent_success">Message sent</string>
+    <string name="sms_sent_failed">Failed to send message</string>
+    <string name="completed_call">Call completed</string>
+
+
 </resources>

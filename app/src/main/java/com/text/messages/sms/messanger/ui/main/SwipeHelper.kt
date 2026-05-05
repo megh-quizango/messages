@@ -55,6 +55,7 @@ class SwipeHelper(
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+        @Suppress("DEPRECATION")
         val position = viewHolder.adapterPosition
         if (position == RecyclerView.NO_POSITION) return
         

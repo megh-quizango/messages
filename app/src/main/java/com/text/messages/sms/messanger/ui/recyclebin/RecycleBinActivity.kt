@@ -2,9 +2,10 @@ package com.text.messages.sms.messanger.ui.recyclebin
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.View
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,7 +19,7 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class RecycleBinActivity : AppCompatActivity() {
+class RecycleBinActivity : BaseActivity() {
 
     private lateinit var binding: ActivityRecycleBinBinding
     private lateinit var adapter: RecycleBinAdapter
@@ -31,6 +32,7 @@ class RecycleBinActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         AnalyticsHelper.logScreenView("RecycleBinActivity", "RecycleBinActivity")
         

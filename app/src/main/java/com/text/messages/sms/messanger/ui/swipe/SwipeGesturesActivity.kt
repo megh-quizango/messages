@@ -2,6 +2,7 @@ package com.text.messages.sms.messanger.ui.swipe
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +11,7 @@ import android.widget.RadioButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,7 +25,7 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class SwipeGesturesActivity : AppCompatActivity() {
+class SwipeGesturesActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySwipeGesturesBinding
     private lateinit var prefs: SharedPreferences
@@ -46,6 +47,7 @@ class SwipeGesturesActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         AnalyticsHelper.logScreenView("SwipeGesturesActivity", "SwipeGesturesActivity")
         
@@ -228,6 +230,7 @@ class SwipeActionAdapter(
             // Remove any existing click listeners to avoid duplicates
             binding.root.setOnClickListener(null)
             binding.root.setOnClickListener {
+                @Suppress("DEPRECATION")
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION && position != selectedPosition) {
                     val previousPosition = selectedPosition

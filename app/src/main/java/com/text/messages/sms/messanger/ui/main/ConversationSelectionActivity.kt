@@ -5,7 +5,7 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
@@ -17,7 +17,7 @@ import com.text.messages.sms.messanger.util.CustomFilterStorage
 import com.text.messages.sms.messanger.util.PrivateConversationStorage
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class ConversationSelectionActivity : AppCompatActivity() {
+class ConversationSelectionActivity : BaseActivity() {
     
     private lateinit var binding: ActivityConversationSelectionBinding
     private lateinit var viewModel: MainViewModel

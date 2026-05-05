@@ -3,7 +3,7 @@ package com.text.messages.sms.messanger.ui.spam
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
@@ -15,7 +15,7 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class SpamBlockActivity : AppCompatActivity() {
+class SpamBlockActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySpamBlockBinding
 

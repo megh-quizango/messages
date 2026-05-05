@@ -62,6 +62,7 @@ object MessagesExportImport {
             
             context.contentResolver.query(uri, projection, null, null, "${Telephony.Sms.DATE} ASC")?.use { cursor ->
                 while (cursor.moveToNext()) {
+                    @Suppress("UNUSED_VARIABLE")
                     val smsId = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms._ID))
                     val threadId = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
                     val address = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)) ?: ""
@@ -132,6 +133,7 @@ object MessagesExportImport {
             Log.d(TAG, "Starting message import from: $inputUri")
             
             // Read zip file
+            @Suppress("NAME_SHADOWING")
             val jsonContent = context.contentResolver.openInputStream(inputUri)?.use { inputStream ->
                 ZipInputStream(BufferedInputStream(inputStream)).use { zipIn ->
                     var entry: ZipEntry? = zipIn.nextEntry

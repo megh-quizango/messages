@@ -85,7 +85,7 @@ abstract class BaseBottomNavActivity : BaseActivity() {
             }
         })
         
-        ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView) { _, insets ->
             insets
         }
         

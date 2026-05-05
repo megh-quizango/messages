@@ -2,10 +2,11 @@ package com.text.messages.sms.messanger.ui.feedback
 
 import android.os.Bundle
 import android.text.Editable
+import androidx.activity.enableEdgeToEdge
 import android.text.TextWatcher
 import android.view.View
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
@@ -15,14 +16,15 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class FeedbackActivity : AppCompatActivity() {
+class FeedbackActivity : BaseActivity() {
 
     private lateinit var binding: ActivityFeedbackBinding
     private var selectedCategory: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        
+
         binding = ActivityFeedbackBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
@@ -111,7 +113,9 @@ class FeedbackActivity : AppCompatActivity() {
         
         binding.buttonSubmit.setOnClickListener {
             // TODO: Implement feedback submission
+            @Suppress("UNUSED_VARIABLE")
             val category = selectedCategory ?: ""
+            @Suppress("UNUSED_VARIABLE")
             val feedback = binding.editTextFeedback.text.toString()
             // Submit feedback
         }

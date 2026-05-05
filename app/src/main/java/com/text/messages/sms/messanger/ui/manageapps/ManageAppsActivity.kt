@@ -11,7 +11,7 @@ import android.os.Looper
 import android.view.View
 import android.view.animation.AnimationUtils
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
@@ -25,7 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ManageAppsActivity : AppCompatActivity() {
+class ManageAppsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityManageAppsBinding
 
@@ -71,9 +71,10 @@ class ManageAppsActivity : AppCompatActivity() {
         
         val totalRam = memInfo.totalMem
         val availableRam = memInfo.availMem
+        @Suppress("UNUSED_VARIABLE")
         val usedRam = totalRam - availableRam
         val availablePercentage = ((availableRam.toFloat() / totalRam.toFloat()) * 100).toInt()
-        
+
         binding.textRamPercentage.text = "$availablePercentage%"
         binding.progressBarRam.progress = availablePercentage
     }
@@ -140,7 +141,8 @@ class ManageAppsActivity : AppCompatActivity() {
             val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
             
             // Filter to only user-installed apps (optional)
-            val userApps = apps.filter { 
+            @Suppress("UNUSED_VARIABLE")
+            val userApps = apps.filter {
                 (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0 ||
                 (it.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
             }

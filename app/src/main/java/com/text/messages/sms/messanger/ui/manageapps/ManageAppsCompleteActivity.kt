@@ -3,7 +3,7 @@ package com.text.messages.sms.messanger.ui.manageapps
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdLoader
@@ -15,7 +15,7 @@ import com.text.messages.sms.messanger.databinding.ActivityManageAppsCompleteBin
 import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class ManageAppsCompleteActivity : AppCompatActivity() {
+class ManageAppsCompleteActivity : BaseActivity() {
 
     private lateinit var binding: ActivityManageAppsCompleteBinding
     private var nativeAd: NativeAd? = null

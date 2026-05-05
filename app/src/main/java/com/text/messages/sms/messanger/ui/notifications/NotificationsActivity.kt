@@ -2,6 +2,7 @@ package com.text.messages.sms.messanger.ui.notifications
 
 import android.content.Intent
 import android.content.SharedPreferences
+import androidx.activity.enableEdgeToEdge
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -11,7 +12,7 @@ import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,7 +42,7 @@ enum class ButtonAction(val displayName: String) {
     COPY_OTP("Copy OTP")
 }
 
-class NotificationsActivity : AppCompatActivity() {
+class NotificationsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityNotificationsBinding
     private lateinit var prefs: SharedPreferences
@@ -57,6 +58,7 @@ class NotificationsActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         AnalyticsHelper.logScreenView("NotificationsActivity", "NotificationsActivity")
         
@@ -235,7 +237,7 @@ class NotificationsActivity : AppCompatActivity() {
         dialog.show()
     }
     
-    private fun showButtonActionDialog(key: String, buttonTitle: String) {
+    private fun showButtonActionDialog(key: String, @Suppress("UNUSED_PARAMETER") buttonTitle: String) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_button_action, null)
         val recyclerView = dialogView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerViewActions)
         
@@ -258,7 +260,7 @@ class NotificationsActivity : AppCompatActivity() {
             ThemeManager.applyTheme(this, dialogView)
         }
         
-        val actionAdapter = ButtonActionAdapter(actions, selectedAction) { action: ButtonAction ->
+        val actionAdapter = ButtonActionAdapter(actions, selectedAction) { _: ButtonAction ->
             // This is called when action is selected
         }
         

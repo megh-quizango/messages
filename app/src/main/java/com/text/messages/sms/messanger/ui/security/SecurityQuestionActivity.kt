@@ -2,7 +2,7 @@ package com.text.messages.sms.messanger.ui.security
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -10,7 +10,7 @@ import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivitySecurityQuestionBinding
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class SecurityQuestionActivity : AppCompatActivity() {
+class SecurityQuestionActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySecurityQuestionBinding
     private lateinit var adapter: SecurityQuestionAdapter
@@ -48,7 +48,7 @@ class SecurityQuestionActivity : AppCompatActivity() {
             "What was the make of your first car?"
         )
         
-        adapter = SecurityQuestionAdapter(questions) { question ->
+        adapter = SecurityQuestionAdapter(questions) { _ ->
             // Question selected
             finish()
         }

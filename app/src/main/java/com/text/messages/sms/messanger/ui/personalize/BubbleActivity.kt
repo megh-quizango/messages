@@ -3,9 +3,10 @@ package com.text.messages.sms.messanger.ui.personalize
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.View
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.text.messages.sms.messanger.R
@@ -15,7 +16,7 @@ import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class BubbleActivity : AppCompatActivity() {
+class BubbleActivity : BaseActivity() {
 
     private lateinit var binding: ActivityBubbleBinding
     private var selectedColorCircle: View? = null
@@ -32,8 +33,9 @@ class BubbleActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        
+
         binding = ActivityBubbleBinding.inflate(layoutInflater)
         setContentView(binding.root)
         

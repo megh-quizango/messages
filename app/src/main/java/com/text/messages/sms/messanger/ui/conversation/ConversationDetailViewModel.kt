@@ -467,6 +467,7 @@ class ConversationDetailViewModel : ViewModel() {
                 
                 // STEP 2: Send SMS using SmsManager
                 Log.d(TAG, "STEP 2: Sending SMS via SmsManager")
+                @Suppress("DEPRECATION")
                 val smsManager = SmsManager.getDefault()
                 val parts = smsManager.divideMessage(messageBody)
                 Log.d(TAG, "Message divided into ${parts.size} parts")

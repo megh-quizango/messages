@@ -20,7 +20,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -68,7 +68,7 @@ import java.util.UUID
 import android.widget.EditText
 import com.facebook.shimmer.ShimmerFrameLayout
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
     
     companion object {
         private const val TAG = "MainActivity"
@@ -101,6 +101,9 @@ class MainActivity : AppCompatActivity() {
     private var hasPreCachedCategories: Boolean = false // Track if categories have been pre-cached
     private val manuallyMarkedAsReadThreadIds = mutableSetOf<Long>() // Track conversations manually marked as read
     private var hasPreCachedFilters: Boolean = false // Track if custom filters have been pre-cached
+    private var currentTimeFilter: String? = null // "Default", "Today", "Month", "Year", "Custom"
+    private var customTimeFilterStartDate: Long? = null
+    private var customTimeFilterEndDate: Long? = null
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -148,7 +151,14 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode == RESULT_OK && currentCustomFilterId != null) {
             // Reload conversations for the current custom filter
             currentCustomFilterId?.let { filterId ->
-                viewModel.loadConversationsForCustomFilter(this, filterId, useCache = true)
+                viewModel.loadConversationsForCustomFilter(
+                    this,
+                    filterId,
+                    useCache = currentTimeFilter == null,
+                    timeFilter = currentTimeFilter,
+                    startDate = customTimeFilterStartDate,
+                    endDate = customTimeFilterEndDate
+                )
             }
         }
     }
@@ -158,7 +168,7 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "=== MainActivity.onCreate() ===")
         AnalyticsHelper.logScreenView("MainActivity", "MainActivity")
         
-//        enableEdgeToEdge()
+        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         Log.d(TAG, "MainActivity.onCreate(): Binding initialized, RecyclerView visibility: ${binding.recyclerViewConversations.visibility}")
@@ -208,7 +218,7 @@ class MainActivity : AppCompatActivity() {
         }
         
         // Bottom navigation should not have extra padding from window insets
-        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigationView) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigationView) { _, insets ->
             // Don't add padding - we want it to be exactly the size of its content
             insets
         }
@@ -223,7 +233,8 @@ class MainActivity : AppCompatActivity() {
         setupMenu()
         setupFab()
         setupBottomNavigation()
-        setupBannerAd()
+        // Defer banner ad loading to avoid blocking first frame (2.5s minimum from cold start)
+        binding.root.postDelayed({ setupBannerAd() }, 2500)
         setupBackPressHandler()
         observeConversations()
         loadCustomFilterTabs()
@@ -245,32 +256,17 @@ class MainActivity : AppCompatActivity() {
             // Apply theme after bottom nav is fully laid out to ensure colors are applied
             ThemeManager.applyTheme(this, binding.root)
         }
-        
-        // Also apply theme immediately
-        ThemeManager.applyTheme(this, binding.root)
-        
-        // Shimmer layout doesn't need theme - it's just placeholder shapes
-        
-        // Register ContentObserver to detect new SMS messages
-        registerSmsContentObserver()
-        
-        // Register receiver for theme changes
-        registerThemeChangeReceiver()
-        
-        // Register receiver for MMS sent refresh
-        registerMmsRefreshReceiver()
-        
-        // Register receiver for conversation restorations
-        registerConversationRestoredReceiver()
-        
-        // Register receiver for conversation actions (archive/delete/block)
-        registerConversationActionReceiver()
-        
-        // Register receiver for conversation updates (new messages, read status, etc.)
-        registerConversationUpdateReceiver()
-        
-        // Initialize loading indicator handler
-        loadingIndicatorHandler = android.os.Handler(android.os.Looper.getMainLooper())
+
+        // Defer observer/receiver registration until after first frame
+        binding.root.post {
+            registerSmsContentObserver()
+            registerThemeChangeReceiver()
+            registerMmsRefreshReceiver()
+            registerConversationRestoredReceiver()
+            registerConversationActionReceiver()
+            registerConversationUpdateReceiver()
+            loadingIndicatorHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        }
     }
     
     private fun registerSmsContentObserver() {
@@ -311,13 +307,36 @@ class MainActivity : AppCompatActivity() {
                 
                 if (category != null) {
                     Log.d(TAG, "ContentObserver: Reloading conversations for category: $category (background refresh, no loading indicator)")
-                    // Force refresh to get latest data
-                    viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
+                    viewModel.loadConversations(
+                        category,
+                        showLoading = false,
+                        useCache = false,
+                        forceRefresh = true,
+                        timeFilter = currentTimeFilter,
+                        startDate = customTimeFilterStartDate,
+                        endDate = customTimeFilterEndDate
+                    )
                 } else if (filterId != null) {
                     Log.d(TAG, "ContentObserver: Reloading conversations for custom filter: $filterId (background refresh, no loading indicator)")
-                    viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId, useCache = false, forceRefresh = true)
+                    viewModel.loadConversationsForCustomFilter(
+                        this@MainActivity,
+                        filterId,
+                        useCache = false,
+                        forceRefresh = true,
+                        timeFilter = currentTimeFilter,
+                        startDate = customTimeFilterStartDate,
+                        endDate = customTimeFilterEndDate
+                    )
                 } else {
-                    viewModel.loadConversations("All", showLoading = false, useCache = false, forceRefresh = true)
+                    viewModel.loadConversations(
+                        "All",
+                        showLoading = false,
+                        useCache = false,
+                        forceRefresh = true,
+                        timeFilter = currentTimeFilter,
+                        startDate = customTimeFilterStartDate,
+                        endDate = customTimeFilterEndDate
+                    )
                 }
             }, 500) // 500ms delay to ensure database is committed
         }
@@ -385,7 +404,7 @@ class MainActivity : AppCompatActivity() {
         }
         
         // Also register for direct callback updates
-        themeUpdateCallback = { ctx: Context, view: View ->
+        themeUpdateCallback = { ctx: Context, _: View ->
             if (ctx == this@MainActivity) {
                 ThemeManager.applyThemeImmediate(this@MainActivity, binding.root)
                 
@@ -432,11 +451,35 @@ class MainActivity : AppCompatActivity() {
                 }
                 
                 if (category != null) {
-                    viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
+                    viewModel.loadConversations(
+                        category,
+                        showLoading = false,
+                        useCache = false,
+                        forceRefresh = true,
+                        timeFilter = currentTimeFilter,
+                        startDate = customTimeFilterStartDate,
+                        endDate = customTimeFilterEndDate
+                    )
                 } else if (filterId != null) {
-                    viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId, useCache = false, forceRefresh = true)
+                    viewModel.loadConversationsForCustomFilter(
+                        this@MainActivity,
+                        filterId,
+                        useCache = false,
+                        forceRefresh = true,
+                        timeFilter = currentTimeFilter,
+                        startDate = customTimeFilterStartDate,
+                        endDate = customTimeFilterEndDate
+                    )
                 } else {
-                    viewModel.loadConversations("All", showLoading = false, useCache = false, forceRefresh = true)
+                    viewModel.loadConversations(
+                        "All",
+                        showLoading = false,
+                        useCache = false,
+                        forceRefresh = true,
+                        timeFilter = currentTimeFilter,
+                        startDate = customTimeFilterStartDate,
+                        endDate = customTimeFilterEndDate
+                    )
                 }
             }
         }
@@ -478,16 +521,37 @@ class MainActivity : AppCompatActivity() {
                             // This is more reliable than trying to load a single conversation
                             if (category != null) {
                                 Log.d(TAG, "Refreshing category '$category' after conversation restore")
-                                // Force refresh regardless of activity state - it will update when activity resumes
-                                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
+                                viewModel.loadConversations(
+                                    category,
+                                    showLoading = false,
+                                    useCache = false,
+                                    forceRefresh = true,
+                                    timeFilter = currentTimeFilter,
+                                    startDate = customTimeFilterStartDate,
+                                    endDate = customTimeFilterEndDate
+                                )
                             } else if (filterId != null) {
                                 Log.d(TAG, "Refreshing custom filter '$filterId' after conversation restore")
-                                // Force refresh for custom filter
-                                viewModel.loadConversationsForCustomFilter(this@MainActivity, filterId, useCache = false, forceRefresh = true)
+                                viewModel.loadConversationsForCustomFilter(
+                                    this@MainActivity,
+                                    filterId,
+                                    useCache = false,
+                                    forceRefresh = true,
+                                    timeFilter = currentTimeFilter,
+                                    startDate = customTimeFilterStartDate,
+                                    endDate = customTimeFilterEndDate
+                                )
                             } else {
                                 Log.d(TAG, "Refreshing 'All' category after conversation restore")
-                                // Default to "All"
-                                viewModel.loadConversations("All", showLoading = false, useCache = false, forceRefresh = true)
+                                viewModel.loadConversations(
+                                    "All",
+                                    showLoading = false,
+                                    useCache = false,
+                                    forceRefresh = true,
+                                    timeFilter = currentTimeFilter,
+                                    startDate = customTimeFilterStartDate,
+                                    endDate = customTimeFilterEndDate
+                                )
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error in conversation restored receiver", e)
@@ -642,7 +706,7 @@ class MainActivity : AppCompatActivity() {
                                     }
                                     
                                     // Update in adapter
-                                    updateConversationInAdapter(threadId) { oldConv ->
+                                    updateConversationInAdapter(threadId) { _ ->
                                         updatedConversation
                                     }
                                     
@@ -698,7 +762,7 @@ class MainActivity : AppCompatActivity() {
     }
     
     override fun onDestroy() {
-        super.onDestroy()
+
         // Unregister ContentObserver to prevent memory leaks
         smsContentObserver?.let {
             contentResolver.unregisterContentObserver(it)
@@ -730,9 +794,9 @@ class MainActivity : AppCompatActivity() {
         // Cancel loading indicator handler
         loadingIndicatorHandler?.removeCallbacksAndMessages(null)
         loadingIndicatorRunnable = null
-        super.onDestroy()
         exitNativeAd?.destroy()
         exitNativeAd = null
+        super.onDestroy()
     }
     
     private fun checkSmsPermissionAndLoad() {
@@ -812,6 +876,7 @@ class MainActivity : AppCompatActivity() {
             R.id.tabTransactions -> "Transactions"
             else -> currentCustomFilterId ?: "All"
         }
+        @Suppress("KotlinConstantConditions")
         if (currentCategory != null) {
             val layoutManager = binding.recyclerViewConversations.layoutManager as? LinearLayoutManager
             val scrollPosition = layoutManager?.findFirstVisibleItemPosition() ?: 0
@@ -825,8 +890,14 @@ class MainActivity : AppCompatActivity() {
         currentCustomFilterId = filterId
         selectTab(tab)
         
-        // Use cache first for instant loading
-        viewModel.loadConversationsForCustomFilter(this, filterId, useCache = true)
+        viewModel.loadConversationsForCustomFilter(
+            this,
+            filterId,
+            useCache = currentTimeFilter == null,
+            timeFilter = currentTimeFilter,
+            startDate = customTimeFilterStartDate,
+            endDate = customTimeFilterEndDate
+        )
     }
     
     private fun showAddFilterDialog() {
@@ -973,7 +1044,7 @@ class MainActivity : AppCompatActivity() {
         // Reset current custom filter if switching to a standard tab
         currentCustomFilterId = null
         
-        // Filter conversations by category - use cache for instant loading
+        // Filter conversations by category - use cache for instant loading (when no time filter)
         val category = when (tab.id) {
             R.id.tabAll -> "All"
             R.id.tabPersonal -> "Personal"
@@ -982,8 +1053,14 @@ class MainActivity : AppCompatActivity() {
             R.id.tabTransactions -> "Transactions"
             else -> "All"
         }
-        // Use cache first, then refresh in background if needed
-        viewModel.loadConversations(category, showLoading = false, useCache = true)
+        viewModel.loadConversations(
+            category,
+            showLoading = false,
+            useCache = currentTimeFilter == null,
+            timeFilter = currentTimeFilter,
+            startDate = customTimeFilterStartDate,
+            endDate = customTimeFilterEndDate
+        )
     }
     
     private fun setupRecyclerView() {
@@ -1137,7 +1214,11 @@ class MainActivity : AppCompatActivity() {
         // Ensure rounded corners are visible
         bottomSheetDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         
-        var selectedFilter = "Default"
+        // Restore user's current selection
+        var selectedFilter = currentTimeFilter ?: "Default"
+        if (selectedFilter == "Custom" && customTimeFilterStartDate == null) {
+            selectedFilter = "Default"
+        }
         val layouts = listOf(
             bottomSheetView.findViewById<LinearLayout>(R.id.layoutDefault),
             bottomSheetView.findViewById<LinearLayout>(R.id.layoutToday),
@@ -1147,12 +1228,22 @@ class MainActivity : AppCompatActivity() {
         )
         
         fun updateSelection(selectedLayout: LinearLayout, filterName: String) {
-            layouts.forEachIndexed { index, layout ->
+            layouts.forEach { layout ->
                 val textView = layout.getChildAt(0) as? TextView
                 textView?.setTextColor(if (layout == selectedLayout) getColor(R.color.blue_primary) else getColor(R.color.gray_dark))
             }
             selectedFilter = filterName
         }
+        
+        // Apply persisted selection visually
+        val selectedLayout = when (selectedFilter) {
+            "Today" -> layouts[1]
+            "Month" -> layouts[2]
+            "Year" -> layouts[3]
+            "Custom" -> layouts[4]
+            else -> layouts[0]
+        }
+        updateSelection(selectedLayout, selectedFilter)
         
         bottomSheetView.findViewById<LinearLayout>(R.id.layoutDefault).setOnClickListener {
             updateSelection(it as LinearLayout, "Default")
@@ -1223,42 +1314,65 @@ class MainActivity : AppCompatActivity() {
         startDatePicker.show()
     }
     
-    private fun applyTimeFilter(filter: String) {
-        val category = when (selectedTab?.id) {
-            R.id.tabAll -> "All"
-            R.id.tabPersonal -> "Personal"
-            R.id.tabOTPs -> "OTPs"
-            R.id.tabOffers -> "Offers"
-            R.id.tabTransactions -> "Transactions"
-            else -> "All"
+    /**
+     * Load conversations for the currently selected tab, applying the active time filter if any.
+     */
+    private fun loadConversationsForCurrentTab(
+        showLoading: Boolean = false,
+        useCache: Boolean = true,
+        forceRefresh: Boolean = false
+    ) {
+        val filterId = selectedTab?.tag as? String
+        if (filterId != null && customFilterTabs.containsKey(filterId)) {
+            viewModel.loadConversationsForCustomFilter(
+                this,
+                filterId,
+                useCache = useCache,
+                forceRefresh = forceRefresh,
+                timeFilter = currentTimeFilter,
+                startDate = customTimeFilterStartDate,
+                endDate = customTimeFilterEndDate
+            )
+        } else {
+            val category = when (selectedTab?.id) {
+                R.id.tabAll -> "All"
+                R.id.tabPersonal -> "Personal"
+                R.id.tabOTPs -> "OTPs"
+                R.id.tabOffers -> "Offers"
+                R.id.tabTransactions -> "Transactions"
+                else -> "All"
+            }
+            viewModel.loadConversations(
+                category,
+                showLoading = showLoading,
+                useCache = useCache,
+                forceRefresh = forceRefresh,
+                timeFilter = currentTimeFilter,
+                startDate = customTimeFilterStartDate,
+                endDate = customTimeFilterEndDate
+            )
         }
-        viewModel.loadConversations(category, timeFilter = filter)
+    }
+    
+    private fun applyTimeFilter(filter: String) {
+        currentTimeFilter = if (filter == "Default") null else filter
+        if (filter != "Custom") {
+            customTimeFilterStartDate = null
+            customTimeFilterEndDate = null
+        }
+        loadConversationsForCurrentTab(showLoading = true, useCache = currentTimeFilter == null, forceRefresh = false)
     }
     
     private fun applyCustomDateRange(startTime: Long, endTime: Long) {
-        val category = when (selectedTab?.id) {
-            R.id.tabAll -> "All"
-            R.id.tabPersonal -> "Personal"
-            R.id.tabOTPs -> "OTPs"
-            R.id.tabOffers -> "Offers"
-            R.id.tabTransactions -> "Transactions"
-            else -> "All"
-        }
-        viewModel.loadConversations(category, timeFilter = "Custom", startDate = startTime, endDate = endTime)
+        currentTimeFilter = "Custom"
+        customTimeFilterStartDate = startTime
+        customTimeFilterEndDate = endTime
+        loadConversationsForCurrentTab(showLoading = true, useCache = false, forceRefresh = false)
     }
     
     private fun markAllAsRead() {
         viewModel.markAllAsRead()
-        // Reload conversations to update UI
-        val category = when (selectedTab?.id) {
-            R.id.tabAll -> "All"
-            R.id.tabPersonal -> "Personal"
-            R.id.tabOTPs -> "OTPs"
-            R.id.tabOffers -> "Offers"
-            R.id.tabTransactions -> "Transactions"
-            else -> "All"
-        }
-        viewModel.loadConversations(category)
+        loadConversationsForCurrentTab(showLoading = false, useCache = currentTimeFilter == null, forceRefresh = false)
     }
     
     private fun setupClickOutsideToClearFocus() {
@@ -1531,7 +1645,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private fun updateConversationUnreadCount(threadId: Long, unreadCount: Int, position: Int) {
+    private fun updateConversationUnreadCount(threadId: Long, unreadCount: Int, @Suppress("UNUSED_PARAMETER") position: Int) {
         updateConversationInAdapter(threadId) { conversation ->
             conversation.copy(unreadCount = unreadCount)
         }
@@ -1591,15 +1705,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 // If position is invalid, refresh the list (which will filter out deleted items)
-                val category = when (selectedTab?.id) {
-                    R.id.tabAll -> "All"
-                    R.id.tabPersonal -> "Personal"
-                    R.id.tabOTPs -> "OTPs"
-                    R.id.tabOffers -> "Offers"
-                    R.id.tabTransactions -> "Transactions"
-                    else -> "All"
-                }
-                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
+                loadConversationsForCurrentTab(showLoading = false, useCache = currentTimeFilter == null, forceRefresh = true)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1646,15 +1752,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 // If position is invalid, refresh the list (which will filter out archived items)
-                val category = when (selectedTab?.id) {
-                    R.id.tabAll -> "All"
-                    R.id.tabPersonal -> "Personal"
-                    R.id.tabOTPs -> "OTPs"
-                    R.id.tabOffers -> "Offers"
-                    R.id.tabTransactions -> "Transactions"
-                    else -> "All"
-                }
-                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
+                loadConversationsForCurrentTab(showLoading = false, useCache = currentTimeFilter == null, forceRefresh = true)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1774,15 +1872,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Conversation blocked", Toast.LENGTH_SHORT).show()
             } else {
                 // If position is invalid, refresh the list (which will filter out blocked items)
-                val category = when (selectedTab?.id) {
-                    R.id.tabAll -> "All"
-                    R.id.tabPersonal -> "Personal"
-                    R.id.tabOTPs -> "OTPs"
-                    R.id.tabOffers -> "Offers"
-                    R.id.tabTransactions -> "Transactions"
-                    else -> "All"
-                }
-                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
+                loadConversationsForCurrentTab(showLoading = false, useCache = currentTimeFilter == null, forceRefresh = true)
                 Toast.makeText(this, "Conversation blocked", Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
@@ -1904,6 +1994,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
         
+        @Suppress("DEPRECATION")
         val fragment = fragmentClass.newInstance()
         fragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
@@ -1993,25 +2084,52 @@ class MainActivity : AppCompatActivity() {
         }
         
         if (category != null) {
-            // Check if cache exists - if not, it was invalidated and we need a full refresh
             val cached = com.text.messages.sms.messanger.util.ConversationCache.getCached(category)
-            if (cached == null) {
-                // Cache was invalidated (e.g., after restore), do a full refresh
-                Log.d(TAG, "MainActivity.onResume(): Cache invalidated for '$category', forcing full refresh")
-                viewModel.loadConversations(category, showLoading = false, useCache = false, forceRefresh = true)
+            if (cached == null || currentTimeFilter != null) {
+                Log.d(TAG, "MainActivity.onResume(): Cache invalidated for '$category' or time filter active, forcing full refresh")
+                viewModel.loadConversations(
+                    category,
+                    showLoading = false,
+                    useCache = false,
+                    forceRefresh = true,
+                    timeFilter = currentTimeFilter,
+                    startDate = customTimeFilterStartDate,
+                    endDate = customTimeFilterEndDate
+                )
             } else {
-                // Cache exists, use it but still refresh in background to ensure we have latest data
-                viewModel.loadConversations(category, showLoading = false, useCache = true, forceRefresh = true)
+                viewModel.loadConversations(
+                    category,
+                    showLoading = false,
+                    useCache = true,
+                    forceRefresh = true,
+                    timeFilter = currentTimeFilter,
+                    startDate = customTimeFilterStartDate,
+                    endDate = customTimeFilterEndDate
+                )
             }
         } else if (filterId != null) {
             val cached = com.text.messages.sms.messanger.util.ConversationCache.getCachedForFilter(filterId)
-            if (cached == null) {
-                // Cache was invalidated, do a full refresh
-                Log.d(TAG, "MainActivity.onResume(): Cache invalidated for filter '$filterId', forcing full refresh")
-                viewModel.loadConversationsForCustomFilter(this, filterId, useCache = false, forceRefresh = true)
+            if (cached == null || currentTimeFilter != null) {
+                Log.d(TAG, "MainActivity.onResume(): Cache invalidated for filter '$filterId' or time filter active, forcing full refresh")
+                viewModel.loadConversationsForCustomFilter(
+                    this,
+                    filterId,
+                    useCache = false,
+                    forceRefresh = true,
+                    timeFilter = currentTimeFilter,
+                    startDate = customTimeFilterStartDate,
+                    endDate = customTimeFilterEndDate
+                )
             } else {
-                // Cache exists, use it but still refresh in background
-                viewModel.loadConversationsForCustomFilter(this, filterId, useCache = true, forceRefresh = true)
+                viewModel.loadConversationsForCustomFilter(
+                    this,
+                    filterId,
+                    useCache = true,
+                    forceRefresh = true,
+                    timeFilter = currentTimeFilter,
+                    startDate = customTimeFilterStartDate,
+                    endDate = customTimeFilterEndDate
+                )
             }
         }
         

@@ -2,11 +2,12 @@ package com.text.messages.sms.messanger.ui.advance
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RadioButton
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +18,7 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-class AdvanceActivity : AppCompatActivity() {
+class AdvanceActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAdvanceBinding
     private lateinit var prefs: SharedPreferences
@@ -39,6 +40,7 @@ class AdvanceActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         AnalyticsHelper.logScreenView("AdvanceActivity", "AdvanceActivity")
         

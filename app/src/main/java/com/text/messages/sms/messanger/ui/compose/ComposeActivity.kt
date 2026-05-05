@@ -3,7 +3,7 @@ package com.text.messages.sms.messanger.ui.compose
 import android.content.BroadcastReceiver
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.text.messages.sms.messanger.R
@@ -11,7 +11,7 @@ import com.text.messages.sms.messanger.databinding.ActivityComposeBinding
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 
-class ComposeActivity : AppCompatActivity() {
+class ComposeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityComposeBinding
     private var themeChangeReceiver: BroadcastReceiver? = null
