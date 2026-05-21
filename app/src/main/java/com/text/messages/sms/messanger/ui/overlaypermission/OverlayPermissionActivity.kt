@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Telephony
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,6 +26,8 @@ class OverlayPermissionActivity : BaseActivity() {
     private lateinit var binding: ActivityOverlayPermissionBinding
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var pagerAdapter: ImagePagerAdapter
+    private val guideLaunchHandler = Handler(Looper.getMainLooper())
+    private var shouldShowOverlayGuide = false
 
     private val overlayPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -95,7 +99,14 @@ class OverlayPermissionActivity : BaseActivity() {
             if (PermissionManager.hasOverlayPermission(this)) {
                 onOverlayPermissionGranted()
             } else {
+                shouldShowOverlayGuide = true
                 overlayPermissionLauncher.launch(PermissionManager.getOverlayPermissionIntent(this))
+                guideLaunchHandler.postDelayed({
+                    if (shouldShowOverlayGuide && !isFinishing && !isDestroyed) {
+                        startActivity(Intent(this, OverlayPermissionGuideActivity::class.java))
+                        overridePendingTransition(0, 0)
+                    }
+                }, 160L)
             }
         }
     }
@@ -110,6 +121,8 @@ class OverlayPermissionActivity : BaseActivity() {
     }
 
     private fun checkOverlayPermission() {
+        shouldShowOverlayGuide = false
+        guideLaunchHandler.removeCallbacksAndMessages(null)
         if (PermissionManager.hasOverlayPermission(this)) {
             onOverlayPermissionGranted()
         }
@@ -144,5 +157,10 @@ class OverlayPermissionActivity : BaseActivity() {
         if (PermissionManager.hasOverlayPermission(this)) {
             checkOverlayPermission()
         }
+    }
+
+    override fun onDestroy() {
+        guideLaunchHandler.removeCallbacksAndMessages(null)
+        super.onDestroy()
     }
 }

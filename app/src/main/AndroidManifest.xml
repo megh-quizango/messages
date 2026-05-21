@@ -102,6 +102,12 @@
             android:exported="false"
             android:theme="@style/Theme.Messages" />
 
+        <activity
+            android:name=".ui.overlaypermission.OverlayPermissionGuideActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Messages.OverlayGuide" />
+
         <!-- LanguageActivity -->
         <activity
             android:name=".ui.language.LanguageActivity"

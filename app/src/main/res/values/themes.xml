@@ -16,6 +16,23 @@
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
+    <style name="Theme.Messages.OverlayGuide" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@style/OverlayGuideActivityAnimation</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="OverlayGuideActivityAnimation">
+        <item name="android:activityOpenEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:activityOpenExitAnimation">@android:anim/fade_out</item>
+        <item name="android:activityCloseEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:activityCloseExitAnimation">@android:anim/fade_out</item>
+    </style>
+
     <!-- Full-screen dialog theme for native video ads -->
     <style name="FullScreenAdDialogTheme" parent="android:Theme.Black.NoTitleBar.Fullscreen">
         <item name="android:windowNoTitle">true</item>

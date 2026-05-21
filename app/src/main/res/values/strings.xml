@@ -80,6 +80,9 @@
     <string name="overlay_permission_hand">Animated hand guide</string>
     <string name="overlay_allow_permission">Allow Permission</string>
     <string name="overlay_permission_note">This permission is only used to improve your messaging experience.</string>
+    <string name="overlay_guide_secure">#Message is safe &amp; secure</string>
+    <string name="overlay_guide_instruction">Find #Messages and allow permission</string>
+    <string name="overlay_guide_shield">Security badge</string>
 
 
 </resources>
