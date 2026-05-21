@@ -11,10 +11,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.ads.AdRequest
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityRecycleBinBinding
 import com.text.messages.sms.messanger.ui.main.DeletedConversationData
+import com.text.messages.sms.messanger.util.ConversationStorageParser
 import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
@@ -88,8 +88,7 @@ class RecycleBinActivity : BaseActivity() {
     private fun loadDeletedConversations() {
         val deletedJson = prefs.getString(KEY_DELETED_CONVERSATIONS, null)
         val deletedConversations = if (deletedJson != null) {
-            val type = object : TypeToken<List<DeletedConversationData>>() {}.type
-            val conversations = gson.fromJson<List<DeletedConversationData>>(deletedJson, type)
+            val conversations = ConversationStorageParser.parseDeletedConversations(deletedJson, gson)
             // Update contact names
             conversations.map { conversation ->
                 if (conversation.contactName.isNullOrEmpty()) {
@@ -131,8 +130,7 @@ class RecycleBinActivity : BaseActivity() {
         // Remove from recycle bin
         val deletedJson = prefs.getString(KEY_DELETED_CONVERSATIONS, null)
         if (deletedJson != null) {
-            val type = object : TypeToken<List<DeletedConversationData>>() {}.type
-            val deletedConversations = gson.fromJson<List<DeletedConversationData>>(deletedJson, type).toMutableList()
+            val deletedConversations = ConversationStorageParser.parseDeletedConversations(deletedJson, gson)
             deletedConversations.removeAll { it.threadId == deletedConversation.threadId }
             
             val updatedJson = gson.toJson(deletedConversations)

@@ -166,6 +166,12 @@ object ThemeManager {
             } catch (e: Exception) {
                 // Some views don't support backgroundTintList
             }
+
+            if ((view is Button || view is MaterialButton) && view.tag != "exclude_from_theme_textcolor") {
+                getViewBackgroundColor(view)?.let { backgroundColor ->
+                    (view as? TextView)?.setTextColor(getContrastTextColor(backgroundColor))
+                }
+            }
             
             // Handle TextView textColor
             if (view is TextView) {
@@ -1105,6 +1111,16 @@ object ThemeManager {
     fun getThemeColorLight(context: Context): Int {
         return Color.parseColor(AppPreferences.getThemeColorLight(context))
     }
+
+    private fun getViewBackgroundColor(view: View): Int? {
+        view.backgroundTintList?.defaultColor?.let { return it }
+
+        return when (val background = view.background) {
+            is ColorDrawable -> background.color
+            is GradientDrawable -> getGradientDrawableColor(background)
+            else -> null
+        }
+    }
     
     /**
      * Apply theme-based styling to a Switch toggle
@@ -1188,19 +1204,32 @@ object ThemeManager {
      */
     fun setupNavigationBar(activity: AppCompatActivity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            activity.window.statusBarColor = activity.getColor(android.R.color.white)
             activity.window.navigationBarColor = activity.getColor(android.R.color.white)
             
-            // Set navigation bar icons to dark/black for visibility on white background
+            // Set status/navigation bar icons to dark for visibility on white backgrounds.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                // Use WindowInsetsController for Android R and above
                 val windowInsetsController = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
+                windowInsetsController.isAppearanceLightStatusBars = true
                 windowInsetsController.isAppearanceLightNavigationBars = true
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // Use systemUiVisibility for Android O to Q
                 var flags = activity.window.decorView.systemUiVisibility
+                flags = flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 flags = flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
                 activity.window.decorView.systemUiVisibility = flags
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                var flags = activity.window.decorView.systemUiVisibility
+                flags = flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                activity.window.decorView.systemUiVisibility = flags
             }
+        }
+    }
+
+    fun getContrastTextColor(backgroundColor: Int): Int {
+        return if (androidx.core.graphics.ColorUtils.calculateLuminance(backgroundColor) > 0.5) {
+            Color.parseColor("#1F2937")
+        } else {
+            Color.WHITE
         }
     }
 }

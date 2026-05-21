@@ -21,6 +21,7 @@ import com.text.messages.sms.messanger.data.model.MessageStatus
 import com.text.messages.sms.messanger.data.model.MessageType
 import com.text.messages.sms.messanger.receiver.SmsDeliveredReceiver
 import com.text.messages.sms.messanger.receiver.SmsSentReceiver
+import com.text.messages.sms.messanger.util.MessagingAddressUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -394,6 +395,11 @@ class ConversationDetailViewModel : ViewModel() {
     }
     
     fun sendMessage(threadId: Long, address: String, body: String) {
+        if (!MessagingAddressUtils.canReplyToAddress(address)) {
+            _errorMessage.postValue("Replies aren't supported for this sender.")
+            return
+        }
+
         Log.d(TAG, "sendMessage called - threadId: $threadId, address: $address, body length: ${body.length}")
         
         // Get signature from SharedPreferences and append to message
@@ -616,6 +622,11 @@ class ConversationDetailViewModel : ViewModel() {
     }
     
     fun sendMMS(threadId: Long, address: String, body: String, imageUri: android.net.Uri) {
+        if (!MessagingAddressUtils.canReplyToAddress(address)) {
+            _errorMessage.postValue("Replies aren't supported for this sender.")
+            return
+        }
+
         Log.d(TAG, "sendMMS called - threadId: $threadId, address: $address, body length: ${body.length}")
         
         viewModelScope.launch {
@@ -753,6 +764,11 @@ class ConversationDetailViewModel : ViewModel() {
     }
     
     fun sendMMSWithContact(threadId: Long, address: String, body: String, vCardUri: android.net.Uri) {
+        if (!MessagingAddressUtils.canReplyToAddress(address)) {
+            _errorMessage.postValue("Replies aren't supported for this sender.")
+            return
+        }
+
         Log.d(TAG, "sendMMSWithContact called - threadId: $threadId, address: $address, body length: ${body.length}")
         
         viewModelScope.launch {

@@ -10,9 +10,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.ads.AdRequest
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityArchiveBinding
+import com.text.messages.sms.messanger.util.ConversationStorageParser
 import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
@@ -90,8 +90,7 @@ class ArchiveActivity : BaseActivity() {
     private fun loadArchivedMessages() {
         val archivedJson = prefs.getString(KEY_ARCHIVED_MESSAGES, null)
         val archivedMessages = if (archivedJson != null) {
-            val type = object : TypeToken<List<ArchivedMessageData>>() {}.type
-            val messages = gson.fromJson<List<ArchivedMessageData>>(archivedJson, type)
+            val messages = ConversationStorageParser.parseArchivedMessages(archivedJson, gson)
             // Update contact names
             messages.map { message ->
                 if (message.contactName.isNullOrEmpty()) {
@@ -117,8 +116,7 @@ class ArchiveActivity : BaseActivity() {
     private fun removeFromArchive(archivedMessage: ArchivedMessageData) {
         val archivedJson = prefs.getString(KEY_ARCHIVED_MESSAGES, null)
         if (archivedJson != null) {
-            val type = object : TypeToken<MutableList<ArchivedMessageData>>() {}.type
-            val archivedMessages = gson.fromJson<MutableList<ArchivedMessageData>>(archivedJson, type)
+            val archivedMessages = ConversationStorageParser.parseArchivedMessages(archivedJson, gson)
             archivedMessages.removeAll { it.threadId == archivedMessage.threadId }
             
             val updatedJson = gson.toJson(archivedMessages)

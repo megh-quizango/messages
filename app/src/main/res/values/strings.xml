@@ -3,6 +3,7 @@
     <string name="languages">Languages</string>
     <string name="next">NEXT</string>
     <string name="messages">Messages</string>
+    <string name="calls">Calls</string>
     <string name="new_conversation">New Conversation</string>
     <string name="compose_message">Compose message UI will be implemented here</string>
     <string name="set_default_sms">Set Default SMS App</string>
@@ -52,6 +53,33 @@
     <string name="sms_sent_success">Message sent</string>
     <string name="sms_sent_failed">Failed to send message</string>
     <string name="completed_call">Call completed</string>
+    <string name="cannot_reply_to_sender">Can\'t reply to this sender</string>
+    <string name="reply_not_supported_for_sender">Replies aren\'t supported for this sender</string>
+    <string name="welcome_to_messages">Welcome to Messages</string>
+    <string name="welcome_illustration">Welcome illustration</string>
+    <string name="welcome_calls_description">To enable post-call actions, please allow phone call permission. This permission lets you conveniently send messages right after ending a call.</string>
+    <string name="welcome_notifications_title">Notifications</string>
+    <string name="welcome_notifications_description">Turn on notifications to stay updated with important chats and alerts, right when they happen.</string>
+    <string name="welcome_security_text">Your contacts and messages remain secure and are never shared with anyone.</string>
+    <string name="welcome_privacy_lead">By continuing, you agree to our </string>
+    <string name="welcome_privacy_policy">Privacy Policy</string>
+    <string name="welcome_agree_continue">Agree &amp; Continue</string>
+    <string name="overlay_title">One Last Step!</string>
+    <string name="overlay_subtitle">Allow overlay access to show quick message options right after calls - no extra taps needed!</string>
+    <string name="overlay_benefit_title">This Lets You  &#128073;</string>
+    <string name="overlay_bullet_one">Message quickly after calls</string>
+    <string name="overlay_bullet_two">Get instant access to conversations</string>
+    <string name="overlay_step_badge_one">1/2</string>
+    <string name="overlay_step_badge_two">2/2</string>
+    <string name="overlay_essential">Essential</string>
+    <string name="overlay_slide_one_title">Find and Tap &quot;#Messages&quot; on\nthe app lists</string>
+    <string name="overlay_slide_two_title">Then, allow display permission</string>
+    <string name="overlay_slide_two_subtitle">(Permission name may differ by device)</string>
+    <string name="overlay_permission_row">Allow display over other apps</string>
+    <string name="overlay_permission_toggle">Overlay permission toggle</string>
+    <string name="overlay_permission_hand">Animated hand guide</string>
+    <string name="overlay_allow_permission">Allow Permission</string>
+    <string name="overlay_permission_note">This permission is only used to improve your messaging experience.</string>
 
 
 </resources>

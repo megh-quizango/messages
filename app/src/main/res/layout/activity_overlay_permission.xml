@@ -4,181 +4,193 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp"
-    android:paddingTop="32dp">
+    android:paddingStart="28dp"
+    android:paddingTop="22dp"
+    android:paddingEnd="28dp"
+    android:paddingBottom="18dp">
 
-    <!-- Images ViewPager -->
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewPagerImages"
-        android:layout_width="0dp"
-        android:layout_height="280dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.85" />
-
-    <!-- Description Text -->
     <TextView
-        android:id="@+id/textDescription"
+        android:id="@+id/textTitle"
         android:layout_width="0dp"
-        android:layout_height="80dp"
-        android:text="See Essential Messages Instantly On The Screen Without Opening The App, Which Will Help You To Get Information Quickly.\n\nOnly some important messages will be shown on the screen. Ex: OTP messages."
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        android:fontFamily="@font/poppins"
-        android:gravity="center"
-        android:ellipsize="end"
-        android:maxLines="5"
-        android:layout_marginTop="16dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/viewPagerImages"
+        android:fontFamily="@font/poppins"
+        android:gravity="center"
+        android:text="@string/overlay_title"
+        android:textColor="@color/primary_blue"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Scroll Dots Indicator -->
+    <TextView
+        android:id="@+id/textSubtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="22dp"
+        android:fontFamily="@font/poppins"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"
+        android:maxLines="3"
+        android:text="@string/overlay_subtitle"
+        android:textColor="#5E5E6C"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/textTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/textBenefitTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/poppins"
+        android:text="@string/overlay_benefit_title"
+        android:textColor="#161625"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/textSubtitle"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/layoutBulletOne"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/textBenefitTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:contentDescription="@string/overlay_bullet_one"
+            android:src="@drawable/ic_check_circle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:fontFamily="@font/poppins"
+            android:text="@string/overlay_bullet_one"
+            android:textColor="#5D5D6B"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutBulletTwo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/layoutBulletOne"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:contentDescription="@string/overlay_bullet_two"
+            android:src="@drawable/ic_check_circle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:fontFamily="@font/poppins"
+            android:text="@string/overlay_bullet_two"
+            android:textColor="#5D5D6B"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPagerImages"
+        android:layout_width="0dp"
+        android:layout_height="332dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/layoutBulletTwo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <LinearLayout
         android:id="@+id/scrollDotsContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginTop="14dp"
         android:gravity="center"
-        android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@+id/textDescription"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/viewPagerImages"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <View
             android:id="@+id/dot1"
-            android:layout_width="24dp"
-            android:layout_height="8dp"
-            android:minWidth="24dp"
-            android:minHeight="8dp"
-            android:background="@drawable/dot_indicator_active"
-            android:layout_marginEnd="8dp" />
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:background="@drawable/overlay_dot_active" />
 
         <View
             android:id="@+id/dot2"
-            android:layout_width="8dp"
-            android:layout_height="8dp"
-            android:minWidth="8dp"
-            android:minHeight="8dp"
-            android:background="@drawable/dot_indicator_inactive" />
-
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="14dp"
+            android:background="@drawable/overlay_dot_inactive" />
     </LinearLayout>
 
-    <!-- Permission Heading -->
-    <TextView
-        android:id="@+id/textPermissionHeading"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Allow Overlay Permission For A Better Experience."
-        android:textColor="@color/black"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:fontFamily="@font/poppins"
-        android:gravity="center"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@+id/scrollDotsContainer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Instructions Box -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/containerInstructions"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_instructions_box"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/textPermissionHeading"
-        app:layout_constraintBottom_toTopOf="@+id/buttonAllowPermission"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:id="@+id/textStep1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Step 01: Tap &quot;Enable&quot; Below"
-            android:textColor="@color/primary_blue"
-            android:textSize="14sp"
-            android:fontFamily="@font/poppins"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <TextView
-            android:id="@+id/textStep2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Step 02: Find #Messages In The List"
-            android:textColor="@color/primary_blue"
-            android:textSize="14sp"
-            android:fontFamily="@font/poppins"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@+id/textStep1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <TextView
-            android:id="@+id/textStep3"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Step 03: Toggle The Switch To Activate It"
-            android:textColor="@color/primary_blue"
-            android:textSize="14sp"
-            android:fontFamily="@font/poppins"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@+id/textStep2"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- Allow Permission Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonAllowPermission"
         android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="12dp"
-        android:text="ALLOW PERMISSION"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:fontFamily="@font/poppins"
+        android:layout_height="54dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="14dp"
         android:backgroundTint="@color/primary_blue"
-        android:stateListAnimator="@null"
-        app:cornerRadius="28dp"
-        app:layout_constraintTop_toBottomOf="@+id/containerInstructions"
-        app:layout_constraintBottom_toTopOf="@+id/textSettingsNote"
+        android:elevation="6dp"
+        android:fontFamily="@font/poppins"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="@string/overlay_allow_permission"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:cornerRadius="27dp"
+        app:layout_constraintTop_toBottomOf="@id/scrollDotsContainer"
+        app:layout_constraintBottom_toTopOf="@id/textSettingsNote"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Settings Note Text -->
     <TextView
         android:id="@+id/textSettingsNote"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="You can disable this anytime in settings."
-        android:textColor="#999999"
-        android:textSize="12sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
         android:fontFamily="@font/poppins"
         android:gravity="center"
-        android:layout_marginBottom="24dp"
+        android:lineSpacingExtra="1dp"
+        android:text="@string/overlay_permission_note"
+        android:textColor="#6B6B79"
+        android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

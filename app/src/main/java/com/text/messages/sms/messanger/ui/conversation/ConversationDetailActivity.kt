@@ -58,6 +58,7 @@ import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.databinding.ActivityConversationDetailBinding
 import com.text.messages.sms.messanger.receiver.ScheduledMessageReceiver
+import com.text.messages.sms.messanger.util.MessagingAddressUtils
 import com.squareup.picasso.Picasso
 import java.io.File
 import java.io.FileOutputStream
@@ -88,6 +89,7 @@ class ConversationDetailActivity : BaseActivity() {
     private var bubbleColorChangeReceiver: BroadcastReceiver? = null
     private var fontChangeReceiver: BroadcastReceiver? = null
     private var conversationActionReceiver: BroadcastReceiver? = null
+    private var canReplyToSender: Boolean = true
     
     // Attachment related
     private var selectedImageUri: Uri? = null
@@ -199,6 +201,8 @@ class ConversationDetailActivity : BaseActivity() {
         enableEdgeToEdge()
         binding = ActivityConversationDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        canReplyToSender = MessagingAddressUtils.canReplyToAddress(address)
+        applyReplyCapability()
         
         // Setup navigation bar with white background and black icons
         ThemeManager.setupNavigationBar(this)
@@ -251,8 +255,11 @@ class ConversationDetailActivity : BaseActivity() {
         setupBannerAd()
         observeMessages()
         
-        if (isScheduling) {
+        if (isScheduling && canReplyToSender) {
             showDatePicker()
+        } else if (isScheduling) {
+            isScheduling = false
+            Toast.makeText(this, getString(R.string.reply_not_supported_for_sender), Toast.LENGTH_SHORT).show()
         }
         
         // Register ContentObserver to detect new messages in this conversation
@@ -565,6 +572,13 @@ class ConversationDetailActivity : BaseActivity() {
     }
     
     private fun updateSendButtonState() {
+        if (!canReplyToSender) {
+            binding.buttonSend.setImageResource(R.drawable.ic_send_disabled)
+            binding.buttonSend.isEnabled = false
+            binding.buttonSend.alpha = 0.5f
+            return
+        }
+
         val messageText = binding.editTextMessage.text.toString()
         val hasText = messageText.isNotEmpty()
         val hasImage = selectedImageUri != null
@@ -584,6 +598,11 @@ class ConversationDetailActivity : BaseActivity() {
     
     private fun setupSendButton() {
         binding.buttonSend.setOnClickListener {
+            if (!canReplyToSender) {
+                Toast.makeText(this, getString(R.string.reply_not_supported_for_sender), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val messageText = binding.editTextMessage.text.toString()
             val hasImage = selectedImageUri != null
             val hasContact = selectedContactName != null && selectedContactNumber != null
@@ -660,6 +679,34 @@ class ConversationDetailActivity : BaseActivity() {
     
     private fun setupBannerAd() {
         binding.adViewBanner.loadBannerAdWithRemoteConfig()
+    }
+
+    private fun applyReplyCapability() {
+        if (canReplyToSender) {
+            binding.layoutInputRow.visibility = View.VISIBLE
+            binding.textReplyDisabled.visibility = View.GONE
+            binding.imageAttachment.isEnabled = true
+            binding.imageAttachment.alpha = 1f
+            binding.editTextMessage.isEnabled = true
+            binding.editTextMessage.isFocusable = true
+            binding.editTextMessage.isFocusableInTouchMode = true
+            return
+        }
+
+        selectedImageUri = null
+        selectedContactName = null
+        selectedContactNumber = null
+        binding.editTextMessage.text?.clear()
+        binding.layoutAttachments.removeAllViews()
+        binding.scrollViewAttachments.visibility = View.GONE
+        binding.layoutScheduledInfo.visibility = View.GONE
+        binding.layoutInputRow.visibility = View.GONE
+        binding.textReplyDisabled.visibility = View.VISIBLE
+        binding.imageAttachment.isEnabled = false
+        binding.imageAttachment.alpha = 0.4f
+        binding.editTextMessage.isEnabled = false
+        binding.editTextMessage.isFocusable = false
+        binding.editTextMessage.isFocusableInTouchMode = false
     }
 
     private var isFirstLoad = true
@@ -888,6 +935,11 @@ class ConversationDetailActivity : BaseActivity() {
     }
 
     private fun scheduleMessage(messageText: String, hasImage: Boolean = false, hasContact: Boolean = false) {
+        if (!canReplyToSender) {
+            Toast.makeText(this, getString(R.string.reply_not_supported_for_sender), Toast.LENGTH_SHORT).show()
+            return
+        }
+
         scheduledDate?.let { date ->
             scheduledTime?.let { hour ->
                 scheduledMinute?.let { minute ->
@@ -1555,6 +1607,11 @@ class ConversationDetailActivity : BaseActivity() {
     }
     
     private fun resendFailedMessage(message: Message) {
+        if (!canReplyToSender) {
+            Toast.makeText(this, getString(R.string.reply_not_supported_for_sender), Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val attachmentPath = message.attachmentPath
         val mimeType = message.mimeType
         

@@ -78,9 +78,9 @@
 
         <!-- Required for Facebook App Ads -->
 
-        <!-- ProxyActivity (First-run / Role setup) - LAUNCHER -->
+        <!-- LandingActivity (Splash Screen) - LAUNCHER -->
         <activity
-            android:name=".ui.launcher.ProxyActivity"
+            android:name=".ui.splash.LandingActivity"
             android:exported="true"
             android:label="Messages"
             android:theme="@style/Theme.Messages.Splash">
@@ -89,27 +89,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- HomeActivity (Actual launcher) - HOME -->
-        <activity
-            android:name=".ui.launcher.HomeActivity"
-            android:exported="true"
-            android:launchMode="singleTask"
-            android:excludeFromRecents="true"
-            android:clearTaskOnLaunch="true"
-            android:theme="@style/Theme.Messages.Home">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <!-- LandingActivity (Legacy splash, kept for internal navigation) -->
-        <activity
-            android:name=".ui.splash.LandingActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Messages.Splash" />
 
         <!-- WelcomeActivity -->
         <activity

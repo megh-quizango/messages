@@ -20,7 +20,6 @@ import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.text.messages.sms.messanger.MessagesApp
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityConversationDetailsBinding
@@ -30,6 +29,7 @@ import com.text.messages.sms.messanger.ui.main.DeletedConversationData
 import com.text.messages.sms.messanger.util.AvatarHelper
 import com.text.messages.sms.messanger.util.BlockedConversationStorage
 import com.text.messages.sms.messanger.util.ConversationCache
+import com.text.messages.sms.messanger.util.ConversationStorageParser
 import com.text.messages.sms.messanger.util.ThemeManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -243,8 +243,7 @@ class ConversationDetailsActivity : BaseActivity() {
         // Load existing archived items
         val archivedJson = prefs.getString("archived_messages_list", null)
         val archivedMessages = if (archivedJson != null) {
-            val type = object : TypeToken<MutableList<ArchivedMessageData>>() {}.type
-            gson.fromJson<MutableList<ArchivedMessageData>>(archivedJson, type)
+            ConversationStorageParser.parseArchivedMessages(archivedJson, gson)
         } else {
             mutableListOf()
         }
@@ -431,11 +430,12 @@ class ConversationDetailsActivity : BaseActivity() {
         // Load existing recycle bin items
         val recycleBinJson = prefs.getString("deleted_conversations", null)
         val deletedConversations = if (recycleBinJson != null) {
-            val type = object : TypeToken<List<DeletedConversationData>>() {}.type
-            gson.fromJson<List<DeletedConversationData>>(recycleBinJson, type).toMutableList()
+            ConversationStorageParser.parseDeletedConversations(recycleBinJson, gson)
         } else {
             mutableListOf()
         }
+
+        deletedConversations.removeAll { it.threadId == conversation.threadId }
         
         // Add current conversation to recycle bin
         deletedConversations.add(DeletedConversationData(

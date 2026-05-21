@@ -134,6 +134,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
                 android:text="Set Default SMS App"
+                android:textColor="@color/white"
+                android:tag="exclude_from_theme_textcolor"
                 android:backgroundTint="#0C56CF"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -186,4 +188,3 @@
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

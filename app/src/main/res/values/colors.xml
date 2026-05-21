@@ -34,6 +34,6 @@
     <color name="bottom_nav_background">#0C56CF</color>
     
     <!-- Custom Blocking Colors -->
-    <color name="primary_blue">#0C56CF</color>
+    <color name="primary_blue">#0061FD</color>
     <color name="light_blue">#E6F0FF</color>
 </resources>

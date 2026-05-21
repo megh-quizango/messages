@@ -14,7 +14,6 @@ import android.widget.Toast
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.text.messages.sms.messanger.MessagesApp
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.data.model.Conversation
@@ -23,6 +22,8 @@ import com.text.messages.sms.messanger.data.model.MessageStatus
 import com.text.messages.sms.messanger.data.model.MessageType
 import com.text.messages.sms.messanger.ui.main.DeletedConversationData
 import com.text.messages.sms.messanger.ui.notifications.ButtonAction
+import com.text.messages.sms.messanger.util.ConversationStorageParser
+import com.text.messages.sms.messanger.util.MessagingAddressUtils
 import com.text.messages.sms.messanger.util.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +74,11 @@ class NotificationActionReceiver : BroadcastReceiver() {
             ButtonAction.CALL -> handleCall(context, address)
             ButtonAction.MARK_AS_READ -> handleMarkAsRead(context, threadId)
             ButtonAction.REPLY -> {
+                if (!MessagingAddressUtils.canReplyToAddress(address)) {
+                    Toast.makeText(context, R.string.reply_not_supported_for_sender, Toast.LENGTH_SHORT).show()
+                    return
+                }
+
                 // Check if this is an inline reply (from RemoteInput)
                 val remoteInput = RemoteInput.getResultsFromIntent(intent)
                 Log.d(TAG, "REPLY action - remoteInput is null: ${remoteInput == null}")
@@ -186,9 +192,8 @@ class NotificationActionReceiver : BroadcastReceiver() {
             val prefs = context.getSharedPreferences("recycle_bin", Context.MODE_PRIVATE)
             val gson = Gson()
             val existingJson = prefs.getString("deleted_conversations", null)
-            val type = object : TypeToken<List<DeletedConversationData>>() {}.type
             val deletedList = if (existingJson != null) {
-                gson.fromJson<List<DeletedConversationData>>(existingJson, type).toMutableList()
+                ConversationStorageParser.parseDeletedConversations(existingJson, gson)
             } else {
                 mutableListOf()
             }
@@ -340,6 +345,11 @@ class NotificationActionReceiver : BroadcastReceiver() {
     }
     
     private fun handleReply(context: Context, threadId: Long, address: String) {
+        if (!MessagingAddressUtils.canReplyToAddress(address)) {
+            Toast.makeText(context, R.string.reply_not_supported_for_sender, Toast.LENGTH_SHORT).show()
+            return
+        }
+
         try {
             Log.d(TAG, "handleReply called - threadId: $threadId, address: $address")
             val intent = Intent(context, com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity::class.java).apply {
@@ -358,6 +368,13 @@ class NotificationActionReceiver : BroadcastReceiver() {
     
     private fun handleInlineReply(context: Context, threadId: Long, address: String, replyText: String) {
         CoroutineScope(Dispatchers.IO).launch {
+            if (!MessagingAddressUtils.canReplyToAddress(address)) {
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    Toast.makeText(context, R.string.reply_not_supported_for_sender, Toast.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
+
             try {
                 Log.d(TAG, "handleInlineReply: Starting - threadId=$threadId, address=$address, text='$replyText'")
                 

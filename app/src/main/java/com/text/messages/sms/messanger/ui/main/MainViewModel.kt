@@ -19,6 +19,7 @@ import com.text.messages.sms.messanger.util.CustomFilterStorage
 import com.text.messages.sms.messanger.util.PrivateConversationStorage
 import com.text.messages.sms.messanger.util.BlockedConversationStorage
 import com.text.messages.sms.messanger.util.ConversationCache
+import com.text.messages.sms.messanger.util.ConversationStorageParser
 import com.text.messages.sms.messanger.util.OtpHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -1253,8 +1254,7 @@ class MainViewModel : ViewModel() {
         val deletedJson = prefs.getString("deleted_conversations", null)
         if (deletedJson != null) {
             val gson = com.google.gson.Gson()
-            val type = object : com.google.gson.reflect.TypeToken<List<com.text.messages.sms.messanger.ui.main.DeletedConversationData>>() {}.type
-            val deletedConversations = gson.fromJson<List<com.text.messages.sms.messanger.ui.main.DeletedConversationData>>(deletedJson, type)
+            val deletedConversations = ConversationStorageParser.parseDeletedConversations(deletedJson, gson)
             return deletedConversations.map { it.threadId }.toSet()
         }
         return emptySet()
@@ -1265,8 +1265,7 @@ class MainViewModel : ViewModel() {
         val archivedJson = prefs.getString("archived_messages_list", null)
         if (archivedJson != null) {
             val gson = com.google.gson.Gson()
-            val type = object : com.google.gson.reflect.TypeToken<List<com.text.messages.sms.messanger.ui.archive.ArchivedMessageData>>() {}.type
-            val archivedMessages = gson.fromJson<List<com.text.messages.sms.messanger.ui.archive.ArchivedMessageData>>(archivedJson, type)
+            val archivedMessages = ConversationStorageParser.parseArchivedMessages(archivedJson, gson)
             return archivedMessages.map { it.threadId }.toSet()
         }
         return emptySet()

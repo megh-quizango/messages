@@ -306,10 +306,15 @@ class MessageAdapter(
                 if (hasVisibleAttachment) {
                     // Transparent background for messages with attachments
                     drawable.setColor(Color.TRANSPARENT)
+                    applySentMessageTextColors(Color.WHITE)
                 } else {
                     // Normal bubble color for text-only messages
                     val bubbleColor = AppPreferences.getBubbleColor(context)
-                    drawable.setColor(Color.parseColor(bubbleColor))
+                    val bubbleColorInt = Color.parseColor(bubbleColor)
+                    drawable.setColor(bubbleColorInt)
+                    applySentMessageTextColors(
+                        com.text.messages.sms.messanger.util.ThemeManager.getContrastTextColor(bubbleColorInt)
+                    )
                 }
                 cardMessage?.background = drawable
             } else {
@@ -322,6 +327,7 @@ class MessageAdapter(
                     drawable.setColor(Color.TRANSPARENT)
                     cardMessage?.background = drawable
                 }
+                resetReceivedMessageTextColors()
             }
             
             // Show/hide checkmark based on selection
@@ -375,6 +381,29 @@ class MessageAdapter(
             } catch (e: Exception) {
                 Toast.makeText(context, "Error copying OTP", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        private fun applySentMessageTextColors(primaryTextColor: Int) {
+            val secondaryTextColor = if (primaryTextColor == Color.WHITE) {
+                Color.argb(179, 255, 255, 255)
+            } else {
+                Color.parseColor("#4B5563")
+            }
+            textMessage?.setTextColor(primaryTextColor)
+            textTime?.setTextColor(secondaryTextColor)
+            textOtpValue?.setTextColor(primaryTextColor)
+            buttonCopyOtp?.setTextColor(primaryTextColor)
+            textContactName?.setTextColor(primaryTextColor)
+            textContactNumber?.setTextColor(secondaryTextColor)
+        }
+
+        private fun resetReceivedMessageTextColors() {
+            textMessage?.setTextColor(Color.parseColor("#111827"))
+            textTime?.setTextColor(Color.parseColor("#6B7280"))
+            textOtpValue?.setTextColor(Color.parseColor("#111827"))
+            buttonCopyOtp?.setTextColor(Color.parseColor("#111827"))
+            textContactName?.setTextColor(Color.parseColor("#111827"))
+            textContactNumber?.setTextColor(Color.parseColor("#6B7280"))
         }
         
         private fun handleAttachments(message: Message): Boolean {

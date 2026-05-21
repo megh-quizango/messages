@@ -19,8 +19,6 @@ import androidx.core.view.WindowInsetsCompat
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityWelcomeBinding
 import com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity
-import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
-import android.graphics.Paint
 
 class WelcomeActivity : BaseActivity() {
 
@@ -62,51 +60,41 @@ class WelcomeActivity : BaseActivity() {
         
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val initialPaddingLeft = binding.root.paddingLeft
+        val initialPaddingTop = binding.root.paddingTop
+        val initialPaddingRight = binding.root.paddingRight
+        val initialPaddingBottom = binding.root.paddingBottom
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(
+                initialPaddingLeft + systemBars.left,
+                initialPaddingTop + systemBars.top,
+                initialPaddingRight + systemBars.right,
+                initialPaddingBottom + systemBars.bottom
+            )
             insets
         }
         
         sharedPreferences = getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
         
         setupUI()
-        setupBannerAd()
     }
     
     private fun setupUI() {
-        // Initially disable the button
-        binding.buttonAgreeContinue.isEnabled = false
-        
-        // Set checkbox listener
-        binding.checkboxPrivacy.setOnCheckedChangeListener { _, isChecked ->
-            binding.buttonAgreeContinue.isEnabled = isChecked
-        }
-        
-        // Set button click listener
         binding.buttonAgreeContinue.setOnClickListener {
-            if (binding.checkboxPrivacy.isChecked) {
-                // Request Notification and Phone permissions first (these can be requested before default handler)
-                requestNonSmsPermissions()
-            }
+            // Request Notification and Phone permissions first (these can be requested before default handler)
+            requestNonSmsPermissions()
         }
-        
-        // Set underline for privacy policy text
-        binding.textPrivacyPolicy.paintFlags = binding.textPrivacyPolicy.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         
         // Set privacy policy link click listener
         binding.textPrivacyPolicy.setOnClickListener {
-            // Open privacy policy (you may need to replace with actual URL)
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sites.google.com/quizangomedia.com/quizango-media-private-limited/messages-sms-texting-app"))
             if (intent.resolveActivity(packageManager) != null) {
                 startActivity(intent)
             }
         }
-    }
-    
-    private fun setupBannerAd() {
-        binding.adViewBanner.loadBannerAdWithRemoteConfig()
     }
     
     private fun getRequiredNonSmsPermissions(): List<String> {
@@ -183,4 +171,3 @@ class WelcomeActivity : BaseActivity() {
         }
     }
 }
-

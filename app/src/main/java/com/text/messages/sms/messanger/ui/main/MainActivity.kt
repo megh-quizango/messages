@@ -59,6 +59,7 @@ import android.util.Log
 import com.text.messages.sms.messanger.observer.SmsContentObserver
 import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.ConversationCache
+import com.text.messages.sms.messanger.util.ConversationStorageParser
 import com.text.messages.sms.messanger.MessagesApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -619,24 +620,12 @@ class MainActivity : BaseActivity() {
                         }
                         
                         try {
-                            // Remove conversation from adapter immediately without reloading entire list
-                            val currentList = adapter.currentList.toMutableList()
-                            val index = currentList.indexOfFirst { it.threadId == threadId }
-                            
-                            if (index >= 0) {
-                                currentList.removeAt(index)
-                                
-                                // Create a new list instance to ensure DiffUtil detects the change
-                                val newList = currentList.toList()
-                                
-                                // Force update on main thread
-                                adapter.submitList(newList) {
-                                    // Update empty state after removal
-                                    updateEmptyState(newList.isEmpty())
-                                    Log.d(TAG, "Successfully removed conversation $threadId from recycler view after $action")
-                                }
-                            } else {
-                                Log.d(TAG, "Conversation $threadId not found in current list, may have been already removed or not in current filter")
+                            val newList = removeConversationFromVisibleLists(threadId)
+                            adapter.submitList(newList) {
+                                val hasRealConversations = newList.any { it.threadId != -1L }
+                                updateEmptyState(newList.isEmpty() || (!hasRealConversations && currentCustomFilterId == null))
+                                loadConversationsForCurrentTab(showLoading = false, useCache = false, forceRefresh = true)
+                                Log.d(TAG, "Successfully removed conversation $threadId from recycler view after $action")
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error updating adapter after $action", e)
@@ -1663,6 +1652,11 @@ class MainActivity : BaseActivity() {
             }
         }
     }
+
+    private fun removeConversationFromVisibleLists(threadId: Long): List<Conversation> {
+        allConversations = allConversations.filter { it.threadId != threadId }
+        return adapter.currentList.filter { it.threadId != threadId }
+    }
     
     private fun deleteConversation(conversation: Conversation, position: Int) {
         AnalyticsHelper.logConversationDeleted(conversation.threadId.toString())
@@ -1680,32 +1674,11 @@ class MainActivity : BaseActivity() {
             com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
             com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
             
-            // Remove from adapter immediately
-            val currentList = adapter.currentList.toMutableList()
-            if (position >= 0 && position < currentList.size) {
-                currentList.removeAt(position)
-                
-                // Update allConversations to keep it in sync
-                val allList = allConversations.toMutableList()
-                val allIndex = allList.indexOfFirst { it.threadId == conversation.threadId }
-                if (allIndex >= 0) {
-                    allList.removeAt(allIndex)
-                    allConversations = allList
-                }
-                
-                adapter.submitList(currentList) {
-                    // Reset swipe position after list update
-                    binding.recyclerViewConversations.post {
-                        val viewHolder = binding.recyclerViewConversations.findViewHolderForAdapterPosition(position)
-                        viewHolder?.itemView?.translationX = 0f
-                        viewHolder?.itemView?.alpha = 1f
-                    }
-                    // Update empty state after deletion
-                    updateEmptyState(currentList.isEmpty())
-                }
-            } else {
-                // If position is invalid, refresh the list (which will filter out deleted items)
-                loadConversationsForCurrentTab(showLoading = false, useCache = currentTimeFilter == null, forceRefresh = true)
+            val updatedList = removeConversationFromVisibleLists(conversation.threadId)
+            adapter.submitList(updatedList) {
+                val hasRealConversations = updatedList.any { it.threadId != -1L }
+                updateEmptyState(updatedList.isEmpty() || (!hasRealConversations && currentCustomFilterId == null))
+                loadConversationsForCurrentTab(showLoading = false, useCache = false, forceRefresh = true)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1727,32 +1700,11 @@ class MainActivity : BaseActivity() {
             com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
             com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
             
-            // Remove from adapter immediately
-            val currentList = adapter.currentList.toMutableList()
-            if (position >= 0 && position < currentList.size) {
-                currentList.removeAt(position)
-                
-                // Update allConversations to keep it in sync
-                val allList = allConversations.toMutableList()
-                val allIndex = allList.indexOfFirst { it.threadId == conversation.threadId }
-                if (allIndex >= 0) {
-                    allList.removeAt(allIndex)
-                    allConversations = allList
-                }
-                
-                adapter.submitList(currentList) {
-                    // Reset swipe position after list update
-                    binding.recyclerViewConversations.post {
-                        val viewHolder = binding.recyclerViewConversations.findViewHolderForAdapterPosition(position)
-                        viewHolder?.itemView?.translationX = 0f
-                        viewHolder?.itemView?.alpha = 1f
-                    }
-                    // Update empty state after archiving
-                    updateEmptyState(currentList.isEmpty())
-                }
-            } else {
-                // If position is invalid, refresh the list (which will filter out archived items)
-                loadConversationsForCurrentTab(showLoading = false, useCache = currentTimeFilter == null, forceRefresh = true)
+            val updatedList = removeConversationFromVisibleLists(conversation.threadId)
+            adapter.submitList(updatedList) {
+                val hasRealConversations = updatedList.any { it.threadId != -1L }
+                updateEmptyState(updatedList.isEmpty() || (!hasRealConversations && currentCustomFilterId == null))
+                loadConversationsForCurrentTab(showLoading = false, useCache = false, forceRefresh = true)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1766,8 +1718,7 @@ class MainActivity : BaseActivity() {
         // Load existing archived items
         val archivedJson = prefs.getString("archived_messages_list", null)
         val archivedMessages = if (archivedJson != null) {
-            val type = object : com.google.gson.reflect.TypeToken<MutableList<com.text.messages.sms.messanger.ui.archive.ArchivedMessageData>>() {}.type
-            gson.fromJson<MutableList<com.text.messages.sms.messanger.ui.archive.ArchivedMessageData>>(archivedJson, type)
+            ConversationStorageParser.parseArchivedMessages(archivedJson, gson)
         } else {
             mutableListOf()
         }
@@ -1797,11 +1748,12 @@ class MainActivity : BaseActivity() {
         // Load existing recycle bin items
         val recycleBinJson = prefs.getString("deleted_conversations", null)
         val deletedConversations = if (recycleBinJson != null) {
-            val type = object : com.google.gson.reflect.TypeToken<List<DeletedConversationData>>() {}.type
-            gson.fromJson<List<DeletedConversationData>>(recycleBinJson, type).toMutableList()
+            ConversationStorageParser.parseDeletedConversations(recycleBinJson, gson)
         } else {
             mutableListOf()
         }
+
+        deletedConversations.removeAll { it.threadId == conversation.threadId }
         
         // Add current conversation to recycle bin
         deletedConversations.add(DeletedConversationData(
@@ -2198,9 +2150,12 @@ class MainActivity : BaseActivity() {
             // Store all conversations for search filtering (always update in background)
             allConversations = newConversations
             
-            // Update cache when new conversations arrive (always update in background)
+            // Only cache non-time-filtered results so "Default" never reuses a filtered subset.
+            val shouldCacheCurrentResult = currentTimeFilter == null
             if (currentCustomFilterId != null) {
-                com.text.messages.sms.messanger.util.ConversationCache.cacheForFilter(currentCustomFilterId!!, newConversations)
+                if (shouldCacheCurrentResult) {
+                    com.text.messages.sms.messanger.util.ConversationCache.cacheForFilter(currentCustomFilterId!!, newConversations)
+                }
             } else {
                 val category = when (selectedTab?.id) {
                     R.id.tabAll -> "All"
@@ -2210,7 +2165,9 @@ class MainActivity : BaseActivity() {
                     R.id.tabTransactions -> "Transactions"
                     else -> "All"
                 }
-                com.text.messages.sms.messanger.util.ConversationCache.cache(category, newConversations)
+                if (shouldCacheCurrentResult) {
+                    com.text.messages.sms.messanger.util.ConversationCache.cache(category, newConversations)
+                }
                 
                 // Pre-cache all other categories in background after "All" is first loaded
                 if (category == "All" && !hasPreCachedCategories && newConversations.isNotEmpty()) {
@@ -2702,34 +2659,25 @@ class MainActivity : BaseActivity() {
         Log.d(TAG, "mergeConversationLists - current: ${currentList.size}, new: ${newList.size}")
         val newMap = newList.associateBy { it.threadId }
         val mergedMap = mutableMapOf<Long, Conversation>()
-        val processedThreadIds = mutableSetOf<Long>()
         
-        // First pass: update existing conversations with new data from newList
+        // First pass: update existing conversations that still exist in the latest dataset.
         currentList.forEach { currentConv ->
             val newConv = newMap[currentConv.threadId]
             if (newConv != null) {
-                // Conversation exists in both lists - use updated version from newList
-                // But preserve manually marked-as-read state for unread count
                 val isManuallyMarkedAsRead = manuallyMarkedAsReadThreadIds.contains(currentConv.threadId)
                 
                 if (isManuallyMarkedAsRead && newConv.unreadCount > currentConv.unreadCount) {
-                    // New unread message received - remove from manually marked-as-read set
                     manuallyMarkedAsReadThreadIds.remove(currentConv.threadId)
                     Log.d(TAG, "Manually marked-as-read conversation ${currentConv.threadId} has new unread message")
                 }
                 
                 mergedMap[currentConv.threadId] = newConv
-                processedThreadIds.add(currentConv.threadId)
-            } else {
-                // Conversation exists in current but not in new - keep it (might be filtered out)
-                mergedMap[currentConv.threadId] = currentConv
-                processedThreadIds.add(currentConv.threadId)
             }
         }
         
-        // Second pass: add any new conversations that weren't in current list
+        // Second pass: add any new conversations that weren't in the old visible list.
         newList.forEach { newConv ->
-            if (!processedThreadIds.contains(newConv.threadId)) {
+            if (!mergedMap.containsKey(newConv.threadId)) {
                 mergedMap[newConv.threadId] = newConv
             }
         }

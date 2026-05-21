@@ -10,6 +10,7 @@ import android.os.Looper
 import android.provider.Telephony
 import android.util.Log
 import android.animation.ObjectAnimator
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.content.ContextCompat
@@ -163,5 +164,10 @@ class LandingActivity : BaseActivity() {
             }
         }
         finish()
+    }
+
+    override fun onDestroy() {
+        handler.removeCallbacksAndMessages(null)
+        super.onDestroy()
     }
 }

@@ -274,6 +274,20 @@
 
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/textReplyDisabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingStart="24dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="20dp"
+            android:text="@string/cannot_reply_to_sender"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:visibility="gone"/>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

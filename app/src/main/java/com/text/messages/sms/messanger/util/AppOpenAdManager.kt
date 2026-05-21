@@ -59,9 +59,7 @@ object AppOpenAdManager {
     private const val CLOSE_BUTTON_DELAY_MS = 2000L // 2 seconds delay for close button
 
     /**
-     * Shows Native Video Ads based on build type:
-     * - DEBUG: Shows TWO video ads back-to-back
-     * - RELEASE: Shows ONE video ad only
+     * Shows the cold-start native video ad sequence.
      *
      * @param activity The activity context to show the ad
      * @param onFinish Callback invoked when all ads are finished or if any ad fails
@@ -70,7 +68,7 @@ object AppOpenAdManager {
 
     fun showDoubleAppOpenIfDebug(activity: Activity, onFinish: () -> Unit) {
         val isDebug = (activity.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
-        val adsToShow = if (isDebug) 2 else 1
+        val adsToShow = 2
         Log.d(TAG, "Starting native video ad sequence. Build type: ${if (isDebug) "DEBUG" else "RELEASE"}, ads to show: $adsToShow")
 
         // Enforce minimum 2.5s delay from cold start before showing ads

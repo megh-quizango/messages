@@ -289,6 +289,11 @@ object NotificationHelper {
             if (action != null && action != ButtonAction.NONE) {
                 // Handle REPLY separately with RemoteInput for inline reply
                 if (action == ButtonAction.REPLY) {
+                    if (!MessagingAddressUtils.canReplyToAddress(address)) {
+                        Log.d(TAG, "Skipping REPLY action for non-replyable sender: $address")
+                        return@forEachIndexed
+                    }
+
                     val replyLabel = "Reply"
                     val remoteInput = RemoteInput.Builder("reply_text")
                         .setLabel("Type a reply...")

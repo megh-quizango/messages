@@ -8,6 +8,8 @@ import android.provider.Telephony
 import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Toast
+import com.text.messages.sms.messanger.R
+import com.text.messages.sms.messanger.util.MessagingAddressUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +24,11 @@ class ScheduledMessageReceiver : BroadcastReceiver() {
         val address = intent.getStringExtra("address") ?: return
         val messageBody = intent.getStringExtra("message") ?: return
         val threadId = intent.getLongExtra("thread_id", -1)
+
+        if (!MessagingAddressUtils.canReplyToAddress(address)) {
+            Toast.makeText(context, context.getString(R.string.reply_not_supported_for_sender), Toast.LENGTH_SHORT).show()
+            return
+        }
 
         try {
             // Message body already includes signature (added in ConversationDetailActivity)
