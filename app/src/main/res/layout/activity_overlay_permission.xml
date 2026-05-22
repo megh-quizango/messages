@@ -118,13 +118,15 @@
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPagerImages"
         android:layout_width="0dp"
-        android:layout_height="332dp"
+        android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
+        android:layout_marginBottom="14dp"
         android:layout_marginEnd="8dp"
         android:clipChildren="false"
         android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/layoutBulletTwo"
+        app:layout_constraintBottom_toTopOf="@id/scrollDotsContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -132,10 +134,10 @@
         android:id="@+id/scrollDotsContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
+        android:layout_marginBottom="18dp"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/viewPagerImages"
+        app:layout_constraintBottom_toTopOf="@id/layoutBottomContent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -153,63 +155,67 @@
             android:background="@drawable/overlay_dot_inactive" />
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/containerAllowPermission"
+    <LinearLayout
+        android:id="@+id/layoutBottomContent"
         android:layout_width="0dp"
-        android:layout_height="54dp"
-        android:clipChildren="true"
+        android:layout_height="wrap_content"
         android:layout_marginStart="14dp"
-        android:layout_marginTop="20dp"
         android:layout_marginEnd="14dp"
-        app:layout_constraintTop_toBottomOf="@id/scrollDotsContainer"
-        app:layout_constraintBottom_toTopOf="@id/textSettingsNote"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonAllowPermission"
+        <FrameLayout
+            android:id="@+id/containerAllowPermission"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:backgroundTint="@color/primary_blue"
-            android:elevation="6dp"
+            android:layout_height="54dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonAllowPermission"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="@color/primary_blue"
+                android:elevation="6dp"
+                android:fontFamily="@font/poppins"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/overlay_allow_permission"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:cornerRadius="27dp" />
+
+            <View
+                android:id="@+id/viewAllowPermissionShimmer"
+                android:layout_width="52dp"
+                android:layout_height="96dp"
+                android:layout_gravity="center_vertical|start"
+                android:alpha="0.7"
+                android:background="@drawable/bg_button_shimmer_strip"
+                android:importantForAccessibility="no"
+                android:rotation="14" />
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/textSettingsNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="2dp"
             android:fontFamily="@font/poppins"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:text="@string/overlay_allow_permission"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:cornerRadius="27dp" />
+            android:gravity="center"
+            android:lineSpacingExtra="1dp"
+            android:text="@string/overlay_permission_note"
+            android:textColor="#6B6B79"
+            android:textSize="11sp" />
 
-        <View
-            android:id="@+id/viewAllowPermissionShimmer"
-            android:layout_width="52dp"
-            android:layout_height="96dp"
-            android:layout_gravity="center_vertical|start"
-            android:alpha="0.7"
-            android:background="@drawable/bg_button_shimmer_strip"
-            android:importantForAccessibility="no"
-            android:rotation="14" />
-
-    </FrameLayout>
-
-    <TextView
-        android:id="@+id/textSettingsNote"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="16dp"
-        android:fontFamily="@font/poppins"
-        android:gravity="center"
-        android:lineSpacingExtra="1dp"
-        android:text="@string/overlay_permission_note"
-        android:textColor="#6B6B79"
-        android:textSize="11sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
