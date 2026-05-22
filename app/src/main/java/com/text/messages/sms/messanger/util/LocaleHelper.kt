@@ -118,6 +118,19 @@ object LocaleHelper {
         }
     }
 
+    fun getLocalizedContext(context: Context): Context {
+        return setLocale(context, getSavedLanguageCode(context))
+    }
+
+    fun getLocalizedString(context: Context, @StringRes resId: Int, vararg formatArgs: Any): String {
+        val localizedContext = getLocalizedContext(context)
+        return if (formatArgs.isEmpty()) {
+            localizedContext.getString(resId)
+        } else {
+            localizedContext.getString(resId, *formatArgs)
+        }
+    }
+
     /**
      * Apply the locale to the context
      */

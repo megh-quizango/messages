@@ -264,7 +264,7 @@ class SettingsFragment : Fragment() {
                 type = "text/plain"
                 putExtra(
                     Intent.EXTRA_TEXT,
-                    getString(R.string.settings_share_app_message, getString(R.string.app_name), packageName)
+                    getString(R.string.settings_share_app_message, getString(R.string.settings_app_name), packageName)
                 )
             }
             context?.startActivity(Intent.createChooser(shareIntent, getString(R.string.settings_share_app_chooser_title)))

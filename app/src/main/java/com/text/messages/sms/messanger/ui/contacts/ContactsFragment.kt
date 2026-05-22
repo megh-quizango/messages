@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.content.BroadcastReceiver
+import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.FragmentContactsBinding
 import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
@@ -44,7 +45,7 @@ class ContactsFragment : Fragment() {
         } else {
             Toast.makeText(
                 requireContext(),
-                "Contacts permission is required to display contacts",
+                getString(R.string.contacts_permission_required_display_contacts),
                 Toast.LENGTH_LONG
             ).show()
         }

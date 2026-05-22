@@ -3,7 +3,6 @@ package com.text.messages.sms.messanger.util
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import com.google.android.gms.ads.AdListener
 
 /**
@@ -19,11 +18,16 @@ fun AdView.loadBannerAdWithRemoteConfig() {
         return
     }
 
-    if (this.adUnitId != remoteConfigAdUnitId) {
+    if (this.adUnitId.isNullOrBlank()) {
         android.util.Log.d("AdHelper", "Applying Remote Config banner ad unit id: $remoteConfigAdUnitId")
+        this.adUnitId = remoteConfigAdUnitId
+    } else if (this.adUnitId != remoteConfigAdUnitId) {
+        android.util.Log.w(
+            "AdHelper",
+            "AdView already has ad unit id '${this.adUnitId}'. Skipping reassignment to '$remoteConfigAdUnitId'."
+        )
     }
     this.visibility = android.view.View.VISIBLE
-    this.adUnitId = remoteConfigAdUnitId
     
     // Ensure ad size is set (should be set in XML, but verify)
     if (this.adSize == null) {

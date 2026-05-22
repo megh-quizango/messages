@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
@@ -36,14 +37,14 @@ class SwipeGesturesActivity : BaseActivity() {
         const val KEY_LEFT_SWIPE = "left_swipe_action"
     }
     
-    enum class SwipeAction(val displayName: String, val iconRes: Int) {
-        NONE("None", 0),
-        ARCHIVE("Archive", R.drawable.archive_swipe),
-        DELETE("Delete", R.drawable.ic_delete),
-        BLOCK("Block", R.drawable.ic_block),
-        CALL("Call", R.drawable.ic_call),
-        MARK_AS_READ("Mark as Read", R.drawable.mark_read),
-        MARK_AS_UNREAD("Mark as Unread", R.drawable.ic_mark_unread)
+    enum class SwipeAction(@StringRes val displayNameRes: Int, val iconRes: Int) {
+        NONE(R.string.swipe_action_none, 0),
+        ARCHIVE(R.string.swipe_action_archive, R.drawable.archive_swipe),
+        DELETE(R.string.swipe_action_delete, R.drawable.ic_delete),
+        BLOCK(R.string.swipe_action_block, R.drawable.ic_block),
+        CALL(R.string.swipe_action_call, R.drawable.ic_call),
+        MARK_AS_READ(R.string.swipe_action_mark_as_read, R.drawable.mark_read),
+        MARK_AS_UNREAD(R.string.swipe_action_mark_as_unread, R.drawable.ic_mark_unread)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,7 +129,7 @@ class SwipeGesturesActivity : BaseActivity() {
     }
     
     private fun updateRightSwipeUI(action: SwipeAction) {
-        binding.textRightSwipeAction.text = action.displayName
+        binding.textRightSwipeAction.text = getString(action.displayNameRes)
         if (action.iconRes != 0) {
             binding.imageRightSwipeIcon.setImageResource(action.iconRes)
             binding.imageRightSwipeIcon.visibility = View.VISIBLE
@@ -138,7 +139,7 @@ class SwipeGesturesActivity : BaseActivity() {
     }
     
     private fun updateLeftSwipeUI(action: SwipeAction) {
-        binding.textLeftSwipeAction.text = action.displayName
+        binding.textLeftSwipeAction.text = getString(action.displayNameRes)
         if (action.iconRes != 0) {
             binding.imageLeftSwipeIcon.setImageResource(action.iconRes)
             binding.imageLeftSwipeIcon.visibility = View.VISIBLE
@@ -149,7 +150,7 @@ class SwipeGesturesActivity : BaseActivity() {
     
     private fun showSwipeActionDialog(isRightSwipe: Boolean, currentAction: SwipeAction) {
         val dialogBinding = DialogSwipeActionSelectionBinding.inflate(LayoutInflater.from(this))
-        dialogBinding.textDialogTitle.text = if (isRightSwipe) "Right Swipe" else "Left Swipe"
+        dialogBinding.textDialogTitle.text = getString(if (isRightSwipe) R.string.swipe_right else R.string.swipe_left)
         
         val dialog = AlertDialog.Builder(this)
             .setView(dialogBinding.root)
@@ -220,7 +221,7 @@ class SwipeActionAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(action: SwipeGesturesActivity.SwipeAction, isSelected: Boolean) {
-            binding.textActionName.text = action.displayName
+            binding.textActionName.text = binding.root.context.getString(action.displayNameRes)
             binding.radioButton.isChecked = isSelected
             // Prevent radio button from being clickable directly - only the row should be clickable
             binding.radioButton.isClickable = false

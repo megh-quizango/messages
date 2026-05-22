@@ -37,23 +37,26 @@ class CallHistoryAdapter : ListAdapter<CallHistoryItem, CallHistoryAdapter.CallH
             // Set call type text and icon
             when (item.type) {
                 CallLog.Calls.INCOMING_TYPE -> {
-                    textCallType.text = "Incoming"
+                    textCallType.setText(R.string.call_type_incoming)
                     imageCallType.setImageResource(R.drawable.ic_call)
                     imageCallType.rotation = 0f
+                    textCallType.setTextColor(itemView.context.getColor(R.color.black))
                 }
                 CallLog.Calls.OUTGOING_TYPE -> {
-                    textCallType.text = "Outgoing"
+                    textCallType.setText(R.string.call_type_outgoing)
                     imageCallType.setImageResource(R.drawable.ic_call)
                     imageCallType.rotation = 180f
+                    textCallType.setTextColor(itemView.context.getColor(R.color.black))
                 }
                 CallLog.Calls.MISSED_TYPE -> {
-                    textCallType.text = "Missed"
+                    textCallType.setText(R.string.call_type_missed)
                     imageCallType.setImageResource(R.drawable.ic_call)
                     imageCallType.rotation = 0f
                     textCallType.setTextColor(itemView.context.getColor(R.color.holo_pink_dark))
                 }
                 else -> {
-                    textCallType.text = "Unknown"
+                    textCallType.setText(R.string.call_type_unknown)
+                    textCallType.setTextColor(itemView.context.getColor(R.color.black))
                 }
             }
 
@@ -80,11 +83,11 @@ class CallHistoryAdapter : ListAdapter<CallHistoryItem, CallHistoryAdapter.CallH
             return when {
                 isSameDay(calendar, today) -> {
                     val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
-                    "Today, ${timeFormat.format(date)}"
+                    itemView.context.getString(R.string.call_history_today_time, timeFormat.format(date))
                 }
                 isSameDay(calendar, yesterday) -> {
                     val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
-                    "Yesterday, ${timeFormat.format(date)}"
+                    itemView.context.getString(R.string.call_history_yesterday_time, timeFormat.format(date))
                 }
                 calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) -> {
                     val dateFormat = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())

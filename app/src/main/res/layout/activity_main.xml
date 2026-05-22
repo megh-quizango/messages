@@ -40,7 +40,7 @@
             android:layout_marginStart="12dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
-            android:hint="Search Messages"
+            android:hint="@string/gen_activity_main_hint_1"
             android:textColorHint="#9696A3"
             android:textColor="@color/black"
             android:textSize="14sp"
@@ -58,7 +58,7 @@
             android:layout_marginStart="12dp"
             android:src="@android:drawable/ic_menu_more"
             android:tint="@color/black"
-            android:contentDescription="More options"
+            android:contentDescription="@string/gen_activity_main_content_description_2"
             android:clickable="true"
             android:focusable="true"/>
 
@@ -95,7 +95,7 @@
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                android:text="All"
+                android:text="@string/gen_activity_main_text_3"
                 android:textColor="@color/white"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -110,7 +110,7 @@
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                android:text="Personal"
+                android:text="@string/gen_activity_main_text_4"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:background="@drawable/bg_tab_unselected"/>
@@ -124,7 +124,7 @@
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                android:text="OTPs"
+                android:text="@string/gen_activity_main_text_5"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:background="@drawable/bg_tab_unselected"/>
@@ -138,7 +138,7 @@
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                android:text="Offers"
+                android:text="@string/gen_activity_main_text_6"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:background="@drawable/bg_tab_unselected"/>
@@ -152,7 +152,7 @@
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                android:text="Transactions"
+                android:text="@string/gen_activity_main_text_7"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:background="@drawable/bg_tab_unselected"/>
@@ -172,7 +172,7 @@
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                android:text="+"
+                android:text="@string/gen_activity_main_text_8"
                 android:textColor="@color/black"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -225,14 +225,14 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:src="@drawable/feedback"
-            android:contentDescription="Empty state icon"
+            android:contentDescription="@string/gen_activity_main_content_description_9"
             android:layout_marginBottom="16dp"/>
 
         <TextView
             android:id="@+id/textEmptyState"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Message list empty"
+            android:text="@string/gen_activity_main_text_10"
             android:textSize="16sp"
             android:textColor="#9696A3"
             android:gravity="center"/>
@@ -278,7 +278,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_placeholder"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -289,7 +288,7 @@
         android:id="@+id/fabStartChat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Chat"
+        android:text="@string/gen_activity_main_text_11"
         android:textColor="@color/white"
         android:backgroundTint="#0C56CF"
         app:icon="@drawable/start"
@@ -301,4 +300,7 @@
         android:layout_marginBottom="12dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 

@@ -14,7 +14,7 @@
         android:id="@+id/textResponse"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Quick response text"
+        android:text="@string/gen_item_quick_response_text_1"
         android:textColor="@color/black"
         android:textSize="14sp"
         android:layout_marginEnd="12dp"
@@ -35,3 +35,6 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

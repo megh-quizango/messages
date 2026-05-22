@@ -11,7 +11,7 @@
         android:id="@+id/textTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Notification Previews"
+        android:text="@string/gen_dialog_notification_preview_text_1"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Show name and message"
+        android:text="@string/gen_dialog_notification_preview_text_2"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:buttonTint="#0C56CF"
@@ -39,7 +39,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Show Name"
+        android:text="@string/gen_dialog_notification_preview_text_3"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:buttonTint="#0C56CF"
@@ -54,7 +54,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Hide contents"
+        android:text="@string/gen_dialog_notification_preview_text_4"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:buttonTint="#0C56CF"
@@ -64,4 +64,5 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

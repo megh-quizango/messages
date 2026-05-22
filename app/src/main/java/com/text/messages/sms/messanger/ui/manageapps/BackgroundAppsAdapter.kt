@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ItemBackgroundAppBinding
 
 class BackgroundAppsAdapter(
@@ -50,11 +51,11 @@ class BackgroundAppsAdapter(
             }
             
             if (app.isStopped) {
-                binding.buttonStop.text = "Stopped"
+                binding.buttonStop.setText(R.string.manage_apps_stopped)
                 binding.buttonStop.isEnabled = false
                 binding.buttonStop.alpha = 0.6f
             } else {
-                binding.buttonStop.text = "Stop"
+                binding.buttonStop.setText(R.string.manage_apps_stop)
                 binding.buttonStop.isEnabled = true
                 binding.buttonStop.alpha = 1.0f
             }

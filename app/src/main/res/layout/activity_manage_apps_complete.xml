@@ -34,7 +34,7 @@
                 android:layout_height="48dp"
                 android:background="@drawable/bg_back_button"
                 android:src="@drawable/ic_arrow_back"
-                android:contentDescription="Back"
+                android:contentDescription="@string/gen_activity_manage_apps_complete_content_description_1"
                 android:scaleType="centerInside"
                 android:padding="12dp"/>
 
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="16dp"
-                android:text="Manage Apps"
+                android:text="@string/gen_activity_manage_apps_complete_text_2"
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"/>
@@ -57,7 +57,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
-            android:text="Stopped 0 apps running in the background"
+            android:text="@string/gen_activity_manage_apps_complete_text_3"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"/>
@@ -78,4 +78,7 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 

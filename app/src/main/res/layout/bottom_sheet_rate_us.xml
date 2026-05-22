@@ -12,7 +12,7 @@
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:src="@drawable/rate_us_a"
-        android:contentDescription="Rate Us"
+        android:contentDescription="@string/gen_bottom_sheet_rate_us_content_description_1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Thank you for your support!"
+        android:text="@string/gen_bottom_sheet_rate_us_text_2"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -37,7 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Your satisfaction makes all of our effort worthwhile:)"
+        android:text="@string/gen_bottom_sheet_rate_us_text_3"
         android:textColor="@color/gray_dark"
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/textThankYou"
@@ -64,7 +64,7 @@
             android:src="@drawable/ic_star_outline"
             android:background="@drawable/bg_star_container"
             android:padding="8dp"
-            android:contentDescription="Star 1"
+            android:contentDescription="@string/gen_bottom_sheet_rate_us_content_description_4"
             android:clickable="true"
             android:focusable="true"/>
 
@@ -76,7 +76,7 @@
             android:src="@drawable/ic_star_outline"
             android:background="@drawable/bg_star_container"
             android:padding="8dp"
-            android:contentDescription="Star 2"
+            android:contentDescription="@string/gen_bottom_sheet_rate_us_content_description_5"
             android:clickable="true"
             android:focusable="true"/>
 
@@ -88,7 +88,7 @@
             android:src="@drawable/ic_star_outline"
             android:background="@drawable/bg_star_container"
             android:padding="8dp"
-            android:contentDescription="Star 3"
+            android:contentDescription="@string/gen_bottom_sheet_rate_us_content_description_6"
             android:clickable="true"
             android:focusable="true"/>
 
@@ -100,7 +100,7 @@
             android:src="@drawable/ic_star_outline"
             android:background="@drawable/bg_star_container"
             android:padding="8dp"
-            android:contentDescription="Star 4"
+            android:contentDescription="@string/gen_bottom_sheet_rate_us_content_description_7"
             android:clickable="true"
             android:focusable="true"/>
 
@@ -111,7 +111,7 @@
             android:src="@drawable/ic_star_outline"
             android:background="@drawable/bg_star_container"
             android:padding="8dp"
-            android:contentDescription="Star 5"
+            android:contentDescription="@string/gen_bottom_sheet_rate_us_content_description_8"
             android:clickable="true"
             android:focusable="true"/>
 
@@ -123,7 +123,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Rate Us"
+        android:text="@string/gen_bottom_sheet_rate_us_text_9"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -136,4 +136,7 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 

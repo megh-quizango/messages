@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Filter By Time"
+        android:text="@string/gen_bottom_sheet_filter_time_text_1"
         android:textSize="18sp"
         android:textStyle="normal"
         android:textColor="@color/gray_dark"
@@ -37,7 +37,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Default"
+                android:text="@string/gen_bottom_sheet_filter_time_text_2"
                 android:textSize="16sp"
                 android:textColor="#0C56CF"/>
         </LinearLayout>
@@ -63,7 +63,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Today"
+                android:text="@string/gen_bottom_sheet_filter_time_text_3"
                 android:textSize="16sp"
                 android:textColor="@color/gray_dark"/>
         </LinearLayout>
@@ -89,7 +89,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Month"
+                android:text="@string/gen_bottom_sheet_filter_time_text_4"
                 android:textSize="16sp"
                 android:textColor="@color/gray_dark"/>
         </LinearLayout>
@@ -115,7 +115,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Year"
+                android:text="@string/gen_bottom_sheet_filter_time_text_5"
                 android:textSize="16sp"
                 android:textColor="@color/gray_dark"/>
         </LinearLayout>
@@ -141,7 +141,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Custom"
+                android:text="@string/gen_bottom_sheet_filter_time_text_6"
                 android:textSize="16sp"
                 android:textColor="@color/gray_dark"/>
         </LinearLayout>
@@ -159,7 +159,7 @@
             android:id="@+id/textViewReset"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RESET"
+            android:text="@string/gen_bottom_sheet_filter_time_text_7"
             android:textSize="14sp"
             android:textColor="#0C56CF"
             android:textStyle="bold"
@@ -175,7 +175,7 @@
             android:id="@+id/textViewOk"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="OK"
+            android:text="@string/gen_bottom_sheet_filter_time_text_8"
             android:textSize="14sp"
             android:textColor="@color/white"
             android:textStyle="bold"
@@ -191,3 +191,4 @@
     </LinearLayout>
 
 </LinearLayout>
+

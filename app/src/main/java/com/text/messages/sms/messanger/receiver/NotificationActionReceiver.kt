@@ -23,6 +23,7 @@ import com.text.messages.sms.messanger.data.model.MessageType
 import com.text.messages.sms.messanger.ui.main.DeletedConversationData
 import com.text.messages.sms.messanger.ui.notifications.ButtonAction
 import com.text.messages.sms.messanger.util.ConversationStorageParser
+import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.MessagingAddressUtils
 import com.text.messages.sms.messanger.util.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
@@ -103,7 +104,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 if (isOTPMessage(messageBody)) {
                     handleCopyOTP(context, messageBody)
                 } else {
-                    Toast.makeText(context, "This message does not contain an OTP", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.this_message_does_not_contain_otp), Toast.LENGTH_SHORT).show()
                 }
             }
             ButtonAction.NONE -> {}
@@ -272,16 +273,20 @@ class NotificationActionReceiver : BroadcastReceiver() {
                         Log.d(TAG, "Dial activity started for: $cleanAddress")
                     } else {
                         Log.e(TAG, "No activity found to handle ACTION_DIAL")
-                        android.widget.Toast.makeText(context, "No dialer app found", android.widget.Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.no_dialer_app_found), android.widget.Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: android.content.ActivityNotFoundException) {
                     Log.e(TAG, "ActivityNotFoundException - no app to handle dial", e)
                     e.printStackTrace()
-                    android.widget.Toast.makeText(context, "No dialer app found", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.no_dialer_app_found), android.widget.Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in handleCall on main thread", e)
                     e.printStackTrace()
-                    android.widget.Toast.makeText(context, "Unable to open dialer: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(
+                        context,
+                        LocaleHelper.getLocalizedString(context, R.string.unable_to_open_dialer_reason, e.message ?: LocaleHelper.getLocalizedString(context, R.string.settings_unknown_error)),
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         } catch (e: SecurityException) {
@@ -299,16 +304,20 @@ class NotificationActionReceiver : BroadcastReceiver() {
             } catch (e2: Exception) {
                 Log.e(TAG, "Error opening dialer", e2)
                 e2.printStackTrace()
-                Toast.makeText(context, "Unable to make call", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.unable_to_make_call), Toast.LENGTH_SHORT).show()
             }
         } catch (e: android.content.ActivityNotFoundException) {
             Log.e(TAG, "ActivityNotFoundException - no app to handle call", e)
             e.printStackTrace()
-            Toast.makeText(context, "No app found to make calls", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.no_app_found_to_make_calls), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e(TAG, "Error making call", e)
             e.printStackTrace()
-            Toast.makeText(context, "Unable to make call: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                LocaleHelper.getLocalizedString(context, R.string.unable_to_make_call_reason, e.message ?: LocaleHelper.getLocalizedString(context, R.string.settings_unknown_error)),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
     
@@ -362,7 +371,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
         } catch (e: Exception) {
             Log.e(TAG, "Error opening reply", e)
             e.printStackTrace()
-            Toast.makeText(context, "Unable to open conversation", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.unable_to_open_conversation), Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -496,7 +505,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 
                 // Show toast to confirm message was sent
                 android.os.Handler(android.os.Looper.getMainLooper()).post {
-                    Toast.makeText(context, "Message sent", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.sms_sent_success), Toast.LENGTH_SHORT).show()
                 }
                 
                 // Cancel notification after sending
@@ -505,7 +514,11 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 Log.e(TAG, "Error sending inline reply", e)
                 e.printStackTrace()
                 android.os.Handler(android.os.Looper.getMainLooper()).post {
-                    Toast.makeText(context, "Failed to send message: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        LocaleHelper.getLocalizedString(context, R.string.failed_to_send_message_reason, e.message ?: LocaleHelper.getLocalizedString(context, R.string.settings_unknown_error)),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -519,14 +532,14 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("OTP", otp)
                 clipboard.setPrimaryClip(clip)
-                Toast.makeText(context, "OTP copied: $otp", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.otp_copied, otp), Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "OTP copied: $otp")
             } else {
-                Toast.makeText(context, "No OTP found in message", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.no_otp_found_in_message), Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error copying OTP", e)
-            Toast.makeText(context, "Error copying OTP", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.error_copying_otp), Toast.LENGTH_SHORT).show()
         }
     }
     

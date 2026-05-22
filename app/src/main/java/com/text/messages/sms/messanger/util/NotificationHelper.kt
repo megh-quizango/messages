@@ -41,7 +41,6 @@ object NotificationHelper {
     
     private const val TAG = "NotificationHelper"
     private const val CHANNEL_ID = "sms_notifications"
-    private const val CHANNEL_NAME = "SMS Notifications"
     private const val PREFS_NAME = "notifications_settings"
     private const val RINGTONE_PREFS_NAME = "ringtone_settings"
     
@@ -60,10 +59,10 @@ object NotificationHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                CHANNEL_NAME,
+                context.getString(R.string.notification_channel_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Notifications for incoming SMS messages"
+                description = context.getString(R.string.notification_channel_description)
                 enableLights(true)
                 enableVibration(true)
                 setShowBadge(true)
@@ -294,9 +293,9 @@ object NotificationHelper {
                         return@forEachIndexed
                     }
 
-                    val replyLabel = "Reply"
+                    val replyLabel = context.getString(R.string.notification_reply_label)
                     val remoteInput = RemoteInput.Builder("reply_text")
-                        .setLabel("Type a reply...")
+                        .setLabel(context.getString(R.string.notification_reply_hint))
                         .build()
                     
                     val replyIntent = Intent(context, NotificationActionReceiver::class.java).apply {
@@ -361,7 +360,7 @@ object NotificationHelper {
                     }
                     
                     val iconRes = getActionIcon(action)
-                    val actionTitle = action.displayName
+                    val actionTitle = context.getString(action.displayNameRes)
                     
                     builder.addAction(iconRes, actionTitle, actionPendingIntent)
                     Log.d(TAG, "Added COPY_OTP action for OTP: $otp")
@@ -393,7 +392,7 @@ object NotificationHelper {
                     }
                     
                     val iconRes = getActionIcon(action)
-                    val actionTitle = action.displayName
+                    val actionTitle = context.getString(action.displayNameRes)
                     
                     builder.addAction(iconRes, actionTitle, actionPendingIntent)
                     Log.d(TAG, "Added standard action: $actionTitle")

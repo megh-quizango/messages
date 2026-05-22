@@ -38,7 +38,11 @@ class ManageAppsCompleteActivity : BaseActivity() {
         }
 
         val stoppedCount = intent.getIntExtra("stopped_count", 0)
-        binding.textStoppedApps.text = "Stopped $stoppedCount apps running in the background"
+        binding.textStoppedApps.text = resources.getQuantityString(
+            R.plurals.manage_apps_stopped_apps_summary,
+            stoppedCount,
+            stoppedCount
+        )
 
         setupBackButton()
         initializeNativeAdView()

@@ -11,7 +11,7 @@
         android:id="@+id/radioNoDelay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No delay"
+        android:text="@string/gen_dialog_delay_selection_text_1"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:buttonTint="#0C56CF"
@@ -26,7 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="3 seconds"
+        android:text="@string/gen_dialog_delay_selection_text_2"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:buttonTint="#0C56CF"
@@ -41,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="5 seconds"
+        android:text="@string/gen_dialog_delay_selection_text_3"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:buttonTint="#0C56CF"
@@ -51,4 +51,5 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

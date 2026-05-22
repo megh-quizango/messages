@@ -209,17 +209,7 @@ class EditQuickResponseActivity : BaseActivity() {
     }
     
     private fun getDefaultQuickMessages(): List<String> {
-        return listOf(
-            "What's up?",
-            "I'll be running a bit late, but I'll be there soon",
-            "Where is the meeting taking place?",
-            "Where are you?",
-            "How are things?",
-            "Please give me a call after receiving this message.",
-            "When are we meeting?",
-            "I'll let you know a bit.",
-            "No problem. I missed your call."
-        )
+        return resources.getStringArray(R.array.default_quick_messages).toList()
     }
 }
 

@@ -116,7 +116,7 @@ class MainActivity : BaseActivity() {
             // Permission denied
             Toast.makeText(
                 this,
-                "SMS permission is required to display messages",
+                getString(R.string.sms_permission_required_display_messages),
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -134,12 +134,12 @@ class MainActivity : BaseActivity() {
             if (dialIntent.resolveActivity(packageManager) != null) {
                 startActivity(dialIntent)
             } else {
-                Toast.makeText(this, "No app found to make calls", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.no_app_found_to_make_calls), Toast.LENGTH_SHORT).show()
             }
         } else if (!isGranted) {
             Toast.makeText(
                 this,
-                "Phone permission is required to make calls",
+                getString(R.string.phone_permission_required_to_make_calls),
                 Toast.LENGTH_SHORT
             ).show()
             pendingPhoneCall = null
@@ -903,7 +903,7 @@ class MainActivity : BaseActivity() {
         buttonOk.setOnClickListener {
             val filterName = editTextFilterName.text.toString().trim()
             if (filterName.isEmpty()) {
-                Toast.makeText(this, "Please enter a filter name", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.main_please_enter_filter_name), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             
@@ -1287,7 +1287,7 @@ class MainActivity : BaseActivity() {
                             applyCustomDateRange(startTime, endTime)
                             bottomSheetDialog.dismiss()
                         } else {
-                            Toast.makeText(this, "End date must be after start date", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, getString(R.string.main_end_date_after_start), Toast.LENGTH_SHORT).show()
                         }
                     },
                     calendar.get(java.util.Calendar.YEAR),
@@ -1821,15 +1821,15 @@ class MainActivity : BaseActivity() {
                     updateEmptyState(currentList.isEmpty())
                 }
                 
-                Toast.makeText(this, "Conversation blocked", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.main_conversation_blocked), Toast.LENGTH_SHORT).show()
             } else {
                 // If position is invalid, refresh the list (which will filter out blocked items)
                 loadConversationsForCurrentTab(showLoading = false, useCache = currentTimeFilter == null, forceRefresh = true)
-                Toast.makeText(this, "Conversation blocked", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.main_conversation_blocked), Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(this, "Failed to block conversation", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.main_failed_block_conversation), Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -1841,7 +1841,7 @@ class MainActivity : BaseActivity() {
             if (dialIntent.resolveActivity(packageManager) != null) {
                 startActivity(dialIntent)
             } else {
-                Toast.makeText(this, "No app found to make calls", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.no_app_found_to_make_calls), Toast.LENGTH_SHORT).show()
             }
         } else {
             pendingPhoneCall = phoneNumber

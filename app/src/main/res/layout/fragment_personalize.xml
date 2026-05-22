@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="Personalize"
+        android:text="@string/gen_fragment_personalize_text_1"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -63,7 +63,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Theme"
+                        android:text="@string/gen_fragment_personalize_text_2"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -72,7 +72,7 @@
                         android:id="@+id/textThemeMore"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="More"
+                        android:text="@string/gen_fragment_personalize_text_3"
                         android:textColor="@color/black"
                         android:textSize="14sp" />
                 </LinearLayout>
@@ -90,7 +90,7 @@
                         android:layout_margin="4dp"
                         android:src="@drawable/ts1"
                         android:scaleType="centerCrop"
-                        android:contentDescription="Theme 1" />
+                        android:contentDescription="@string/gen_fragment_personalize_content_description_4" />
 
                     <ImageView
                         android:id="@+id/imageTheme2"
@@ -100,7 +100,7 @@
                         android:layout_margin="4dp"
                         android:src="@drawable/ts2"
                         android:scaleType="centerCrop"
-                        android:contentDescription="Theme 2" />
+                        android:contentDescription="@string/gen_fragment_personalize_content_description_5" />
 
                     <ImageView
                         android:id="@+id/imageTheme3"
@@ -110,7 +110,7 @@
                         android:layout_margin="4dp"
                         android:src="@drawable/ts3"
                         android:scaleType="centerCrop"
-                        android:contentDescription="Theme 3" />
+                        android:contentDescription="@string/gen_fragment_personalize_content_description_6" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -137,7 +137,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Font &amp; Size"
+                        android:text="@string/gen_fragment_personalize_text_7"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -146,7 +146,7 @@
                         android:id="@+id/textFontMore"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="More"
+                        android:text="@string/gen_fragment_personalize_text_8"
                         android:textColor="@color/black"
                         android:textSize="14sp" />
                 </LinearLayout>
@@ -176,7 +176,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_alignParentStart="true"
                                 android:layout_alignParentTop="true"
-                                android:text="aAbBcCdD\nMessage"
+                                android:text="@string/gen_fragment_personalize_text_9"
                                 android:textColor="@color/white"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
@@ -188,7 +188,7 @@
                                 android:layout_alignParentBottom="true"
                                 android:src="@drawable/fs1"
                                 android:scaleType="fitCenter"
-                                android:contentDescription="Font style 1" />
+                                android:contentDescription="@string/gen_fragment_personalize_content_description_10" />
                         </RelativeLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -212,7 +212,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_alignParentStart="true"
                                 android:layout_alignParentTop="true"
-                                android:text="aAbBcCdD\nMessage"
+                                android:text="@string/gen_fragment_personalize_text_11"
                                 android:textColor="@color/white"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
@@ -224,7 +224,7 @@
                                 android:layout_alignParentBottom="true"
                                 android:src="@drawable/fs2"
                                 android:scaleType="fitCenter"
-                                android:contentDescription="Font style 2" />
+                                android:contentDescription="@string/gen_fragment_personalize_content_description_12" />
                         </RelativeLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
@@ -253,7 +253,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Bubble"
+                        android:text="@string/gen_fragment_personalize_text_13"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -262,7 +262,7 @@
                         android:id="@+id/textBubbleMore"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="More"
+                        android:text="@string/gen_fragment_personalize_text_14"
                         android:textColor="@color/black"
                         android:textSize="14sp" />
                 </LinearLayout>
@@ -508,7 +508,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Ringtone"
+                        android:text="@string/gen_fragment_personalize_text_15"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -517,7 +517,7 @@
                         android:id="@+id/textRingtoneMore"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="More"
+                        android:text="@string/gen_fragment_personalize_text_16"
                         android:textColor="@color/black"
                         android:textSize="14sp" />
                 </LinearLayout>
@@ -549,7 +549,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_alignParentStart="true"
                                 android:layout_centerVertical="true"
-                                android:text="Bling"
+                                android:text="@string/gen_fragment_personalize_text_17"
                                 android:textColor="@color/white"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -560,7 +560,7 @@
                                 android:layout_alignParentEnd="true"
                                 android:layout_centerVertical="true"
                                 android:src="@drawable/flower"
-                                android:contentDescription="Flower icon" />
+                                android:contentDescription="@string/gen_fragment_personalize_content_description_18" />
                         </RelativeLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -579,7 +579,7 @@
                             android:layout_height="match_parent"
                             android:gravity="center_vertical|start"
                             android:padding="16dp"
-                            android:text="Android"
+                            android:text="@string/gen_fragment_personalize_text_19"
                             android:textColor="@color/white"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -600,7 +600,7 @@
                             android:layout_height="match_parent"
                             android:gravity="center_vertical|start"
                             android:padding="16dp"
-                            android:text="Instruments"
+                            android:text="@string/gen_fragment_personalize_text_20"
                             android:textColor="@color/white"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -621,7 +621,7 @@
                             android:layout_height="match_parent"
                             android:gravity="center_vertical|start"
                             android:padding="16dp"
-                            android:text="Wind Chimes"
+                            android:text="@string/gen_fragment_personalize_text_21"
                             android:textColor="@color/white"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -633,3 +633,6 @@
     </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

@@ -10,7 +10,7 @@
         android:id="@+id/textTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Blacklist Contacts"
+        android:text="@string/gen_dialog_add_blacklist_contacts_text_1"
         android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -31,7 +31,7 @@
             android:id="@+id/optionConversationList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="From Conversation List"
+            android:text="@string/gen_dialog_add_blacklist_contacts_text_2"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:padding="16dp"
@@ -43,7 +43,7 @@
             android:id="@+id/optionContactsList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="From Contacts List"
+            android:text="@string/gen_dialog_add_blacklist_contacts_text_3"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:padding="16dp"
@@ -55,7 +55,7 @@
             android:id="@+id/optionAddPhoneNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Phone Number"
+            android:text="@string/gen_dialog_add_blacklist_contacts_text_4"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:padding="16dp"
@@ -70,7 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Cancel"
+        android:text="@string/gen_dialog_add_blacklist_contacts_text_5"
         android:textColor="@color/gray_dark"
         android:textSize="16sp"
         android:padding="8dp"
@@ -80,4 +80,5 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

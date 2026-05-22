@@ -324,7 +324,7 @@ class CustomBlockingActivity : BaseActivity() {
                 updateKeywordsUI()
                 dialog.dismiss()
             } else {
-                Toast.makeText(this, "Please enter a keyword", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.custom_blocking_enter_keyword, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -356,7 +356,7 @@ class CustomBlockingActivity : BaseActivity() {
                 updateContactsUI()
                 dialog.dismiss()
             } else {
-                Toast.makeText(this, "Please enter a phone number", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.custom_blocking_enter_phone_number, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -413,7 +413,7 @@ class CustomBlockingActivity : BaseActivity() {
     private fun showUnblockKeywordDialog(keyword: String) {
         val dialogBinding = DialogUnblockConfirmationBinding.inflate(LayoutInflater.from(this))
         dialogBinding.textTitle.text = keyword
-        dialogBinding.textMessage.text = "Do you want to unblock this keyword from blacklist?"
+        dialogBinding.textMessage.text = getString(R.string.custom_blocking_unblock_keyword_message)
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogBinding.root)
@@ -439,7 +439,7 @@ class CustomBlockingActivity : BaseActivity() {
     private fun showUnblockContactDialog(contact: BlockedContact) {
         val dialogBinding = DialogUnblockConfirmationBinding.inflate(LayoutInflater.from(this))
         dialogBinding.textTitle.text = contact.name
-        dialogBinding.textMessage.text = "Do you want to unblock this contact from blacklist?"
+        dialogBinding.textMessage.text = getString(R.string.custom_blocking_unblock_contact_message)
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogBinding.root)

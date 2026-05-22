@@ -377,9 +377,9 @@ class MessageAdapter(
                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("OTP", otp)
                 clipboard.setPrimaryClip(clip)
-                Toast.makeText(context, "OTP copied: $otp", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.otp_copied, otp), Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Toast.makeText(context, "Error copying OTP", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.error_copying_otp, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -539,11 +539,11 @@ class MessageAdapter(
             
             // Display contact info
             if (contactName.isNotEmpty() || contactNumber.isNotEmpty()) {
-                textContactName?.text = contactName.ifEmpty { "Contact" }
+                textContactName?.text = contactName.ifEmpty { context.getString(R.string.conversation_detail_default_contact) }
                 textContactNumber?.text = contactNumber
             } else {
                 // Fallback: show generic contact card
-                textContactName?.text = "Contact card"
+                textContactName?.text = context.getString(R.string.conversation_detail_contact_card)
                 textContactNumber?.text = ""
             }
         }
@@ -562,8 +562,8 @@ class MessageAdapter(
             val messageDate = Calendar.getInstance().apply { timeInMillis = timestamp }
 
             return when {
-                isSameDay(messageDate, today) -> "Today"
-                isSameDay(messageDate, today.apply { add(Calendar.DAY_OF_YEAR, -1) }) -> "Yesterday"
+                isSameDay(messageDate, today) -> itemView.context.getString(R.string.message_date_today)
+                isSameDay(messageDate, today.apply { add(Calendar.DAY_OF_YEAR, -1) }) -> itemView.context.getString(R.string.message_date_yesterday)
                 messageDate.get(Calendar.YEAR) == today.get(Calendar.YEAR) -> {
                     val dateFormat = SimpleDateFormat("MMMM dd", Locale.getDefault())
                     dateFormat.format(messageDate.time)

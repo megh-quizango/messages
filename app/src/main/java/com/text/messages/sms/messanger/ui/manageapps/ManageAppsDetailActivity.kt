@@ -60,7 +60,7 @@ class ManageAppsDetailActivity : BaseActivity() {
 
         // Get RAM used percentage from intent
         val ramUsedPercentage = intent.getIntExtra("ram_used_percentage", 56)
-        binding.textRamUsed.text = "$ramUsedPercentage% Used"
+        binding.textRamUsed.text = getString(R.string.manage_apps_ram_used_format, ramUsedPercentage)
 
         setupBackButton()
         setupRecyclerView()
@@ -123,7 +123,7 @@ class ManageAppsDetailActivity : BaseActivity() {
                 binding.progressIndicator.visibility = View.GONE
                 binding.recyclerViewApps.visibility = View.VISIBLE
                 
-                binding.textAppsTotal.text = "Total: ${apps.size}"
+                binding.textAppsTotal.text = getString(R.string.manage_apps_total_apps_format, apps.size)
                 adapter.submitList(backgroundApps.map { 
                     it.copy(isStopped = stoppedApps.contains(it.packageName))
                 })

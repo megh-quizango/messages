@@ -40,14 +40,14 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:src="@drawable/ic_camera"
-                    android:contentDescription="Camera"
+                    android:contentDescription="@string/gen_bottom_sheet_attachments_content_description_1"
                     android:tint="#4CAF50"/>
                 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Camera"
+                    android:text="@string/gen_bottom_sheet_attachments_text_2"
                     android:textColor="@color/black"
                     android:textSize="12sp"/>
             </LinearLayout>
@@ -69,14 +69,14 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:src="@drawable/ic_gallery"
-                    android:contentDescription="Gallery"
+                    android:contentDescription="@string/gen_bottom_sheet_attachments_content_description_3"
                     android:tint="#FF9800"/>
                 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Gallery"
+                    android:text="@string/gen_bottom_sheet_attachments_text_4"
                     android:textColor="@color/black"
                     android:textSize="12sp"/>
             </LinearLayout>
@@ -98,14 +98,14 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:src="@drawable/schedule"
-                    android:contentDescription="Scheduled"
+                    android:contentDescription="@string/gen_bottom_sheet_attachments_content_description_5"
                     android:tint="#2196F3"/>
                 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Scheduled"
+                    android:text="@string/gen_bottom_sheet_attachments_text_6"
                     android:textColor="@color/black"
                     android:textSize="12sp"/>
             </LinearLayout>
@@ -127,14 +127,14 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:src="@drawable/contacts"
-                    android:contentDescription="Contacts"
+                    android:contentDescription="@string/gen_bottom_sheet_attachments_content_description_7"
                     android:tint="#9C27B0"/>
                 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Contacts"
+                    android:text="@string/gen_bottom_sheet_attachments_text_8"
                     android:textColor="@color/black"
                     android:textSize="12sp"/>
             </LinearLayout>
@@ -165,14 +165,14 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:src="@drawable/ic_note"
-                    android:contentDescription="Quick Note"
+                    android:contentDescription="@string/gen_bottom_sheet_attachments_content_description_9"
                     android:tint="#4CAF50"/>
                 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Quick"
+                    android:text="@string/gen_bottom_sheet_attachments_text_10"
                     android:textColor="@color/black"
                     android:textSize="12sp"/>
             </LinearLayout>
@@ -182,3 +182,6 @@
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

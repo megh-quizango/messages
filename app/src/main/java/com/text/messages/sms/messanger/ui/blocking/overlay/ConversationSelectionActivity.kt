@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityConversationSelectionBinding
 import com.text.messages.sms.messanger.ui.blocking.CustomBlockingActivity
 import com.text.messages.sms.messanger.ui.main.MainViewModel
@@ -33,7 +34,7 @@ class ConversationSelectionActivity : BaseActivity() {
         } else {
             Toast.makeText(
                 this,
-                "SMS permission is required",
+                getString(R.string.sms_permission_required),
                 Toast.LENGTH_LONG
             ).show()
         }

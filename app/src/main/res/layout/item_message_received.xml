@@ -54,7 +54,7 @@
                     android:layout_height="200dp"
                     android:scaleType="centerCrop"
                     android:visibility="gone"
-                    android:contentDescription="Image attachment" />
+                    android:contentDescription="@string/gen_item_message_received_content_description_1" />
                 
                 <!-- Failed Status Indicator - positioned on image -->
                 <ImageView
@@ -66,7 +66,7 @@
                     android:src="@drawable/ic_error"
                     android:background="@drawable/bg_error_badge"
                     android:visibility="gone"
-                    android:contentDescription="Failed" />
+                    android:contentDescription="@string/gen_item_message_received_content_description_2" />
             </FrameLayout>
             
             <!-- Time for Image Attachment -->
@@ -147,7 +147,7 @@
                     android:src="@drawable/ic_error"
                     android:background="@drawable/bg_error_badge"
                     android:visibility="gone"
-                    android:contentDescription="Failed" />
+                    android:contentDescription="@string/gen_item_message_received_content_description_3" />
             </FrameLayout>
             
             <!-- Time for Contact Card Attachment -->
@@ -217,7 +217,7 @@
                     android:src="@drawable/ic_error"
                     android:background="@drawable/bg_error_badge"
                     android:visibility="gone"
-                    android:contentDescription="Failed" />
+                    android:contentDescription="@string/gen_item_message_received_content_description_4" />
 
                 <ImageView
                     android:id="@+id/imageStarBadge"
@@ -242,3 +242,6 @@
 <!--        app:layout_constraintWidth_percent="0.2"/>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

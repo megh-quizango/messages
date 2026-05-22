@@ -14,7 +14,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/bg_back_button"
         android:src="@drawable/ic_arrow_back"
-        android:contentDescription="Back"
+        android:contentDescription="@string/gen_activity_edit_quick_response_content_description_1"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
-        android:text="Messages"
+        android:text="@string/gen_activity_edit_quick_response_text_2"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -42,7 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:text="Delete"
+        android:text="@string/gen_activity_edit_quick_response_text_3"
         android:textColor="#0C56CF"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -86,7 +86,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
-            android:text="Delete"
+            android:text="@string/gen_activity_edit_quick_response_text_4"
             android:textColor="@color/white"
             android:backgroundTint="#0C56CF"
             app:cornerRadius="8dp"/>
@@ -97,7 +97,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="Cancel"
+            android:text="@string/gen_activity_edit_quick_response_text_5"
             android:textColor="@color/black"
             android:backgroundTint="@color/white"
             app:strokeColor="@color/black"
@@ -114,11 +114,14 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:src="@drawable/ic_add"
-        android:contentDescription="Add Message"
+        android:contentDescription="@string/gen_activity_edit_quick_response_content_description_6"
         app:tint="@color/white"
         app:backgroundTint="#0C56CF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 

@@ -13,10 +13,11 @@
         android:id="@+id/textHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Section Title"
+        android:text="@string/gen_item_settings_header_text_1"
         android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
 </LinearLayout>
+

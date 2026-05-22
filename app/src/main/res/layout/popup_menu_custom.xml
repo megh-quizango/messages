@@ -22,7 +22,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_filter_time"
-            android:contentDescription="Filter By Time"
+            android:contentDescription="@string/gen_popup_menu_custom_content_description_1"
             android:tint="@color/gray_dark"/>
         
         <TextView
@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="12dp"
-            android:text="Filter By Time"
+            android:text="@string/gen_popup_menu_custom_text_2"
             android:textSize="16sp"
             android:textColor="@color/gray_dark"/>
     </LinearLayout>
@@ -50,7 +50,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_mark_as_read"
-            android:contentDescription="Mark All Read"
+            android:contentDescription="@string/gen_popup_menu_custom_content_description_3"
             android:tint="@color/gray_dark"/>
         
         <TextView
@@ -58,10 +58,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="12dp"
-            android:text="Mark All Read"
+            android:text="@string/gen_popup_menu_custom_text_4"
             android:textSize="16sp"
             android:textColor="@color/gray_dark"/>
     </LinearLayout>
 
 </LinearLayout>
+
+
+
 

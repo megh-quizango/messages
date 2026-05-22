@@ -15,7 +15,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:src="@drawable/ic_person"
-        android:contentDescription="Contact"
+        android:contentDescription="@string/gen_item_attachment_contact_content_description_1"
         android:background="@drawable/bg_person_icon"
         android:padding="6dp"
         android:scaleType="centerCrop"
@@ -43,7 +43,7 @@
             android:id="@+id/textContactName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Contact Name"
+            android:text="@string/gen_item_attachment_contact_text_2"
             android:textColor="@color/black"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -61,7 +61,7 @@
                 android:id="@+id/textContactNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="+1234567890"
+                android:text="@string/gen_item_attachment_contact_text_3"
                 android:textColor="@color/gray_dark"
                 android:textSize="12sp"
                 android:maxLines="1"
@@ -72,7 +72,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:text="• Contact card"
+                android:text="@string/gen_item_attachment_contact_text_4"
                 android:textColor="@color/gray_dark"
                 android:textSize="11sp"
                 android:maxLines="1"/>
@@ -88,7 +88,7 @@
         android:layout_height="20dp"
         android:src="@drawable/ic_close"
         android:background="@drawable/bg_circular_remove_badge"
-        android:contentDescription="Remove"
+        android:contentDescription="@string/gen_item_attachment_contact_content_description_5"
         android:scaleType="centerInside"
         android:padding="4dp"
         android:clickable="true"
@@ -97,3 +97,6 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

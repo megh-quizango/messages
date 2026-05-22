@@ -18,7 +18,7 @@
         android:id="@+id/textDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Today"
+        android:text="@string/gen_item_message_date_header_text_1"
         android:textColor="@color/gray_dark"
         android:textSize="12sp"
         android:paddingStart="8dp"
@@ -32,4 +32,5 @@
         android:layout_marginStart="8dp"/>
 
 </LinearLayout>
+
 

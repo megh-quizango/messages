@@ -11,7 +11,7 @@
         android:id="@+id/textHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add message"
+        android:text="@string/gen_dialog_add_message_text_1"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -24,7 +24,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Enter message"
+        android:hint="@string/gen_dialog_add_message_hint_2"
         android:inputType="textMultiLine"
         android:maxLines="3"
         android:minLines="1"
@@ -52,7 +52,7 @@
             android:id="@+id/buttonCancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
+            android:text="@string/gen_dialog_add_message_text_3"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:padding="12dp"
@@ -65,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="OK"
+            android:text="@string/gen_dialog_add_message_text_4"
             android:textColor="#0C56CF"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -77,4 +77,5 @@
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

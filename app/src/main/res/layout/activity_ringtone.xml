@@ -17,7 +17,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/bg_back_button"
         android:src="@drawable/ic_arrow_back"
-        android:contentDescription="Back"
+        android:contentDescription="@string/gen_activity_ringtone_content_description_1"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -30,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Ringtone"
+        android:text="@string/gen_activity_ringtone_text_2"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -98,7 +98,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Sound Off"
+                            android:text="@string/gen_activity_ringtone_text_3"
                             android:textColor="@color/black"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -147,7 +147,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Default"
+                            android:text="@string/gen_activity_ringtone_text_4"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -196,7 +196,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Bling"
+                            android:text="@string/gen_activity_ringtone_text_5"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -245,7 +245,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Android"
+                            android:text="@string/gen_activity_ringtone_text_6"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -294,7 +294,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Whistle"
+                            android:text="@string/gen_activity_ringtone_text_7"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -343,7 +343,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Ting"
+                            android:text="@string/gen_activity_ringtone_text_8"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -392,7 +392,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Alert"
+                            android:text="@string/gen_activity_ringtone_text_9"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -441,7 +441,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Instruments"
+                            android:text="@string/gen_activity_ringtone_text_10"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -490,7 +490,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Soul"
+                            android:text="@string/gen_activity_ringtone_text_11"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -539,7 +539,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Love"
+                            android:text="@string/gen_activity_ringtone_text_12"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -588,7 +588,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Water"
+                            android:text="@string/gen_activity_ringtone_text_13"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -637,7 +637,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Tick"
+                            android:text="@string/gen_activity_ringtone_text_14"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -686,7 +686,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentStart="true"
-                            android:text="Wind Chimes"
+                            android:text="@string/gen_activity_ringtone_text_15"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
@@ -708,4 +708,7 @@
     </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 

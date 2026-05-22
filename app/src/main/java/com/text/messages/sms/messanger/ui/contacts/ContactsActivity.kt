@@ -55,7 +55,7 @@ class ContactsActivity : BaseActivity() {
         } else {
             Toast.makeText(
                 this,
-                "Contacts permission is required to display contacts",
+                getString(R.string.contacts_permission_required_display_contacts),
                 Toast.LENGTH_LONG
             ).show()
         }

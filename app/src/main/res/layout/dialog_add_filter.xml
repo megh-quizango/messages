@@ -10,7 +10,7 @@
         android:id="@+id/textTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Add filter"
+        android:text="@string/gen_dialog_add_filter_text_1"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@color/black"
@@ -23,7 +23,7 @@
         android:id="@+id/editTextFilterName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Filter name"
+        android:hint="@string/gen_dialog_add_filter_hint_2"
         android:textSize="16sp"
         android:textColor="@color/black"
         android:textColorHint="#9696A3"
@@ -50,7 +50,7 @@
             android:id="@+id/buttonCancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
+            android:text="@string/gen_dialog_add_filter_text_3"
             android:textSize="16sp"
             android:textColor="#9696A3"
             android:padding="12dp"
@@ -64,7 +64,7 @@
             android:id="@+id/buttonOk"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="OK"
+            android:text="@string/gen_dialog_add_filter_text_4"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="#0C56CF"
@@ -79,4 +79,5 @@
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

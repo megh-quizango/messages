@@ -28,7 +28,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 class ConversationAdapter(
@@ -349,19 +349,13 @@ class ConversationAdapter(
             val diff = now - timestamp
             
             return when {
-                diff < 60000 -> "Just now"
-                diff < 3600000 -> "${diff / 60000} Min"
+                diff < 60000 -> itemView.context.getString(R.string.conversation_time_just_now)
+                diff < 3600000 -> itemView.context.getString(R.string.conversation_time_minutes_short, diff / 60000)
                 diff < 86400000 -> {
                     val hours = diff / 3600000
-                    if (hours < 24) "${hours}h" else "Yesterday"
+                    itemView.context.getString(R.string.conversation_time_hours_short, hours)
                 }
-                else -> {
-                    val calendar = Calendar.getInstance()
-                    calendar.timeInMillis = timestamp
-                    val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-                    val days = arrayOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-                    days[dayOfWeek - 1]
-                }
+                else -> SimpleDateFormat("EEE", Locale.getDefault()).format(Date(timestamp))
             }
         }
         
@@ -370,9 +364,9 @@ class ConversationAdapter(
                 val clipboard = itemView.context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("OTP", otp)
                 clipboard.setPrimaryClip(clip)
-                Toast.makeText(itemView.context, "OTP copied: $otp", Toast.LENGTH_SHORT).show()
+                Toast.makeText(itemView.context, itemView.context.getString(R.string.otp_copied, otp), Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Toast.makeText(itemView.context, "Error copying OTP", Toast.LENGTH_SHORT).show()
+                Toast.makeText(itemView.context, R.string.error_copying_otp, Toast.LENGTH_SHORT).show()
             }
         }
     }

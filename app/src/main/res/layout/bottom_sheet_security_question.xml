@@ -10,7 +10,7 @@
         android:id="@+id/textTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set Security Question"
+        android:text="@string/gen_bottom_sheet_security_question_text_1"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Help you reset your password when you forget it."
+        android:text="@string/gen_bottom_sheet_security_question_text_2"
         android:textColor="@color/gray_dark"
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/textTitle"
@@ -33,7 +33,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:hint="Select Security Question"
+        android:hint="@string/gen_bottom_sheet_security_question_hint_3"
         app:boxBackgroundMode="filled"
         app:boxBackgroundColor="#E6F0FF"
         app:boxCornerRadiusTopStart="12dp"
@@ -63,7 +63,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Enter the Answer"
+        android:hint="@string/gen_bottom_sheet_security_question_hint_4"
         app:boxBackgroundMode="filled"
         app:boxBackgroundColor="#E6F0FF"
         app:boxCornerRadiusTopStart="12dp"
@@ -91,7 +91,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Save"
+        android:text="@string/gen_bottom_sheet_security_question_text_5"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -108,7 +108,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Cancel"
+        android:text="@string/gen_bottom_sheet_security_question_text_6"
         android:textColor="@color/gray_dark"
         android:textSize="16sp"
         android:clickable="true"
@@ -119,4 +119,5 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

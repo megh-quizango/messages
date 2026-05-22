@@ -17,7 +17,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/bg_back_button"
         android:src="@drawable/ic_arrow_back"
-        android:contentDescription="Back"
+        android:contentDescription="@string/gen_activity_starred_content_description_1"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -30,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Starred"
+        android:text="@string/gen_activity_starred_text_2"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -57,14 +57,14 @@
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:src="@drawable/starred"
-            android:contentDescription="No starred messages"
+            android:contentDescription="@string/gen_activity_starred_content_description_3"
             android:layout_marginBottom="24dp"/>
 
         <TextView
             android:id="@+id/textEmpty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No Starred SMS found yet."
+            android:text="@string/gen_activity_starred_text_4"
             android:textColor="@color/gray_dark"
             android:textSize="16sp"/>
 
@@ -91,11 +91,13 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_placeholder"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 
 

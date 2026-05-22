@@ -15,7 +15,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/bg_back_button"
         android:src="@drawable/ic_arrow_back"
-        android:contentDescription="Back"
+        android:contentDescription="@string/gen_activity_scheduled_messages_content_description_1"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Scheduled"
+        android:text="@string/gen_activity_scheduled_messages_text_2"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -43,7 +43,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:text="Automatically send a message, at the exact moment you'd like"
+        android:text="@string/gen_activity_scheduled_messages_text_3"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:gravity="center"
@@ -75,7 +75,7 @@
             android:paddingEnd="16dp"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:text="Hey! When was your birthday again?"
+            android:text="@string/gen_activity_scheduled_messages_text_4"
             android:textColor="@color/black"
             android:textSize="14sp"
             android:textStyle="italic"
@@ -93,7 +93,7 @@
             android:paddingEnd="16dp"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:text="It's on December 23rd"
+            android:text="@string/gen_activity_scheduled_messages_text_5"
             android:textColor="@color/white"
             android:textSize="14sp"
             android:textStyle="italic"
@@ -110,7 +110,7 @@
             android:paddingEnd="16dp"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:text="Happy birthday! Look at what a great friend I am, remembering your birthday"
+            android:text="@string/gen_activity_scheduled_messages_text_6"
             android:textColor="@color/black"
             android:textSize="14sp"
             android:textStyle="italic"
@@ -126,7 +126,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:text="Sending on December 23rd"
+        android:text="@string/gen_activity_scheduled_messages_text_7"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/layoutChatBubbles"
@@ -140,7 +140,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:src="@drawable/ic_add"
-        android:contentDescription="Add Schedule"
+        android:contentDescription="@string/gen_activity_scheduled_messages_content_description_8"
         app:backgroundTint="#0C56CF"
         app:tint="@color/white"
         app:layout_constraintBottom_toTopOf="@id/adViewBanner"
@@ -152,11 +152,13 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_placeholder"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 
 

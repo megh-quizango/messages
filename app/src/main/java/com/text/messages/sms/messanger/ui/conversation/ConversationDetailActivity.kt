@@ -105,7 +105,7 @@ class ConversationDetailActivity : BaseActivity() {
         } else {
             Toast.makeText(
                 this,
-                "Phone permission is required to make calls",
+                getString(R.string.phone_permission_required_to_make_calls),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -491,7 +491,11 @@ class ConversationDetailActivity : BaseActivity() {
     
     private fun updateSelectionUI() {
         val selectedCount = adapter.getSelectedMessages().size
-        binding.textSelectionCount.text = "$selectedCount selected"
+        binding.textSelectionCount.text = resources.getQuantityString(
+            R.plurals.conversation_detail_selected_messages,
+            selectedCount,
+            selectedCount
+        )
     }
     
     private fun loadStarredMessages() {
@@ -548,7 +552,7 @@ class ConversationDetailActivity : BaseActivity() {
         
         adapter.setStarredMessages(starredMessageIds)
         exitSelectionMode()
-        Toast.makeText(this, "Messages starred", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.conversation_detail_messages_starred), Toast.LENGTH_SHORT).show()
     }
 
     private fun setupTextInput() {
@@ -918,7 +922,7 @@ class ConversationDetailActivity : BaseActivity() {
 
                     // Show scheduled info container and update text
                     binding.layoutScheduledInfo.visibility = View.VISIBLE
-                    binding.textScheduledInfo.text = "Scheduled for $dateStr $timeStr"
+                    binding.textScheduledInfo.text = getString(R.string.conversation_detail_scheduled_for, dateStr, timeStr)
                     binding.buttonCancelScheduled.setOnClickListener {
                         cancelScheduling()
                     }
@@ -951,7 +955,7 @@ class ConversationDetailActivity : BaseActivity() {
 
                     val scheduleTime = calendar.timeInMillis
                     if (scheduleTime <= System.currentTimeMillis()) {
-                        Toast.makeText(this, "Please select a future date and time", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.conversation_detail_select_future_datetime), Toast.LENGTH_SHORT).show()
                         return
                     }
 
@@ -995,7 +999,7 @@ class ConversationDetailActivity : BaseActivity() {
                         pendingIntent
                     )
 
-                    Toast.makeText(this, "Message scheduled successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.conversation_detail_message_scheduled_success), Toast.LENGTH_SHORT).show()
                     binding.editTextMessage.text?.clear()
                     selectedImageUri = null
                     selectedContactName = null
@@ -1011,7 +1015,7 @@ class ConversationDetailActivity : BaseActivity() {
 
     private fun makePhoneCall() {
         if (address.isEmpty()) {
-            Toast.makeText(this, "No phone number available", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.conversation_detail_no_phone_number), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -1088,7 +1092,7 @@ class ConversationDetailActivity : BaseActivity() {
             try {
                 startActivity(intent)
             } catch (e: Exception) {
-                Toast.makeText(this, "Unable to make call", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.unable_to_make_call), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -1199,7 +1203,7 @@ class ConversationDetailActivity : BaseActivity() {
             currentPhotoPath = photoFile.absolutePath
             cameraLauncher.launch(photoURI)
         } catch (e: IOException) {
-            Toast.makeText(this, "Error creating image file", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.conversation_detail_error_creating_image_file), Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -1300,7 +1304,7 @@ class ConversationDetailActivity : BaseActivity() {
             imageView.setImageBitmap(circularBitmap)
         } catch (e: Exception) {
             Log.e(TAG, "Error loading image: ${e.message}")
-            Toast.makeText(this, "Error loading image", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.conversation_detail_error_loading_image), Toast.LENGTH_SHORT).show()
             return
         }
         
@@ -1378,7 +1382,7 @@ class ConversationDetailActivity : BaseActivity() {
         }
         
         if (textContactCard != null) {
-            textContactCard.text = "• Contact card"
+            textContactCard.text = getString(R.string.conversation_detail_contact_card_bullet)
             textContactCard.visibility = View.VISIBLE
             textContactCard.alpha = 1.0f
         }
@@ -1501,17 +1505,7 @@ class ConversationDetailActivity : BaseActivity() {
     }
     
     private fun getDefaultQuickMessages(): List<String> {
-        return listOf(
-            "What's up?",
-            "I'll be running a bit late, but I'll be there soon",
-            "Where is the meeting taking place?",
-            "Where are you?",
-            "How are things?",
-            "Please give me a call after receiving this message.",
-            "When are we meeting?",
-            "I'll let you know a bit.",
-            "No problem. I missed your call."
-        )
+        return resources.getStringArray(R.array.default_quick_messages).toList()
     }
     
     private fun showFailedMessageDialog(message: Message) {
@@ -1573,13 +1567,13 @@ class ConversationDetailActivity : BaseActivity() {
                         val nameMatch = Regex("FN:([^\\r\\n]+)").find(body)
                         val telMatch = Regex("TEL:([^\\r\\n]+)").find(body)
                         
-                        val name = nameMatch?.groupValues?.get(1) ?: "Contact"
+                        val name = nameMatch?.groupValues?.get(1) ?: getString(R.string.conversation_detail_default_contact)
                         val number = telMatch?.groupValues?.get(1) ?: ""
                         
                         textContactName.text = name
                         textContactNumber.text = number
                     } else {
-                        textContactName.text = "Contact card"
+                        textContactName.text = getString(R.string.conversation_detail_contact_card)
                         textContactNumber.text = ""
                     }
                 }
@@ -1590,7 +1584,7 @@ class ConversationDetailActivity : BaseActivity() {
         
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
-            .setTitle("Failed Message")
+            .setTitle(getString(R.string.conversation_detail_failed_message_title))
             .create()
         
         buttonResend.setOnClickListener {
@@ -1636,7 +1630,7 @@ class ConversationDetailActivity : BaseActivity() {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error resending message", e)
-                Toast.makeText(this, "Error resending message", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.conversation_detail_error_resending_message), Toast.LENGTH_SHORT).show()
             }
         } else {
             // No attachment, resend as regular SMS
@@ -1646,7 +1640,7 @@ class ConversationDetailActivity : BaseActivity() {
     
     private fun deleteFailedMessage(message: Message) {
         viewModel.deleteMessage(message.id)
-        Toast.makeText(this, "Message deleted", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.conversation_detail_message_deleted), Toast.LENGTH_SHORT).show()
     }
 }
 

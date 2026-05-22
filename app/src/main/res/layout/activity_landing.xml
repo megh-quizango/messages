@@ -24,7 +24,7 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_marginBottom="32dp"
-            android:contentDescription="Messages Logo"
+            android:contentDescription="@string/gen_activity_landing_content_description_1"
             android:src="@drawable/splash_logo"
             app:layout_constraintBottom_toTopOf="@+id/textTitle"
             app:layout_constraintEnd_toEndOf="parent"
@@ -36,7 +36,7 @@
             android:id="@+id/textTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MESSAGES"
+            android:text="@string/gen_activity_landing_text_2"
             android:textColor="#FFFFFF"
             android:textSize="40sp"
             android:textStyle="bold"
@@ -60,7 +60,7 @@
             android:id="@+id/textSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SMS Message Text App"
+            android:text="@string/gen_activity_landing_text_3"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:fontFamily="@font/poppins"
@@ -79,7 +79,7 @@
         android:id="@+id/textLoading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="LOADING..."
+        android:text="@string/gen_activity_landing_text_4"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:layout_marginBottom="16dp"
@@ -119,3 +119,6 @@
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

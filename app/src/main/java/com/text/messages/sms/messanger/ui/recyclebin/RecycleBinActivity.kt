@@ -113,12 +113,12 @@ class RecycleBinActivity : BaseActivity() {
     
     private fun showRecoverConfirmationDialog(deletedConversation: DeletedConversationData) {
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Restore Conversation")
-            .setMessage("Do you want to restore the conversation?")
-            .setPositiveButton("Yes") { _, _ ->
+            .setTitle(R.string.recycle_bin_restore_title)
+            .setMessage(R.string.recycle_bin_restore_message)
+            .setPositiveButton(R.string.action_yes) { _, _ ->
                 restoreConversation(deletedConversation)
             }
-            .setNegativeButton("No", null)
+            .setNegativeButton(R.string.action_no, null)
             .create()
         
         // Apply theme to dialog

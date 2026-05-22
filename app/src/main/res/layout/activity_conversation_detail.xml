@@ -15,7 +15,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/bg_back_button"
         android:src="@drawable/ic_arrow_back"
-        android:contentDescription="Back"
+        android:contentDescription="@string/gen_activity_conversation_detail_content_description_1"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
-        android:text="Contact Name"
+        android:text="@string/gen_activity_conversation_detail_text_2"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -45,7 +45,7 @@
         android:layout_marginEnd="8dp"
         android:src="@drawable/ic_call"
         android:background="@android:color/transparent"
-        android:contentDescription="Call"
+        android:contentDescription="@string/gen_activity_conversation_detail_content_description_3"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:tint="@color/black"
@@ -60,7 +60,7 @@
         android:layout_marginEnd="16dp"
         android:src="@drawable/ic_info"
         android:background="@android:color/transparent"
-        android:contentDescription="Info"
+        android:contentDescription="@string/gen_activity_conversation_detail_content_description_4"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:tint="@color/black"
@@ -77,7 +77,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/bg_back_button"
         android:src="@drawable/ic_close"
-        android:contentDescription="Close"
+        android:contentDescription="@string/gen_activity_conversation_detail_content_description_5"
         android:scaleType="centerInside"
         android:padding="12dp"
         android:visibility="gone"
@@ -90,7 +90,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
-        android:text="1 selected"
+        android:text="@string/gen_activity_conversation_detail_text_6"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -107,7 +107,7 @@
         android:layout_marginEnd="16dp"
         android:src="@drawable/ic_star"
         android:background="@android:color/transparent"
-        android:contentDescription="Star"
+        android:contentDescription="@string/gen_activity_conversation_detail_content_description_7"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:tint="#FFA500"
@@ -135,7 +135,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_placeholder"
         app:layout_constraintBottom_toTopOf="@id/layoutInput"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -172,7 +171,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Scheduled for December 23rd 10:00 AM"
+                android:text="@string/gen_activity_conversation_detail_text_8"
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:paddingStart="8dp"
@@ -184,7 +183,7 @@
                 android:layout_height="24dp"
                 android:src="@drawable/ic_close"
                 android:background="@android:color/transparent"
-                android:contentDescription="Cancel"
+                android:contentDescription="@string/gen_activity_conversation_detail_content_description_9"
                 android:padding="4dp"
                 android:scaleType="centerInside"/>
 
@@ -230,7 +229,7 @@
                 android:layout_marginEnd="8dp"
                 android:src="@drawable/ic_attachment"
                 android:background="@android:color/transparent"
-                android:contentDescription="Attachment"
+                android:contentDescription="@string/gen_activity_conversation_detail_content_description_10"
                 android:scaleType="centerInside"
                 android:padding="12dp"
                 android:minHeight="0dp"/>
@@ -246,7 +245,7 @@
                 android:minLines="1"
                 android:textColor="@android:color/black"
                 android:textColorHint="@color/gray_dark"
-                android:hint="Write a message..."
+                android:hint="@string/gen_activity_conversation_detail_hint_11"
                 android:textCursorDrawable="@drawable/text_cursor_drawable"
                 android:textSelectHandle="@drawable/text_select_handle"
                 android:textSelectHandleLeft="@drawable/text_select_handle_left"
@@ -267,7 +266,7 @@
                 android:layout_marginStart="8dp"
                 android:src="@drawable/ic_send"
                 android:background="@android:color/transparent"
-                android:contentDescription="Send"
+                android:contentDescription="@string/gen_activity_conversation_detail_content_description_12"
                 android:scaleType="centerInside"
                 android:padding="12dp"
                 android:minHeight="0dp"/>
@@ -291,4 +290,7 @@
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 

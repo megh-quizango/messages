@@ -79,7 +79,7 @@
                 android:id="@+id/adLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ad"
+                android:text="@string/gen_layout_fullscreen_native_video_ad_text_1"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -92,7 +92,7 @@
                 android:id="@+id/adCounter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1/2"
+                android:text="@string/gen_layout_fullscreen_native_video_ad_text_2"
                 android:textColor="@color/white"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -114,7 +114,7 @@
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
                 android:background="#80000000"
                 android:padding="8dp"
-                android:contentDescription="Close ad"
+                android:contentDescription="@string/gen_layout_fullscreen_native_video_ad_content_description_3"
                 android:visibility="gone"
                 app:tint="@color/white" />
 
@@ -183,7 +183,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:layout_marginTop="12dp"
-                android:text="Install"
+                android:text="@string/gen_layout_fullscreen_native_video_ad_text_4"
                 android:textAllCaps="true"
                 android:textColor="@color/white"
                 android:textSize="15sp"
@@ -196,3 +196,6 @@
     </FrameLayout>
 
 </com.google.android.gms.ads.nativead.NativeAdView>
+
+
+

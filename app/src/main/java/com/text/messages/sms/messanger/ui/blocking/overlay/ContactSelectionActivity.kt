@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityContactSelectionBinding
 import com.text.messages.sms.messanger.ui.blocking.CustomBlockingActivity
 import com.text.messages.sms.messanger.util.ThemeManager
@@ -38,7 +39,7 @@ class ContactSelectionActivity : BaseActivity() {
         } else {
             Toast.makeText(
                 this,
-                "Contacts permission is required",
+                getString(R.string.contacts_permission_required),
                 Toast.LENGTH_LONG
             ).show()
         }

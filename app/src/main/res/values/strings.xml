@@ -54,6 +54,7 @@
     <string name="settings_default_sms_already_set">App is already set as default</string>
     <string name="settings_unable_open_play_store">Unable to open Play Store</string>
     <string name="settings_unable_share_play_store_link">Unable to share Play Store link</string>
+    <string name="settings_app_name">#Messages</string>
     <string name="settings_share_app_chooser_title">Share App</string>
     <string name="settings_share_app_message">Check out %1$s on Play Store: https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="settings_error_opening_file_picker">Error opening file picker</string>
@@ -66,6 +67,50 @@
     <string name="settings_no_new_messages_to_import">No new messages to import (all messages already exist)</string>
     <string name="settings_unknown_error">Unknown error</string>
     <string name="settings_error_with_reason">Error: %1$s</string>
+    <string name="this_message_does_not_contain_otp">This message does not contain an OTP</string>
+    <string name="no_dialer_app_found">No dialer app found</string>
+    <string name="unable_to_open_dialer_reason">Unable to open dialer: %1$s</string>
+    <string name="unable_to_make_call">Unable to make call</string>
+    <string name="no_app_found_to_make_calls">No app found to make calls</string>
+    <string name="unable_to_make_call_reason">Unable to make call: %1$s</string>
+    <string name="unable_to_open_conversation">Unable to open conversation</string>
+    <string name="failed_to_send_message_reason">Failed to send message: %1$s</string>
+    <string name="otp_copied">OTP copied: %1$s</string>
+    <string name="no_otp_found_in_message">No OTP found in message</string>
+    <string name="error_copying_otp">Error copying OTP</string>
+    <string name="scheduled_message_sent">Scheduled message sent</string>
+    <string name="failed_to_send_scheduled_message">Failed to send scheduled message</string>
+    <string name="phone_permission_required_to_make_calls">Phone permission is required to make calls</string>
+    <string name="conversation_detail_messages_starred">Messages starred</string>
+    <string name="conversation_detail_scheduled_for">Scheduled for %1$s %2$s</string>
+    <string name="conversation_detail_select_future_datetime">Please select a future date and time</string>
+    <string name="conversation_detail_message_scheduled_success">Message scheduled successfully</string>
+    <string name="conversation_detail_no_phone_number">No phone number available</string>
+    <string name="conversation_detail_error_creating_image_file">Error creating image file</string>
+    <string name="conversation_detail_error_loading_image">Error loading image</string>
+    <string name="conversation_detail_contact_card_bullet">&#8226; Contact card</string>
+    <string name="conversation_detail_default_contact">Contact</string>
+    <string name="conversation_detail_contact_card">Contact card</string>
+    <string name="conversation_detail_failed_message_title">Failed Message</string>
+    <string name="conversation_detail_error_resending_message">Error resending message</string>
+    <string name="conversation_detail_message_deleted">Message deleted</string>
+    <string name="main_please_enter_filter_name">Please enter a filter name</string>
+    <string name="main_end_date_after_start">End date must be after start date</string>
+    <string name="manage_apps_percentage_format">%1$d%%</string>
+    <string name="manage_apps_ram_used_format">%1$d%% Used</string>
+    <string name="manage_apps_total_apps_format">Total: %1$d</string>
+    <string name="manage_apps_stop">Stop</string>
+    <string name="manage_apps_stopped">Stopped</string>
+    <string name="invalid_filter">Invalid filter</string>
+    <string name="select_conversations">Select Conversations</string>
+    <string name="conversations_added_to_private">Conversations added to private</string>
+    <string name="conversations_added_to_filter">Conversations added to filter</string>
+    <string name="call_type_incoming">Incoming</string>
+    <string name="call_type_outgoing">Outgoing</string>
+    <string name="call_type_missed">Missed</string>
+    <string name="call_type_unknown">Unknown</string>
+    <string name="call_history_today_time">Today, %1$s</string>
+    <string name="call_history_yesterday_time">Yesterday, %1$s</string>
     <string name="facebook_app_id" translatable="false">3157593984414269</string>
     <string name="facebook_client_token" translatable="false">480942a6ad5e01b43bada2e0c4dcda79</string>
     <string name="contact_already_exists" translatable="false">Contact already exists</string>
@@ -74,6 +119,25 @@
         <item quantity="one">Imported %1$d message successfully</item>
         <item quantity="other">Imported %1$d messages successfully</item>
     </plurals>
+    <plurals name="conversation_detail_selected_messages">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <plurals name="manage_apps_stopped_apps_summary">
+        <item quantity="one">Stopped %1$d app running in the background</item>
+        <item quantity="other">Stopped %1$d apps running in the background</item>
+    </plurals>
+    <string-array name="default_quick_messages">
+        <item>What\'s up?</item>
+        <item>I\'ll be running a bit late, but I\'ll be there soon</item>
+        <item>Where is the meeting taking place?</item>
+        <item>Where are you?</item>
+        <item>How are things?</item>
+        <item>Please give me a call after receiving this message.</item>
+        <item>When are we meeting?</item>
+        <item>I\'ll let you know a bit.</item>
+        <item>No problem. I missed your call.</item>
+    </string-array>
 
     <!-- Call After Screen -->
     <string name="call_action" translatable="false">CALL</string>
@@ -131,6 +195,111 @@
     <string name="overlay_guide_secure">#Message is safe &amp; secure</string>
     <string name="overlay_guide_instruction">Find #Messages and allow permission</string>
     <string name="overlay_guide_shield">Security badge</string>
+    <string name="action_open_settings">Open Settings</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_yes">Yes</string>
+    <string name="action_no">No</string>
+    <string name="action_block">Block</string>
+    <string name="action_delete">Delete</string>
+    <string name="permission_required_title">Permissions Required</string>
+    <string name="welcome_permissions_required_message">Notification and Phone permissions are required for the app to function properly. Please enable them in app settings.</string>
+    <string name="default_sms_help_title">Need Help?</string>
+    <string name="default_sms_help_message">If the default SMS prompt does not appear, open your phone settings and set #Messages as the default SMS app from the Default apps section.</string>
+    <string name="default_sms_permissions_required_message">SMS and Phone permissions are required for the app to function properly. Please enable them in app settings.</string>
+    <string name="custom_blocking_enter_keyword">Please enter a keyword</string>
+    <string name="custom_blocking_enter_phone_number">Please enter a phone number</string>
+    <string name="custom_blocking_unblock_keyword_message">Do you want to unblock this keyword from blacklist?</string>
+    <string name="custom_blocking_unblock_contact_message">Do you want to unblock this contact from blacklist?</string>
+    <string name="conversation_details_archive_invalid_contact">Unable to archive conversation: Invalid contact</string>
+    <string name="conversation_details_invalid_conversation_data">Invalid conversation data</string>
+    <string name="conversation_details_archived">Conversation archived</string>
+    <string name="conversation_details_archive_failed">Failed to archive conversation</string>
+    <string name="conversation_details_block_invalid_contact">Unable to block conversation: Invalid contact</string>
+    <string name="conversation_details_block_title">Block Conversation</string>
+    <string name="conversation_details_block_message">Are you sure you want to block this conversation? You will not receive messages from this contact.</string>
+    <string name="conversation_details_blocked">Conversation blocked</string>
+    <string name="conversation_details_block_failed">Failed to block conversation</string>
+    <string name="conversation_details_delete_invalid_contact">Unable to delete conversation: Invalid contact</string>
+    <string name="conversation_details_delete_title">Delete Conversation</string>
+    <string name="conversation_details_delete_message">Are you sure you want to delete this conversation? This action cannot be undone.</string>
+    <string name="conversation_details_deleted">Conversation deleted</string>
+    <string name="conversation_details_delete_failed">Failed to delete conversation</string>
+    <string name="recycle_bin_restore_title">Restore Conversation</string>
+    <string name="recycle_bin_restore_message">Do you want to restore the conversation?</string>
+    <string name="contacts_permission_required">Contacts permission is required</string>
+    <string name="contacts_permission_required_display_contacts">Contacts permission is required to display contacts</string>
+    <string name="sms_permission_required">SMS permission is required</string>
+    <string name="sms_permission_required_display_messages">SMS permission is required to display messages</string>
+    <string name="main_conversation_blocked">Conversation blocked</string>
+    <string name="main_failed_block_conversation">Failed to block conversation</string>
+    <string name="pin_enter_your_pin">Enter Your PIN</string>
+    <string name="pin_incorrect">Incorrect PIN. Please try again.</string>
+    <string name="pin_enter_answer">Please enter an answer</string>
+    <string name="pin_incorrect_answer">Incorrect answer. Please try again.</string>
+    <string name="advance_delayed_sending_title">Delayed sending</string>
+    <string name="advance_delete_old_messages_title">Delete old messages automatically</string>
+    <string name="advance_delivery_confirmations_title">Delivery confirmations</string>
+    <string name="advance_delivery_confirmations_detail">Confirm that messages were sent successfully</string>
+    <string name="advance_strip_accents_title">Strip accents</string>
+    <string name="advance_strip_accents_detail">Remove accents from characters in outgoing SMS messages</string>
+    <string name="advance_mobile_number_only_title">Mobile number only</string>
+    <string name="advance_mobile_number_only_detail">When composing a message, only show mobile numbers</string>
+    <string name="advance_send_long_as_mms_title">Send long messages as MMS</string>
+    <string name="advance_send_long_as_mms_detail">If your longer text messages are failing to send, or sending in the wrong order, you can send them as MMS messages instead. Additional charges may apply</string>
+    <string name="advance_delay_none">No delay</string>
+    <string name="advance_delay_three_seconds">3 seconds</string>
+    <string name="advance_delay_five_seconds">5 seconds</string>
+    <string name="notification_option_notifications_title">Notifications</string>
+    <string name="notification_option_tap_to_customize">Tap to customize</string>
+    <string name="notification_option_previews_title">Notification Previews</string>
+    <string name="notification_option_wake_screen">Wake Screen</string>
+    <string name="notification_option_actions">Actions</string>
+    <string name="notification_option_button_1">Button 1</string>
+    <string name="notification_option_button_2">Button 2</string>
+    <string name="notification_option_button_3">Button 3</string>
+    <string name="notification_channel_name">SMS Notifications</string>
+    <string name="notification_channel_description">Notifications for incoming SMS messages</string>
+    <string name="notification_reply_label">Reply</string>
+    <string name="notification_reply_hint">Type a reply...</string>
+    <string name="notification_preview_show_name_and_message">Show name and message</string>
+    <string name="notification_preview_show_name">Show Name</string>
+    <string name="notification_preview_hide_contents">Hide contents</string>
+    <string name="notification_button_action_none">None</string>
+    <string name="notification_button_action_archive">Archive</string>
+    <string name="notification_button_action_delete">Delete</string>
+    <string name="notification_button_action_block">Block</string>
+    <string name="notification_button_action_call">Call</string>
+    <string name="notification_button_action_mark_as_read">Mark as Read</string>
+    <string name="notification_button_action_reply">Reply</string>
+    <string name="notification_button_action_copy_otp">Copy OTP</string>
+    <string name="swipe_action_none">None</string>
+    <string name="swipe_action_archive">Archive</string>
+    <string name="swipe_action_delete">Delete</string>
+    <string name="swipe_action_block">Block</string>
+    <string name="swipe_action_call">Call</string>
+    <string name="swipe_action_mark_as_read">Mark as Read</string>
+    <string name="swipe_action_mark_as_unread">Mark as Unread</string>
+    <string name="swipe_right">Right Swipe</string>
+    <string name="swipe_left">Left Swipe</string>
+    <string name="conversation_time_just_now">Just now</string>
+    <string name="conversation_time_minutes_short">%1$d Min</string>
+    <string name="conversation_time_hours_short">%1$dh</string>
+    <string name="message_date_today">Today</string>
+    <string name="message_date_yesterday">Yesterday</string>
+    <string name="select_contact_prompt">Please select a contact</string>
 
+    <string-array name="security_questions">
+        <item>What\'s your favorite color?</item>
+        <item>What\'s your pet\'s name?</item>
+        <item>What\'s your lucky number?</item>
+        <item>What\'s your favorite sport?</item>
+        <item>What\'s your favorite book?</item>
+        <item>What month was your first child born?</item>
+        <item>What year was your father born?</item>
+        <item>What year was your mother born?</item>
+        <item>What\'s your mother\'s maiden name?</item>
+        <item>What was the make of your first car?</item>
+    </string-array>
 
 </resources>

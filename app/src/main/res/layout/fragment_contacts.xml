@@ -17,7 +17,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/bg_back_button"
         android:src="@drawable/ic_arrow_back"
-        android:contentDescription="Back"
+        android:contentDescription="@string/gen_fragment_contacts_content_description_1"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -29,7 +29,7 @@
         android:id="@+id/textHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Contacts"
+        android:text="@string/gen_fragment_contacts_text_2"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/black"
@@ -60,7 +60,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@android:drawable/ic_menu_search"
-            android:contentDescription="Search"
+            android:contentDescription="@string/gen_fragment_contacts_content_description_3"
             android:layout_marginEnd="12dp"/>
 
         <EditText
@@ -68,7 +68,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Search contacts"
+            android:hint="@string/gen_fragment_contacts_hint_4"
             android:background="@android:color/transparent"
             android:textSize="16sp"
             android:textColorHint="@color/gray_dark"
@@ -92,4 +92,7 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 

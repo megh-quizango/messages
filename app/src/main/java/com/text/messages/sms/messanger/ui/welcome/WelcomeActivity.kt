@@ -144,15 +144,15 @@ class WelcomeActivity : BaseActivity() {
     
     private fun showPermissionSettingsDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Permissions Required")
-            .setMessage("Notification and Phone permissions are required for the app to function properly. Please enable them in app settings.")
-            .setPositiveButton("Open Settings") { _, _ ->
+            .setTitle(R.string.permission_required_title)
+            .setMessage(R.string.welcome_permissions_required_message)
+            .setPositiveButton(R.string.action_open_settings) { _, _ ->
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.fromParts("package", packageName, null)
                 }
                 startActivity(intent)
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(R.string.action_cancel) { _, _ ->
                 // User cancelled, check again (might have granted manually)
                 permissionsRequested = false
             }

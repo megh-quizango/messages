@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityDefaultSmsBinding
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
@@ -295,9 +296,9 @@ class DefaultSmsActivity : BaseActivity() {
 
     private fun showDefaultSmsHelpDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Need Help?")
-            .setMessage("If the default SMS prompt does not appear, open your phone settings and set #Messages as the default SMS app from the Default apps section.")
-            .setPositiveButton("Open Settings") { _, _ ->
+            .setTitle(R.string.default_sms_help_title)
+            .setMessage(R.string.default_sms_help_message)
+            .setPositiveButton(R.string.action_open_settings) { _, _ ->
                 val intent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
                 if (intent.resolveActivity(packageManager) != null) {
                     startActivity(intent)
@@ -305,7 +306,7 @@ class DefaultSmsActivity : BaseActivity() {
                     startActivity(Intent(Settings.ACTION_SETTINGS))
                 }
             }
-            .setNegativeButton("Close", null)
+            .setNegativeButton(R.string.action_close, null)
             .show()
     }
     
@@ -419,15 +420,15 @@ class DefaultSmsActivity : BaseActivity() {
     
     private fun showPermissionSettingsDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Permissions Required")
-            .setMessage("SMS and Phone permissions are required for the app to function properly. Please enable them in app settings.")
-            .setPositiveButton("Open Settings") { _, _ ->
+            .setTitle(R.string.permission_required_title)
+            .setMessage(R.string.default_sms_permissions_required_message)
+            .setPositiveButton(R.string.action_open_settings) { _, _ ->
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.fromParts("package", packageName, null)
                 }
                 startActivity(intent)
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(R.string.action_cancel) { _, _ ->
                 // User cancelled, check again (might have granted manually)
                 permissionsRequested = false
             }

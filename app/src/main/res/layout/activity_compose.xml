@@ -31,10 +31,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:text="Compose message UI will be implemented here"
+            android:text="@string/gen_activity_compose_text_1"
             android:textColor="@color/black" />
 
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
 

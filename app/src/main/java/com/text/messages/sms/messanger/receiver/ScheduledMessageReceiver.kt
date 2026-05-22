@@ -9,6 +9,7 @@ import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Toast
 import com.text.messages.sms.messanger.R
+import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.MessagingAddressUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,11 +49,11 @@ class ScheduledMessageReceiver : BroadcastReceiver() {
             }
             
             // Show notification or toast
-            Toast.makeText(context, "Scheduled message sent", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.scheduled_message_sent), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e(TAG, "Error sending scheduled message", e)
             e.printStackTrace()
-            Toast.makeText(context, "Failed to send scheduled message", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.failed_to_send_scheduled_message), Toast.LENGTH_SHORT).show()
         }
     }
     

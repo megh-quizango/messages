@@ -14,7 +14,7 @@
         android:id="@+id/textOtpLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="*** OTP"
+        android:text="@string/gen_layout_otp_box_text_1"
         android:textSize="11sp"
         android:textColor="@color/gray_dark"
         android:layout_marginBottom="4dp" />
@@ -47,7 +47,7 @@
             android:id="@+id/buttonCopyOtp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Copy OTP"
+            android:text="@string/gen_layout_otp_box_text_2"
             android:textSize="12sp"
             android:textColor="@color/black"
             android:background="@drawable/button_copy_otp_background"
@@ -75,9 +75,12 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="4dp"
-            android:contentDescription="Delete OTP" />
+            android:contentDescription="@string/gen_layout_otp_box_content_description_3" />
 
     </LinearLayout>
 
 </LinearLayout>
+
+
+
 

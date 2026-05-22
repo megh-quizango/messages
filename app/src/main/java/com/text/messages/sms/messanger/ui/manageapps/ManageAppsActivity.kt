@@ -75,7 +75,7 @@ class ManageAppsActivity : BaseActivity() {
         val usedRam = totalRam - availableRam
         val availablePercentage = ((availableRam.toFloat() / totalRam.toFloat()) * 100).toInt()
 
-        binding.textRamPercentage.text = "$availablePercentage%"
+        binding.textRamPercentage.text = getString(R.string.manage_apps_percentage_format, availablePercentage)
         binding.progressBarRam.progress = availablePercentage
     }
 
@@ -117,7 +117,7 @@ class ManageAppsActivity : BaseActivity() {
             override fun run() {
                 progress += 2
                 if (progress <= 100) {
-                    binding.textLoadingPercentage.text = "$progress%"
+                    binding.textLoadingPercentage.text = getString(R.string.manage_apps_percentage_format, progress)
                     // Ensure color stays blue every time text is updated
                     binding.textLoadingPercentage.setTextColor(blueColor)
                     handler.postDelayed(this, 50) // Update every 50ms

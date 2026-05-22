@@ -22,7 +22,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Language"
+            android:text="@string/gen_item_language_text_1"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -33,7 +33,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_check_circle"
-            android:contentDescription="Selected"
+            android:contentDescription="@string/gen_item_language_content_description_2"
             android:visibility="gone" />
 
         <ImageView
@@ -41,9 +41,12 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_empty_circle"
-            android:contentDescription="Unselected"
+            android:contentDescription="@string/gen_item_language_content_description_3"
             android:visibility="visible" />
 
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
+
+
+

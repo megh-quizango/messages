@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.TextView
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
@@ -25,21 +26,21 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 
-enum class NotificationPreview(val displayName: String) {
-    SHOW_NAME_AND_MESSAGE("Show name and message"),
-    SHOW_NAME("Show Name"),
-    HIDE_CONTENTS("Hide contents")
+enum class NotificationPreview(@StringRes val displayNameRes: Int) {
+    SHOW_NAME_AND_MESSAGE(R.string.notification_preview_show_name_and_message),
+    SHOW_NAME(R.string.notification_preview_show_name),
+    HIDE_CONTENTS(R.string.notification_preview_hide_contents)
 }
 
-enum class ButtonAction(val displayName: String) {
-    NONE("None"),
-    ARCHIVE("Archive"),
-    DELETE("Delete"),
-    BLOCK("Block"),
-    CALL("Call"),
-    MARK_AS_READ("Mark as Read"),
-    REPLY("Reply"),
-    COPY_OTP("Copy OTP")
+enum class ButtonAction(@StringRes val displayNameRes: Int) {
+    NONE(R.string.notification_button_action_none),
+    ARCHIVE(R.string.notification_button_action_archive),
+    DELETE(R.string.notification_button_action_delete),
+    BLOCK(R.string.notification_button_action_block),
+    CALL(R.string.notification_button_action_call),
+    MARK_AS_READ(R.string.notification_button_action_mark_as_read),
+    REPLY(R.string.notification_button_action_reply),
+    COPY_OTP(R.string.notification_button_action_copy_otp)
 }
 
 class NotificationsActivity : BaseActivity() {
@@ -92,19 +93,19 @@ class NotificationsActivity : BaseActivity() {
             NotificationOption(
                 type = NotificationOptionType.NOTIFICATIONS,
                 iconRes = R.drawable.noti,
-                title = "Notifications",
-                detail = "Tap to customize"
+                title = getString(R.string.notification_option_notifications_title),
+                detail = getString(R.string.notification_option_tap_to_customize)
             ),
             NotificationOption(
                 type = NotificationOptionType.NOTIFICATION_PREVIEWS,
                 iconRes = R.drawable.preview,
-                title = "Notification Previews",
+                title = getString(R.string.notification_option_previews_title),
                 detail = getNotificationPreviewDetail()
             ),
             NotificationOption(
                 type = NotificationOptionType.WAKE_SCREEN,
                 iconRes = R.drawable.wake,
-                title = "Wake Screen",
+                title = getString(R.string.notification_option_wake_screen),
                 detail = null,
                 hasToggle = true,
                 toggleState = prefs.getBoolean(KEY_WAKE_SCREEN, false)
@@ -112,25 +113,25 @@ class NotificationsActivity : BaseActivity() {
             NotificationOption(
                 type = NotificationOptionType.ACTIONS_HEADING,
                 iconRes = null,
-                title = "Actions",
+                title = getString(R.string.notification_option_actions),
                 detail = null
             ),
             NotificationOption(
                 type = NotificationOptionType.BUTTON_1,
                 iconRes = R.drawable.button1,
-                title = "Button 1",
+                title = getString(R.string.notification_option_button_1),
                 detail = getButtonActionDetail(KEY_BUTTON_1_ACTION)
             ),
             NotificationOption(
                 type = NotificationOptionType.BUTTON_2,
                 iconRes = R.drawable.button2,
-                title = "Button 2",
+                title = getString(R.string.notification_option_button_2),
                 detail = getButtonActionDetail(KEY_BUTTON_2_ACTION)
             ),
             NotificationOption(
                 type = NotificationOptionType.BUTTON_3,
                 iconRes = R.drawable.button3,
-                title = "Button 3",
+                title = getString(R.string.notification_option_button_3),
                 detail = getButtonActionDetail(KEY_BUTTON_3_ACTION)
             )
         )
@@ -287,12 +288,14 @@ class NotificationsActivity : BaseActivity() {
     
     private fun getNotificationPreviewDetail(): String {
         val previewName = prefs.getString(KEY_NOTIFICATION_PREVIEW, NotificationPreview.SHOW_NAME_AND_MESSAGE.name)
-        return NotificationPreview.values().find { it.name == previewName }?.displayName ?: NotificationPreview.SHOW_NAME_AND_MESSAGE.displayName
+        val preview = NotificationPreview.values().find { it.name == previewName } ?: NotificationPreview.SHOW_NAME_AND_MESSAGE
+        return getString(preview.displayNameRes)
     }
     
     private fun getButtonActionDetail(key: String): String {
         val actionName = prefs.getString(key, ButtonAction.NONE.name)
-        return ButtonAction.values().find { it.name == actionName }?.displayName ?: ButtonAction.NONE.displayName
+        val action = ButtonAction.values().find { it.name == actionName } ?: ButtonAction.NONE
+        return getString(action.displayNameRes)
     }
     
     private fun updateNotificationPreviewDetail() {

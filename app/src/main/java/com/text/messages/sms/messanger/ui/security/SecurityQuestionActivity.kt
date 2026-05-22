@@ -35,18 +35,7 @@ class SecurityQuestionActivity : BaseActivity() {
     }
     
     private fun setupRecyclerView() {
-        val questions = listOf(
-            "What's your favorite color?",
-            "What's your pet's name?",
-            "What's your lucky number?",
-            "What's your favorite sport?",
-            "What's your favorite book?",
-            "What month was your first child born?",
-            "What year was your father born?",
-            "What year was your mother born?",
-            "What's your mother's maiden name?",
-            "What was the make of your first car?"
-        )
+        val questions = resources.getStringArray(R.array.security_questions).toList()
         
         adapter = SecurityQuestionAdapter(questions) { _ ->
             // Question selected

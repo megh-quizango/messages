@@ -33,7 +33,7 @@ class ConversationSelectionActivity : BaseActivity() {
         isPrivate = intent.getBooleanExtra("is_private", false)
         
         if (!isPrivate && filterId.isEmpty()) {
-            Toast.makeText(this, "Invalid filter", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.invalid_filter), Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -114,7 +114,7 @@ class ConversationSelectionActivity : BaseActivity() {
     }
     
     private fun setupToolbar() {
-        binding.textTitle.text = "Select Conversations"
+        binding.textTitle.text = getString(R.string.select_conversations)
         binding.buttonBack.setOnClickListener {
             finish()
         }
@@ -176,7 +176,7 @@ class ConversationSelectionActivity : BaseActivity() {
                 com.text.messages.sms.messanger.util.ConversationCache.invalidate("Offers")
                 com.text.messages.sms.messanger.util.ConversationCache.invalidate("Transactions")
                 
-                Toast.makeText(this, "Conversations added to private", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.conversations_added_to_private), Toast.LENGTH_SHORT).show()
                 setResult(RESULT_OK)
                 finish()
             } else {
@@ -186,7 +186,7 @@ class ConversationSelectionActivity : BaseActivity() {
                     filter.threadIds.clear()
                     filter.threadIds.addAll(selectedThreadIds)
                     CustomFilterStorage.updateFilter(this, filter)
-                    Toast.makeText(this, "Conversations added to filter", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.conversations_added_to_filter), Toast.LENGTH_SHORT).show()
                     setResult(RESULT_OK)
                     finish()
                 }

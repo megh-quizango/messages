@@ -12,7 +12,7 @@
         android:id="@+id/textKeyword"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Keyword"
+        android:text="@string/gen_item_keyword_text_1"
         android:textColor="@color/black"
         android:textSize="16sp"
         app:layout_constraintTop_toTopOf="parent"
@@ -24,7 +24,7 @@
         android:id="@+id/textUnblock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Unblock"
+        android:text="@string/gen_item_keyword_text_2"
         android:textColor="#0C56CF"
         android:textSize="16sp"
         app:layout_constraintTop_toTopOf="parent"
@@ -42,4 +42,5 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

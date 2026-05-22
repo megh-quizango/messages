@@ -149,7 +149,7 @@ class ConversationDetailsActivity : BaseActivity() {
         }
         
         if (actualThreadId <= 0) {
-            Toast.makeText(this, "Unable to archive conversation: Invalid contact", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.conversation_details_archive_invalid_contact, Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -192,7 +192,7 @@ class ConversationDetailsActivity : BaseActivity() {
                 if (conversationToArchive.threadId <= 0) {
                     Log.e(TAG, "Invalid threadId for archiving: ${conversationToArchive.threadId}")
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@ConversationDetailsActivity, "Invalid conversation data", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ConversationDetailsActivity, R.string.conversation_details_invalid_conversation_data, Toast.LENGTH_SHORT).show()
                     }
                     return@launch
                 }
@@ -216,13 +216,13 @@ class ConversationDetailsActivity : BaseActivity() {
                         sendConversationActionBroadcast(actualThreadId, "archived")
                 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@ConversationDetailsActivity, "Conversation archived", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@ConversationDetailsActivity, R.string.conversation_details_archived, Toast.LENGTH_SHORT).show()
                     finish()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error archiving conversation", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@ConversationDetailsActivity, "Failed to archive conversation", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@ConversationDetailsActivity, R.string.conversation_details_archive_failed, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -292,14 +292,14 @@ class ConversationDetailsActivity : BaseActivity() {
         }
         
         if (actualThreadId <= 0) {
-            Toast.makeText(this, "Unable to block conversation: Invalid contact", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.conversation_details_block_invalid_contact, Toast.LENGTH_SHORT).show()
             return
         }
 
         AlertDialog.Builder(this)
-            .setTitle("Block Conversation")
-            .setMessage("Are you sure you want to block this conversation? You will not receive messages from this contact.")
-            .setPositiveButton("Block") { _, _ ->
+            .setTitle(R.string.conversation_details_block_title)
+            .setMessage(R.string.conversation_details_block_message)
+            .setPositiveButton(R.string.action_block) { _, _ ->
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         // Save to blocked conversations storage - same as MainActivity
@@ -328,18 +328,18 @@ class ConversationDetailsActivity : BaseActivity() {
                         sendConversationActionBroadcast(actualThreadId, "blocked")
                         
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(this@ConversationDetailsActivity, "Conversation blocked", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@ConversationDetailsActivity, R.string.conversation_details_blocked, Toast.LENGTH_SHORT).show()
                             finish()
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Error blocking conversation", e)
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(this@ConversationDetailsActivity, "Failed to block conversation", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@ConversationDetailsActivity, R.string.conversation_details_block_failed, Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
@@ -359,14 +359,14 @@ class ConversationDetailsActivity : BaseActivity() {
         }
         
         if (actualThreadId <= 0) {
-            Toast.makeText(this, "Unable to delete conversation: Invalid contact", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.conversation_details_delete_invalid_contact, Toast.LENGTH_SHORT).show()
             return
         }
 
         AlertDialog.Builder(this)
-            .setTitle("Delete Conversation")
-            .setMessage("Are you sure you want to delete this conversation? This action cannot be undone.")
-            .setPositiveButton("Delete") { _, _ ->
+            .setTitle(R.string.conversation_details_delete_title)
+            .setMessage(R.string.conversation_details_delete_message)
+            .setPositiveButton(R.string.action_delete) { _, _ ->
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         // Get conversation from database to get all details
@@ -408,18 +408,18 @@ class ConversationDetailsActivity : BaseActivity() {
                         sendConversationActionBroadcast(actualThreadId, "deleted")
                         
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(this@ConversationDetailsActivity, "Conversation deleted", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@ConversationDetailsActivity, R.string.conversation_details_deleted, Toast.LENGTH_SHORT).show()
                             finish()
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Error deleting conversation", e)
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(this@ConversationDetailsActivity, "Failed to delete conversation", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@ConversationDetailsActivity, R.string.conversation_details_delete_failed, Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
     

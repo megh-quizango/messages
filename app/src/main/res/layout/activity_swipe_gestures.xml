@@ -17,7 +17,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/bg_back_button"
         android:src="@drawable/ic_arrow_back"
-        android:contentDescription="Back"
+        android:contentDescription="@string/gen_activity_swipe_gestures_content_description_1"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -30,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Swipe Gestures"
+        android:text="@string/gen_activity_swipe_gestures_text_2"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -74,7 +74,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Right Swipe"
+                        android:text="@string/gen_activity_swipe_gestures_text_3"
                         android:textColor="@color/black"
                         android:textSize="16sp"
                         android:textStyle="bold"/>
@@ -83,7 +83,7 @@
                         android:id="@+id/buttonChangeRight"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="CHANGE"
+                        android:text="@string/gen_activity_swipe_gestures_text_4"
                         android:textColor="#0C56CF"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -97,7 +97,7 @@
                     android:id="@+id/textRightSwipeAction"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Mark as Read"
+                    android:text="@string/gen_activity_swipe_gestures_text_5"
                     android:textColor="@color/gray_dark"
                     android:textSize="14sp"
                     android:layout_marginBottom="12dp"/>
@@ -122,7 +122,7 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/mark_read"
                             android:scaleType="fitCenter"
-                            android:contentDescription="Right swipe action"/>
+                            android:contentDescription="@string/gen_activity_swipe_gestures_content_description_6"/>
 
                     </FrameLayout>
 
@@ -180,7 +180,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Left Swipe"
+                        android:text="@string/gen_activity_swipe_gestures_text_7"
                         android:textColor="@color/black"
                         android:textSize="16sp"
                         android:textStyle="bold"/>
@@ -189,7 +189,7 @@
                         android:id="@+id/buttonChangeLeft"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="CHANGE"
+                        android:text="@string/gen_activity_swipe_gestures_text_8"
                         android:textColor="#0C56CF"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -203,7 +203,7 @@
                     android:id="@+id/textLeftSwipeAction"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Archive"
+                    android:text="@string/gen_activity_swipe_gestures_text_9"
                     android:textColor="@color/gray_dark"
                     android:textSize="14sp"
                     android:layout_marginBottom="12dp"/>
@@ -261,7 +261,7 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/archive_swipe"
                             android:scaleType="fitCenter"
-                            android:contentDescription="Left swipe action"/>
+                            android:contentDescription="@string/gen_activity_swipe_gestures_content_description_10"/>
 
                     </FrameLayout>
 
@@ -280,11 +280,13 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_placeholder"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 
 

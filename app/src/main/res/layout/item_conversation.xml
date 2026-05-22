@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="A"
+            android:text="@string/gen_item_conversation_text_1"
             android:textColor="@color/gray_dark"
             android:textSize="10sp"
             android:textStyle="normal"
@@ -46,7 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
-        android:text="Contact Name"
+        android:text="@string/gen_item_conversation_text_2"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -62,7 +62,7 @@
         android:layout_height="16dp"
         android:src="@drawable/sim"
         android:visibility="gone"
-        android:contentDescription="SIM card badge"
+        android:contentDescription="@string/gen_item_conversation_content_description_3"
         android:layout_marginEnd="8dp"
         app:layout_constraintEnd_toStartOf="@+id/textTime"
         app:layout_constraintTop_toTopOf="@+id/textContactName"
@@ -72,7 +72,7 @@
         android:id="@+id/textTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="2 Min"
+        android:text="@string/gen_item_conversation_text_4"
         android:textColor="@color/gray_dark"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -86,7 +86,7 @@
         android:layout_marginEnd="8dp"
         android:maxLines="1"
         android:ellipsize="end"
-        android:text="Message snippet..."
+        android:text="@string/gen_item_conversation_text_5"
         android:textColor="@color/gray_dark"
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/buttonCopyOtpList"
@@ -97,7 +97,7 @@
         android:id="@+id/buttonCopyOtpList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Copy OTP"
+        android:text="@string/gen_item_conversation_text_6"
         android:textSize="12sp"
         android:textColor="@color/black"
         android:background="@drawable/button_copy_otp_list_background"
@@ -128,7 +128,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Start Chat"
+        android:text="@string/gen_item_conversation_text_7"
         android:textColor="@color/white"
         android:textSize="12sp"
         android:backgroundTint="#0C56CF"
@@ -146,3 +146,6 @@
         app:layout_constraintTop_toBottomOf="@+id/textSnippet" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

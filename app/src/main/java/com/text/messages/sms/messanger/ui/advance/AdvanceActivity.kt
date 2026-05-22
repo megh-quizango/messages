@@ -6,6 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RadioButton
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
@@ -32,10 +33,10 @@ class AdvanceActivity : BaseActivity() {
         private const val KEY_MOBILE_NUMBER_ONLY = "mobile_number_only"
         private const val KEY_SEND_LONG_AS_MMS = "send_long_as_mms"
         
-        enum class DelayOption(val displayName: String, val seconds: Int) {
-            NO_DELAY("No delay", 0),
-            THREE_SECONDS("3 seconds", 3),
-            FIVE_SECONDS("5 seconds", 5)
+        enum class DelayOption(@StringRes val displayNameRes: Int, val seconds: Int) {
+            NO_DELAY(R.string.advance_delay_none, 0),
+            THREE_SECONDS(R.string.advance_delay_three_seconds, 3),
+            FIVE_SECONDS(R.string.advance_delay_five_seconds, 5)
         }
     }
 
@@ -77,44 +78,44 @@ class AdvanceActivity : BaseActivity() {
             AdvanceOption(
                 type = AdvanceOptionType.DELAYED_SENDING,
                 iconRes = R.drawable.delay,
-                title = "Delayed sending",
-                detail = delayOption.displayName
+                title = getString(R.string.advance_delayed_sending_title),
+                detail = getString(delayOption.displayNameRes)
             ),
             AdvanceOption(
                 type = AdvanceOptionType.DELETE_OLD_MESSAGES,
                 iconRes = R.drawable.delete_old,
-                title = "Delete old messages automatically",
+                title = getString(R.string.advance_delete_old_messages_title),
                 detail = null
             ),
             AdvanceOption(
                 type = AdvanceOptionType.DELIVERY_CONFIRMATIONS,
                 iconRes = R.drawable.delivery,
-                title = "Delivery confirmations",
-                detail = "Confirm that messages were sent successfully",
+                title = getString(R.string.advance_delivery_confirmations_title),
+                detail = getString(R.string.advance_delivery_confirmations_detail),
                 hasToggle = true,
                 toggleState = prefs.getBoolean(KEY_DELIVERY_CONFIRMATIONS, false)
             ),
             AdvanceOption(
                 type = AdvanceOptionType.STRIP_ACCENTS,
                 iconRes = R.drawable.accents,
-                title = "Strip accents",
-                detail = "Remove accents from characters in outgoing SMS messages",
+                title = getString(R.string.advance_strip_accents_title),
+                detail = getString(R.string.advance_strip_accents_detail),
                 hasToggle = true,
                 toggleState = prefs.getBoolean(KEY_STRIP_ACCENTS, false)
             ),
             AdvanceOption(
                 type = AdvanceOptionType.MOBILE_NUMBER_ONLY,
                 iconRes = R.drawable.number,
-                title = "Mobile number only",
-                detail = "When composing a message, only show mobile numbers",
+                title = getString(R.string.advance_mobile_number_only_title),
+                detail = getString(R.string.advance_mobile_number_only_detail),
                 hasToggle = true,
                 toggleState = prefs.getBoolean(KEY_MOBILE_NUMBER_ONLY, false)
             ),
             AdvanceOption(
                 type = AdvanceOptionType.SEND_LONG_AS_MMS,
                 iconRes = R.drawable.long_sms,
-                title = "Send long messages as MMS",
-                detail = "If your longer text messages are failing to send, or sending in the wrong order, you can send them as MMS messages instead. Additional charges may apply",
+                title = getString(R.string.advance_send_long_as_mms_title),
+                detail = getString(R.string.advance_send_long_as_mms_detail),
                 hasToggle = true,
                 toggleState = prefs.getBoolean(KEY_SEND_LONG_AS_MMS, false)
             )
@@ -222,7 +223,7 @@ class AdvanceActivity : BaseActivity() {
         val options = adapter.currentList.toMutableList()
         val index = options.indexOfFirst { it.type == AdvanceOptionType.DELAYED_SENDING }
         if (index >= 0) {
-            options[index] = options[index].copy(detail = delayOption.displayName)
+            options[index] = options[index].copy(detail = getString(delayOption.displayNameRes))
             adapter.submitList(options)
         }
     }

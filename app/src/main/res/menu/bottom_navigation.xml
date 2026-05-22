@@ -3,21 +3,22 @@
     <item
         android:id="@+id/nav_messages"
         android:icon="@drawable/messages_vector"
-        android:title="Messages" />
+        android:title="@string/gen_bottom_navigation_title_1" />
 
     <item
         android:id="@+id/nav_contacts"
         android:icon="@drawable/contacts_vector"
-        android:title="Contacts" />
+        android:title="@string/gen_bottom_navigation_title_2" />
 
     <item
         android:id="@+id/nav_personalize"
         android:icon="@drawable/personalize_vector"
-        android:title="Personalize" />
+        android:title="@string/gen_bottom_navigation_title_3" />
 
     <item
         android:id="@+id/nav_settings"
         android:icon="@drawable/settings_vector"
-        android:title="Settings" />
+        android:title="@string/gen_bottom_navigation_title_4" />
 
 </menu>
+

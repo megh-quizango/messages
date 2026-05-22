@@ -23,7 +23,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Contact Name"
+        android:text="@string/gen_item_blocked_conversation_text_1"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
-        android:text="Latest SMS message..."
+        android:text="@string/gen_item_blocked_conversation_text_2"
         android:textColor="@color/gray_dark"
         android:textSize="14sp"
         android:maxLines="1"
@@ -52,7 +52,7 @@
         android:id="@+id/textUnblock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Unblock"
+        android:text="@string/gen_item_blocked_conversation_text_3"
         android:textColor="#0C56CF"
         android:textSize="16sp"
         app:layout_constraintTop_toTopOf="parent"
@@ -70,4 +70,5 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

@@ -11,7 +11,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:src="@drawable/contacts"
-        android:contentDescription="App Icon"
+        android:contentDescription="@string/gen_item_background_app_content_description_1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:text="App Name"
+        android:text="@string/gen_item_background_app_text_2"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -34,7 +34,7 @@
         android:id="@+id/buttonStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Stop"
+        android:text="@string/gen_item_background_app_text_3"
         android:textColor="#0C56CF"
         android:textSize="14sp"
         android:textStyle="bold"
@@ -50,4 +50,7 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 

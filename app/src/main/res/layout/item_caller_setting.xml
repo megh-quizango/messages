@@ -21,7 +21,7 @@
                 android:id="@+id/textTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Setting Title"
+                android:text="@string/gen_item_caller_setting_text_1"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -31,7 +31,7 @@
                 android:id="@+id/textDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Setting description"
+                android:text="@string/gen_item_caller_setting_text_2"
                 android:textColor="@color/gray_dark"
                 android:textSize="12sp"
                 android:maxLines="3"
@@ -56,4 +56,5 @@
     </LinearLayout>
 
 </LinearLayout>
+
 

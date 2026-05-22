@@ -7,9 +7,10 @@
     android:paddingEnd="16dp"
     android:paddingTop="16dp"
     android:paddingBottom="8dp"
-    android:text="A"
+    android:text="@string/gen_item_contact_section_header_text_1"
     android:textColor="@color/black"
     android:textSize="18sp"
     android:textStyle="bold"
     android:background="@color/white"/>
+
 

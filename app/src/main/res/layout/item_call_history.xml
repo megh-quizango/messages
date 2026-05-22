@@ -13,7 +13,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_call"
-        android:contentDescription="Call type"
+        android:contentDescription="@string/gen_item_call_history_content_description_1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
@@ -23,7 +23,7 @@
         android:id="@+id/textCallType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Incoming"
+        android:text="@string/gen_item_call_history_text_2"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -36,7 +36,7 @@
         android:id="@+id/textCallDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Today, 2:30 PM"
+        android:text="@string/gen_item_call_history_text_3"
         android:textColor="@color/text_secondary"
         android:textSize="14sp"
         android:layout_marginStart="16dp"
@@ -50,7 +50,7 @@
         android:id="@+id/textCallDuration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="2m 30s"
+        android:text="@string/gen_item_call_history_text_4"
         android:textColor="@color/text_secondary"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -58,4 +58,7 @@
         app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 

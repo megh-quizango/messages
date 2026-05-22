@@ -38,7 +38,7 @@ class ButtonActionAdapter(
         private val textActionName: TextView = itemView.findViewById(R.id.textActionName)
 
         fun bind(action: ButtonAction, isSelected: Boolean) {
-            textActionName.text = action.displayName
+            textActionName.text = itemView.context.getString(action.displayNameRes)
             radioButton.isChecked = isSelected
 
             // Prevent direct radio button clicks

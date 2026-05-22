@@ -15,7 +15,7 @@
         android:scaleType="centerCrop"
         android:background="@drawable/bg_rounded_white"
         android:visibility="gone"
-        android:contentDescription="Image preview" />
+        android:contentDescription="@string/gen_dialog_failed_message_preview_content_description_1" />
 
     <!-- Contact Card Preview -->
     <LinearLayout
@@ -68,7 +68,7 @@
             android:id="@+id/buttonDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Delete"
+            android:text="@string/gen_dialog_failed_message_preview_text_2"
             android:textColor="@color/white"
             app:backgroundTint="#F44336"
             android:layout_marginEnd="8dp" />
@@ -77,11 +77,14 @@
             android:id="@+id/buttonResend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Resend"
+            android:text="@string/gen_dialog_failed_message_preview_text_3"
             android:textColor="@color/white"
             app:backgroundTint="@color/button_primary" />
 
     </LinearLayout>
 
 </LinearLayout>
+
+
+
 

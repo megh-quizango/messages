@@ -34,7 +34,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Done"
+        android:text="@string/gen_activity_contact_selection_text_1"
         android:textColor="@color/white"
         android:backgroundTint="#0C56CF"
         app:cornerRadius="50dp"
@@ -43,4 +43,5 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

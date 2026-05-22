@@ -25,7 +25,7 @@
             android:id="@+id/textEditQuickResponse"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Edit quick response"
+            android:text="@string/gen_bottom_sheet_quick_note_text_1"
             android:textColor="#0C56CF"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -74,3 +74,4 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

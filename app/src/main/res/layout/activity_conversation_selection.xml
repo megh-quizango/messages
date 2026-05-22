@@ -24,7 +24,7 @@
             android:layout_height="48dp"
             android:background="@drawable/bg_back_button"
             android:src="@drawable/ic_arrow_back"
-            android:contentDescription="Back"
+            android:contentDescription="@string/gen_activity_conversation_selection_content_description_1"
             android:scaleType="centerInside"
             android:padding="12dp"
             app:layout_constraintTop_toTopOf="parent"
@@ -34,7 +34,7 @@
             android:id="@+id/textTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Select Conversations"
+            android:text="@string/gen_activity_conversation_selection_text_2"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black"
@@ -48,7 +48,7 @@
             android:id="@+id/buttonSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"
+            android:text="@string/gen_activity_conversation_selection_text_3"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="#0C56CF"
@@ -91,13 +91,13 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:src="@drawable/feedback"
-            android:contentDescription="Empty state icon"
+            android:contentDescription="@string/gen_activity_conversation_selection_content_description_4"
             android:layout_marginBottom="16dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No conversations available"
+            android:text="@string/gen_activity_conversation_selection_text_5"
             android:textSize="16sp"
             android:textColor="#9696A3"
             android:gravity="center"/>
@@ -127,10 +127,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Loading conversations..."
+            android:text="@string/gen_activity_conversation_selection_text_6"
             android:textSize="16sp"
             android:textColor="#9696A3"
             android:gravity="center"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

@@ -146,10 +146,10 @@ class PinActivity : BaseActivity() {
 
     private fun updateUI() {
         if (isCreatingPin || isResettingPin) {
-            binding.textPinInstruction.text = "Create your PIN"
+            binding.textPinInstruction.text = getString(R.string.create_your_pin)
             binding.textForgotPassword.visibility = View.GONE
         } else {
-            binding.textPinInstruction.text = "Enter Your PIN"
+            binding.textPinInstruction.text = getString(R.string.pin_enter_your_pin)
             binding.textForgotPassword.visibility = View.VISIBLE
         }
         updatePinDots()
@@ -196,7 +196,7 @@ class PinActivity : BaseActivity() {
                 // PIN incorrect, clear and show error
                 pinDigits.clear()
                 updatePinDots()
-                Toast.makeText(this, "Incorrect PIN. Please try again.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.pin_incorrect, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -277,18 +277,7 @@ class PinActivity : BaseActivity() {
             ThemeManager.applyTheme(this, sheetBinding.root)
         }
         
-        val questions = listOf(
-            "What's your favorite color?",
-            "What's your pet's name?",
-            "What's your lucky number?",
-            "What's your favorite sport?",
-            "What's your favorite book?",
-            "What month was your first child born?",
-            "What year was your father born?",
-            "What year was your mother born?",
-            "What's your mother's maiden name?",
-            "What was the make of your first car?"
-        )
+        val questions = resources.getStringArray(R.array.security_questions).toList()
 
         val adapter = SecurityQuestionListAdapter(questions) { question ->
             parentBinding.editTextQuestion.setText(question)
@@ -347,7 +336,7 @@ class PinActivity : BaseActivity() {
             val answer = sheetBinding.editTextAnswer.text.toString().trim()
             
             if (answer.isEmpty()) {
-                sheetBinding.textError.text = "Please enter an answer"
+                sheetBinding.textError.text = getString(R.string.pin_enter_answer)
                 sheetBinding.textError.visibility = View.VISIBLE
                 return@setOnClickListener
             }
@@ -361,7 +350,7 @@ class PinActivity : BaseActivity() {
                 updateUI()
             } else {
                 // Answer incorrect - show toast
-                Toast.makeText(this, "Incorrect answer. Please try again.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.pin_incorrect_answer, Toast.LENGTH_SHORT).show()
                 sheetBinding.editTextAnswer.text?.clear()
             }
         }

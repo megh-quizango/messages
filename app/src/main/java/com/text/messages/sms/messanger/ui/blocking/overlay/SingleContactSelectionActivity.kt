@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityContactSelectionBinding
 import com.text.messages.sms.messanger.util.ThemeManager
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +38,7 @@ class SingleContactSelectionActivity : BaseActivity() {
         } else {
             Toast.makeText(
                 this,
-                "Contacts permission is required",
+                getString(R.string.contacts_permission_required),
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -99,7 +100,7 @@ class SingleContactSelectionActivity : BaseActivity() {
                 setResult(RESULT_OK, resultIntent)
                 finish()
             } ?: run {
-                Toast.makeText(this, "Please select a contact", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.select_contact_prompt), Toast.LENGTH_SHORT).show()
             }
         }
     }

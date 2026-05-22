@@ -13,7 +13,7 @@
         android:layout_height="24dp"
         android:src="@drawable/settings"
         android:visibility="gone"
-        android:contentDescription="Icon"
+        android:contentDescription="@string/gen_item_settings_option_content_description_1"
         android:layout_marginEnd="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
         android:layout_marginEnd="8dp"
-        android:text="Setting Option"
+        android:text="@string/gen_item_settings_option_text_2"
         android:textColor="@color/black"
         android:textSize="16sp"
         app:layout_constraintEnd_toStartOf="@+id/switchToggle"
@@ -49,3 +49,6 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
