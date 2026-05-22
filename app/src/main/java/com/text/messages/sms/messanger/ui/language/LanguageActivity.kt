@@ -124,6 +124,7 @@ class LanguageActivity : BaseActivity() {
         // Pre-inflate the native ad view structure so the layout is complete from the start
         nativeAdView = layoutInflater.inflate(R.layout.native_ad_layout, binding.nativeAdFrame, false) as NativeAdView
         binding.nativeAdFrame.addView(nativeAdView)
+        binding.nativeAdFrame.visibility = android.view.View.GONE
         
         // Apply theme to the pre-inflated view
         val themeColor = ThemeManager.getThemeColor(this)
@@ -160,6 +161,7 @@ class LanguageActivity : BaseActivity() {
             .withAdListener(object : com.google.android.gms.ads.AdListener() {
                 override fun onAdFailedToLoad(loadAdError: com.google.android.gms.ads.LoadAdError) {
                     super.onAdFailedToLoad(loadAdError)
+                    binding.nativeAdFrame.visibility = android.view.View.GONE
                     com.text.messages.sms.messanger.util.AnalyticsHelper.logAdLoad("native", nativeAdUnitId, false)
                     com.text.messages.sms.messanger.util.AnalyticsHelper.logAdError("native", nativeAdUnitId, loadAdError.code.toString())
                 }
@@ -183,6 +185,7 @@ class LanguageActivity : BaseActivity() {
         // Use the pre-inflated view instead of creating a new one
         val adView = nativeAdView ?: return
         val adBinding = NativeAdLayoutBinding.bind(adView)
+        binding.nativeAdFrame.visibility = android.view.View.VISIBLE
         
         // Set ad assets (view structure already exists, just populate with data)
         if (ad.headline != null) {
