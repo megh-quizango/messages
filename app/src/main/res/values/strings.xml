@@ -64,6 +64,14 @@
     <string name="welcome_privacy_lead">By continuing, you agree to our </string>
     <string name="welcome_privacy_policy">Privacy Policy</string>
     <string name="welcome_agree_continue">Agree &amp; Continue</string>
+    <string name="default_sms_brand_title">Messages</string>
+    <string name="default_sms_illustration">Default SMS app illustration</string>
+    <string name="default_sms_intro">For sending and receiving messages,</string>
+    <string name="default_sms_heading">Make it your default SMS app.</string>
+    <string name="default_sms_bullet_one">&#8226; Easily reply with a tap</string>
+    <string name="default_sms_bullet_two">&#8226; Secure messages for you</string>
+    <string name="default_sms_help_prompt">Having trouble setting as default?</string>
+    <string name="default_sms_help_link">[Click here for help]</string>
     <string name="overlay_title">One Last Step!</string>
     <string name="overlay_subtitle">Allow overlay access to show quick message options right after calls - no extra taps needed!</string>
     <string name="overlay_benefit_title">This Lets You  &#128073;</string>

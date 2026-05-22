@@ -12,176 +12,143 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:padding="24dp"
-            android:gravity="center_horizontal">
+            android:paddingStart="24dp"
+            android:paddingTop="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="28dp">
 
-            <!-- Top spacer to center content vertically -->
-            <Space
+            <TextView
+                android:id="@+id/textBrandTitle"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins"
+                android:text="@string/default_sms_brand_title"
+                android:textColor="#171727"
+                android:textSize="34sp"
+                android:textStyle="bold" />
 
-            <!-- Phone Illustration Placeholder -->
             <ImageView
                 android:id="@+id/imagePhone"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:src="@drawable/sms"
-                android:contentDescription="Phone illustration"
-                 />
+                android:layout_width="270dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="26dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/default_sms_illustration"
+                android:scaleType="fitCenter"
+                android:src="@drawable/sms" />
 
-            <!-- Main Heading -->
+            <TextView
+                android:id="@+id/textIntro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:fontFamily="@font/poppins"
+                android:gravity="center"
+                android:text="@string/default_sms_intro"
+                android:textColor="#666676"
+                android:textSize="17sp" />
+
             <TextView
                 android:id="@+id/textHeading"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Set message as your default to work properly"
-                android:textColor="@color/black"
-                android:textSize="28sp"
-                android:fontFamily="sans-serif-medium"
-                android:textStyle="bold"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/poppins"
                 android:gravity="center"
-                android:lineSpacingMultiplier="1.33"
-                android:lineSpacingExtra="0dp"
-                android:letterSpacing="0" />
+                android:lineSpacingExtra="2dp"
+                android:text="@string/default_sms_heading"
+                android:textColor="#171727"
+                android:textSize="25sp"
+                android:textStyle="bold" />
 
-            <!-- Features List -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="24dp"
                 android:orientation="vertical"
-                android:paddingStart="16dp">
+                android:paddingStart="34dp"
+                android:paddingEnd="20dp">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="• Private Conversations"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="• Exclusive themes"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="• Spam Blocking"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="• Schedule message"
-                    android:textColor="@color/black"
-                    android:textSize="16sp" />
-
-            </LinearLayout>
-
-            <!-- Safety Message Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                app:cardCornerRadius="12dp"
-                app:cardBackgroundColor="@color/blue_primary_container"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp"
-                app:strokeColor="@android:color/transparent">
-
-                <LinearLayout
+                    android:id="@+id/textBulletOne"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:fontFamily="@font/poppins"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/default_sms_bullet_one"
+                    android:textColor="#555566"
+                    android:textSize="16sp" />
 
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/insurance"
-                        android:contentDescription="Security icon"
-                        />
+                <TextView
+                    android:id="@+id/textBulletTwo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="22dp"
+                    android:fontFamily="@font/poppins"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/default_sms_bullet_two"
+                    android:textColor="#555566"
+                    android:textSize="16sp" />
+            </LinearLayout>
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="16dp"
-                        android:text="Your Messages are safe and will not be shared with anyone."
-                        android:textColor="@color/black"
-                        android:textSize="14sp" />
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmerSetDefault"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="32dp"
+                app:shimmer_auto_start="false"
+                app:shimmer_base_alpha="0.55"
+                app:shimmer_base_color="#66FFFFFF"
+                app:shimmer_colored="true"
+                app:shimmer_direction="left_to_right"
+                app:shimmer_duration="1300"
+                app:shimmer_highlight_alpha="1"
+                app:shimmer_highlight_color="@android:color/white">
 
-                </LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonSetDefault"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:backgroundTint="@color/button_primary"
+                    android:elevation="6dp"
+                    android:fontFamily="@font/poppins"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:tag="exclude_from_theme_textcolor"
+                    android:text="@string/set_default_sms"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="29dp" />
 
-            </com.google.android.material.card.MaterialCardView>
+            </com.facebook.shimmer.ShimmerFrameLayout>
 
-            <!-- Set Default Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonSetDefault"
+            <TextView
+                android:id="@+id/textHelpPrompt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="Set Default SMS App"
-                android:textColor="@color/white"
-                android:tag="exclude_from_theme_textcolor"
-                android:backgroundTint="#0C56CF"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:cornerRadius="50dp" />
+                android:fontFamily="@font/poppins"
+                android:gravity="center"
+                android:text="@string/default_sms_help_prompt"
+                android:textColor="#4F4F60"
+                android:textSize="16sp" />
 
-            <!-- Links -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:orientation="horizontal"
-                android:gravity="center">
-
-                <TextView
-                    android:id="@+id/textUserAgreement"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="User Agreement"
-                    android:textColor="#9696A3"
-                    android:textSize="14sp"
-                    android:padding="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="|"
-                    android:textColor="#9696A3"
-                    android:textSize="14sp"
-                    android:padding="8dp" />
-
-                <TextView
-                    android:id="@+id/textPrivacyPolicy"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Privacy policy"
-                    android:textColor="#9696A3"
-                    android:textSize="14sp"
-                    android:padding="8dp" />
-
-            </LinearLayout>
-
-            <!-- Bottom spacer to center content vertically -->
-            <Space
+            <TextView
+                android:id="@+id/textHelpLink"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/poppins"
+                android:gravity="center"
+                android:text="@string/default_sms_help_link"
+                android:textColor="@color/button_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 

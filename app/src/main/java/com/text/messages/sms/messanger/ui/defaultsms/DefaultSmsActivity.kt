@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.text.messages.sms.messanger.databinding.ActivityDefaultSmsBinding
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
@@ -31,6 +32,7 @@ class DefaultSmsActivity : BaseActivity() {
     private var isFromSettings = false
     private var hasLaunchedIntent = false
     private lateinit var sharedPreferences: SharedPreferences
+    private var buttonShimmer: ShimmerFrameLayout? = null
     private var permissionsRequested = false
     
     // ActivityResultLauncher for RoleManager (Android 10+)
@@ -135,6 +137,7 @@ class DefaultSmsActivity : BaseActivity() {
         enableEdgeToEdge()
         binding = ActivityDefaultSmsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        buttonShimmer = binding.shimmerSetDefault
         
         // Setup navigation bar with white background and black icons
         ThemeManager.setupNavigationBar(this)
@@ -149,6 +152,7 @@ class DefaultSmsActivity : BaseActivity() {
         }
         
         setupButton()
+        setupHelp()
         
         // If app is already default and we need to request permissions, do it after UI is set up
         if (::binding.isInitialized) {
@@ -171,6 +175,7 @@ class DefaultSmsActivity : BaseActivity() {
     
     override fun onResume() {
         super.onResume()
+        buttonShimmer?.startShimmer()
         
         // Check if we're returning from the system dialog
         if (hasLaunchedIntent) {
@@ -225,6 +230,11 @@ class DefaultSmsActivity : BaseActivity() {
             }
         }
     }
+
+    override fun onPause() {
+        buttonShimmer?.stopShimmer()
+        super.onPause()
+    }
     
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
@@ -269,6 +279,28 @@ class DefaultSmsActivity : BaseActivity() {
         binding.buttonSetDefault.setOnClickListener {
             requestDefaultSms()
         }
+    }
+
+    private fun setupHelp() {
+        binding.textHelpLink.setOnClickListener {
+            showDefaultSmsHelpDialog()
+        }
+    }
+
+    private fun showDefaultSmsHelpDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Need Help?")
+            .setMessage("If the default SMS prompt does not appear, open your phone settings and set #Messages as the default SMS app from the Default apps section.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                val intent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+                if (intent.resolveActivity(packageManager) != null) {
+                    startActivity(intent)
+                } else {
+                    startActivity(Intent(Settings.ACTION_SETTINGS))
+                }
+            }
+            .setNegativeButton("Close", null)
+            .show()
     }
     
     private fun requestDefaultSms() {
