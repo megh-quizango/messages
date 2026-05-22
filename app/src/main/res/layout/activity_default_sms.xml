@@ -100,12 +100,12 @@
                 android:layout_height="58dp"
                 android:layout_marginTop="32dp"
                 app:shimmer_auto_start="false"
-                app:shimmer_base_alpha="0.08"
+                app:shimmer_base_alpha="0"
                 app:shimmer_direction="left_to_right"
                 app:shimmer_duration="1300"
-                app:shimmer_highlight_alpha="1"
-                app:shimmer_intensity="0.35"
-                app:shimmer_dropoff="0.2">
+                app:shimmer_highlight_alpha="0.78"
+                app:shimmer_intensity="0.22"
+                app:shimmer_dropoff="0.65">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonSetDefault"
