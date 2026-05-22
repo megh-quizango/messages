@@ -523,7 +523,7 @@ class MainViewModel : ViewModel() {
         return sortedConversations
     }
     
-    private fun loadPrivateConversationsFromDevice(context: android.content.Context): List<Conversation> {
+    private suspend fun loadPrivateConversationsFromDevice(context: android.content.Context): List<Conversation> {
         Log.d(TAG, "loadPrivateConversationsFromDevice: Starting")
         val privateThreadIds = PrivateConversationStorage.getThreadIds(context)
         if (privateThreadIds.isEmpty()) {
@@ -600,6 +600,9 @@ class MainViewModel : ViewModel() {
                 conversationsMap[threadId] = finalConversation
             }
         }
+
+        // Private conversations can be MMS-only, so include conversations backed by Room MMS rows too.
+        loadMmsConversationsForThreadIds(conversationsMap, threadIdSet)
         
         // Get contact names in batch
         loadContactNamesBatch(context, conversationsMap.values, conversationsMap)
@@ -607,6 +610,73 @@ class MainViewModel : ViewModel() {
         val sortedConversations = conversationsMap.values.sortedByDescending { it.date }
         Log.d(TAG, "loadPrivateConversationsFromDevice: Returning ${sortedConversations.size} conversations")
         return sortedConversations
+    }
+
+    private suspend fun loadMmsConversationsForThreadIds(
+        conversationsMap: MutableMap<Long, Conversation>,
+        threadIdSet: Set<Long>
+    ) {
+        try {
+            val database = MessagesApp.database
+            val messageDao = database.messageDao()
+            val mmsMessages = messageDao.getAllMmsMessages()
+
+            mmsMessages.forEach { msg ->
+                @Suppress("KotlinConstantConditions")
+                if (msg == null) return@forEach
+
+                val threadId = msg.threadId
+                if (!threadIdSet.contains(threadId)) {
+                    return@forEach
+                }
+
+                val snippet = when {
+                    msg.mimeType?.startsWith("image/") == true || msg.mimeType == "image/*" -> {
+                        if (msg.body.isNotEmpty() && !msg.body.contains("BEGIN:VCARD")) msg.body else "Photo"
+                    }
+                    msg.mimeType == "text/x-vCard" || msg.attachmentPath?.contains(".vcf", ignoreCase = true) == true -> {
+                        val nameMatch = Regex("FN:([^\\r\\n]+)").find(msg.body)
+                        val contactName = nameMatch?.groupValues?.get(1) ?: ""
+                        if (contactName.isNotEmpty()) "Contact: $contactName" else "Contact card"
+                    }
+                    msg.body.isNotEmpty() && !msg.body.contains("BEGIN:VCARD") -> msg.body
+                    else -> "MMS"
+                }
+
+                val existingConversation = conversationsMap[threadId]
+                val baseConversation = existingConversation ?: Conversation(
+                    threadId = threadId,
+                    address = msg.address,
+                    snippet = snippet,
+                    date = msg.date,
+                    unreadCount = 0
+                )
+
+                val updatedConversation = when {
+                    existingConversation == null -> baseConversation
+                    msg.date > baseConversation.date -> {
+                        baseConversation.copy(
+                            address = if (baseConversation.address.isBlank()) msg.address else baseConversation.address,
+                            snippet = snippet,
+                            date = msg.date
+                        )
+                    }
+                    baseConversation.address.isBlank() && msg.address.isNotBlank() -> {
+                        baseConversation.copy(address = msg.address)
+                    }
+                    else -> baseConversation
+                }
+
+                conversationsMap[threadId] = if (!msg.read && msg.type == MessageType.INBOX) {
+                    updatedConversation.copy(unreadCount = updatedConversation.unreadCount + 1)
+                } else {
+                    updatedConversation
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading MMS conversations for thread ids", e)
+            e.printStackTrace()
+        }
     }
     
     private fun loadConversationsForCustomFilterFromDevice(
