@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">#Messages</string>
+    <string name="app_name">Messages</string>
     <string name="languages">Languages</string>
     <string name="next">NEXT</string>
     <string name="messages">Messages</string>
@@ -69,7 +69,7 @@
     <string name="facebook_app_id" translatable="false">3157593984414269</string>
     <string name="facebook_client_token" translatable="false">480942a6ad5e01b43bada2e0c4dcda79</string>
     <string name="contact_already_exists" translatable="false">Contact already exists</string>
-    <string name="banner_ad_unit_placeholder" translatable="false"></string>
+    <string name="banner_ad_unit_placeholder" translatable="false">ca-app-pub-0000000000000000/0000000000</string>
     <plurals name="settings_imported_messages_success">
         <item quantity="one">Imported %1$d message successfully</item>
         <item quantity="other">Imported %1$d messages successfully</item>

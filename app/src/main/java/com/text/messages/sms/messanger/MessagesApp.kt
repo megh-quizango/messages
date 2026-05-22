@@ -21,6 +21,7 @@ import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AppForegroundActivityTracker
 import com.text.messages.sms.messanger.util.AppOpenManager
 import com.text.messages.sms.messanger.util.LocaleHelper
+import com.text.messages.sms.messanger.util.OnboardingInstallGuard
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
 import java.util.concurrent.Executors
 
@@ -50,6 +51,8 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
         instance = this
 
         Log.d("MessagesApp", "onCreate called")
+
+        OnboardingInstallGuard.resetRestoredOnboardingStateIfNeeded(this)
 
         // IMMEDIATE: Only lightweight, non-blocking operations
         // 1. Activity lifecycle tracker (no I/O, just object registration)
