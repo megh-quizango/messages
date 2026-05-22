@@ -94,18 +94,12 @@
                     android:textSize="16sp" />
             </LinearLayout>
 
-            <com.facebook.shimmer.ShimmerFrameLayout
-                android:id="@+id/shimmerSetDefault"
+            <FrameLayout
+                android:id="@+id/containerSetDefault"
                 android:layout_width="match_parent"
                 android:layout_height="58dp"
                 android:layout_marginTop="32dp"
-                app:shimmer_auto_start="false"
-                app:shimmer_base_alpha="0"
-                app:shimmer_direction="left_to_right"
-                app:shimmer_duration="1300"
-                app:shimmer_highlight_alpha="0.78"
-                app:shimmer_intensity="0.22"
-                app:shimmer_dropoff="0.65">
+                android:clipChildren="true">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonSetDefault"
@@ -124,7 +118,17 @@
                     android:textStyle="bold"
                     app:cornerRadius="29dp" />
 
-            </com.facebook.shimmer.ShimmerFrameLayout>
+                <View
+                    android:id="@+id/viewSetDefaultShimmer"
+                    android:layout_width="56dp"
+                    android:layout_height="104dp"
+                    android:layout_gravity="center_vertical|start"
+                    android:alpha="0.7"
+                    android:background="@drawable/bg_button_shimmer_strip"
+                    android:importantForAccessibility="no"
+                    android:rotation="14" />
+
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/textHelpPrompt"

@@ -8,19 +8,20 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
+import android.animation.ObjectAnimator
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.viewpager2.widget.ViewPager2
-import com.facebook.shimmer.ShimmerFrameLayout
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityOverlayPermissionBinding
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
+import com.text.messages.sms.messanger.util.ButtonShimmerAnimator
 import com.text.messages.sms.messanger.util.PermissionManager
 
 class OverlayPermissionActivity : BaseActivity() {
@@ -28,7 +29,7 @@ class OverlayPermissionActivity : BaseActivity() {
     private lateinit var binding: ActivityOverlayPermissionBinding
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var pagerAdapter: ImagePagerAdapter
-    private var buttonShimmer: ShimmerFrameLayout? = null
+    private var buttonShimmerAnimator: ObjectAnimator? = null
     private val guideLaunchHandler = Handler(Looper.getMainLooper())
     private var shouldShowOverlayGuide = false
 
@@ -47,7 +48,6 @@ class OverlayPermissionActivity : BaseActivity() {
 
         binding = ActivityOverlayPermissionBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        buttonShimmer = binding.shimmerAllowPermission
         configureStatusBar()
 
         val initialPaddingLeft = binding.root.paddingLeft
@@ -164,14 +164,20 @@ class OverlayPermissionActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        buttonShimmer?.startShimmer()
+        binding.viewAllowPermissionShimmer.post {
+            buttonShimmerAnimator = ButtonShimmerAnimator.start(
+                binding.viewAllowPermissionShimmer,
+                buttonShimmerAnimator
+            )
+        }
         if (PermissionManager.hasOverlayPermission(this)) {
             checkOverlayPermission()
         }
     }
 
     override fun onPause() {
-        buttonShimmer?.stopShimmer()
+        ButtonShimmerAnimator.stop(binding.viewAllowPermissionShimmer, buttonShimmerAnimator)
+        buttonShimmerAnimator = null
         super.onPause()
     }
 

@@ -198,7 +198,7 @@
         android:layout_marginBottom="18dp"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/shimmerAgreeContinue"
+        app:layout_constraintBottom_toTopOf="@id/containerAgreeContinue"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -222,19 +222,13 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <com.facebook.shimmer.ShimmerFrameLayout
-        android:id="@+id/shimmerAgreeContinue"
+    <FrameLayout
+        android:id="@+id/containerAgreeContinue"
         android:layout_width="0dp"
         android:layout_height="54dp"
+        android:clipChildren="true"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
-        app:shimmer_auto_start="false"
-        app:shimmer_base_alpha="0"
-        app:shimmer_direction="left_to_right"
-        app:shimmer_duration="1300"
-        app:shimmer_highlight_alpha="0.78"
-        app:shimmer_intensity="0.22"
-        app:shimmer_dropoff="0.65"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -256,6 +250,16 @@
             android:textStyle="bold"
             app:cornerRadius="27dp" />
 
-    </com.facebook.shimmer.ShimmerFrameLayout>
+        <View
+            android:id="@+id/viewAgreeContinueShimmer"
+            android:layout_width="52dp"
+            android:layout_height="96dp"
+            android:layout_gravity="center_vertical|start"
+            android:alpha="0.7"
+            android:background="@drawable/bg_button_shimmer_strip"
+            android:importantForAccessibility="no"
+            android:rotation="14" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

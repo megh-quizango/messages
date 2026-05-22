@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.animation.ObjectAnimator
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import com.text.messages.sms.messanger.ui.base.BaseActivity
@@ -17,16 +18,16 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.WindowInsetsCompat
-import com.facebook.shimmer.ShimmerFrameLayout
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityWelcomeBinding
 import com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity
+import com.text.messages.sms.messanger.util.ButtonShimmerAnimator
 
 class WelcomeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityWelcomeBinding
     private lateinit var sharedPreferences: SharedPreferences
-    private var buttonShimmer: ShimmerFrameLayout? = null
+    private var buttonShimmerAnimator: ObjectAnimator? = null
     private var permissionsRequested = false
     
     // Permission launcher for Notification and Phone permissions
@@ -60,10 +61,9 @@ class WelcomeActivity : BaseActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             enableEdgeToEdge()
         }
-
+        
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        buttonShimmer = binding.shimmerAgreeContinue
         configureStatusBar()
 
         val initialPaddingLeft = binding.root.paddingLeft
@@ -172,7 +172,12 @@ class WelcomeActivity : BaseActivity() {
     
     override fun onResume() {
         super.onResume()
-        buttonShimmer?.startShimmer()
+        binding.viewAgreeContinueShimmer.post {
+            buttonShimmerAnimator = ButtonShimmerAnimator.start(
+                binding.viewAgreeContinueShimmer,
+                buttonShimmerAnimator
+            )
+        }
 
         // Check permissions again when returning from settings
         if (permissionsRequested) {
@@ -184,7 +189,8 @@ class WelcomeActivity : BaseActivity() {
     }
 
     override fun onPause() {
-        buttonShimmer?.stopShimmer()
+        ButtonShimmerAnimator.stop(binding.viewAgreeContinueShimmer, buttonShimmerAnimator)
+        buttonShimmerAnimator = null
         super.onPause()
     }
 }

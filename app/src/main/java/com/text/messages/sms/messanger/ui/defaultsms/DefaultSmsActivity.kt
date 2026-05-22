@@ -3,6 +3,7 @@ package com.text.messages.sms.messanger.ui.defaultsms
 import android.Manifest
 import android.app.AlertDialog
 import android.app.role.RoleManager
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -19,11 +20,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.facebook.shimmer.ShimmerFrameLayout
 import com.text.messages.sms.messanger.databinding.ActivityDefaultSmsBinding
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
+import com.text.messages.sms.messanger.util.ButtonShimmerAnimator
 import com.text.messages.sms.messanger.util.ThemeManager
 
 class DefaultSmsActivity : BaseActivity() {
@@ -32,7 +33,7 @@ class DefaultSmsActivity : BaseActivity() {
     private var isFromSettings = false
     private var hasLaunchedIntent = false
     private lateinit var sharedPreferences: SharedPreferences
-    private var buttonShimmer: ShimmerFrameLayout? = null
+    private var buttonShimmerAnimator: ObjectAnimator? = null
     private var permissionsRequested = false
     
     // ActivityResultLauncher for RoleManager (Android 10+)
@@ -137,7 +138,6 @@ class DefaultSmsActivity : BaseActivity() {
         enableEdgeToEdge()
         binding = ActivityDefaultSmsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        buttonShimmer = binding.shimmerSetDefault
         
         // Setup navigation bar with white background and black icons
         ThemeManager.setupNavigationBar(this)
@@ -175,7 +175,12 @@ class DefaultSmsActivity : BaseActivity() {
     
     override fun onResume() {
         super.onResume()
-        buttonShimmer?.startShimmer()
+        binding.viewSetDefaultShimmer.post {
+            buttonShimmerAnimator = ButtonShimmerAnimator.start(
+                binding.viewSetDefaultShimmer,
+                buttonShimmerAnimator
+            )
+        }
         
         // Check if we're returning from the system dialog
         if (hasLaunchedIntent) {
@@ -232,7 +237,8 @@ class DefaultSmsActivity : BaseActivity() {
     }
 
     override fun onPause() {
-        buttonShimmer?.stopShimmer()
+        ButtonShimmerAnimator.stop(binding.viewSetDefaultShimmer, buttonShimmerAnimator)
+        buttonShimmerAnimator = null
         super.onPause()
     }
     
