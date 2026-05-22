@@ -195,6 +195,10 @@ class ManageAppsDetailActivity : BaseActivity() {
     
     private fun loadNativeAd() {
         val nativeAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeAdUnitId()
+        if (nativeAdUnitId.isBlank()) {
+            binding.nativeAdContainer.visibility = View.GONE
+            return
+        }
         val adLoader = AdLoader.Builder(this, nativeAdUnitId)
             .forNativeAd { ad ->
                 nativeAd = ad

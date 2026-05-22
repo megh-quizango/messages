@@ -24,7 +24,7 @@ class LanguageActivity : BaseActivity() {
     private lateinit var binding: ActivityLanguageBinding
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var adapter: LanguageAdapter
-    private var selectedLanguage: String = "System Default"
+    private var selectedLanguageCode: String = "system"
     private var nativeAd: NativeAd? = null
     private var isFromSettings: Boolean = false
     private var nativeAdView: NativeAdView? = null
@@ -55,7 +55,7 @@ class LanguageActivity : BaseActivity() {
         sharedPreferences = getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
         
         // Load saved language preference
-        selectedLanguage = LocaleHelper.getSavedLanguage(this)
+        selectedLanguageCode = LocaleHelper.getSavedLanguageCode(this)
         
         setupRecyclerView()
         setupNextButton()
@@ -64,23 +64,18 @@ class LanguageActivity : BaseActivity() {
     }
     
     private fun setupRecyclerView() {
-        val languages = listOf(
-            LanguageItem("System Default", false),
-            LanguageItem("English", false),
-            LanguageItem("Hindi", false),
-            LanguageItem("Español", false),
-            LanguageItem("Deutsch", false)
-        )
-        
-        // Find and mark the saved language as selected
-        val savedLanguage = selectedLanguage
-        val languagesWithSelection = languages.map { 
-            LanguageItem(it.name, it.name == savedLanguage) 
+        val savedLanguageCode = selectedLanguageCode
+        val languages = LocaleHelper.getSupportedLanguages().map { language ->
+            LanguageItem(
+                code = language.code,
+                displayName = LocaleHelper.getDisplayName(this, language.code),
+                isSelected = language.code == savedLanguageCode
+            )
         }
         
-        adapter = LanguageAdapter(languagesWithSelection) { language ->
-            selectedLanguage = language
-            adapter.updateSelection(language)
+        adapter = LanguageAdapter(languages) { languageCode ->
+            selectedLanguageCode = languageCode
+            adapter.updateSelection(languageCode)
         }
         
         binding.recyclerViewLanguages.layoutManager = LinearLayoutManager(this)
@@ -90,8 +85,7 @@ class LanguageActivity : BaseActivity() {
     private fun setupNextButton() {
         binding.buttonNext.setOnClickListener {
             // Save language preference and apply locale
-            LocaleHelper.setLanguage(this, selectedLanguage)
-            LocaleHelper.updateLocale(this, selectedLanguage)
+            LocaleHelper.updateLocale(this, selectedLanguageCode)
             
             // Save additional preference
             sharedPreferences.edit()
@@ -152,6 +146,10 @@ class LanguageActivity : BaseActivity() {
     
     private fun loadNativeAd() {
         val nativeAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeAdUnitId()
+        if (nativeAdUnitId.isBlank()) {
+            binding.nativeAdFrame.visibility = android.view.View.GONE
+            return
+        }
         val adLoader = AdLoader.Builder(this, nativeAdUnitId)
             .forNativeAd { ad ->
                 nativeAd = ad
@@ -225,7 +223,8 @@ class LanguageActivity : BaseActivity() {
 }
 
 data class LanguageItem(
-    val name: String,
+    val code: String,
+    val displayName: String,
     val isSelected: Boolean
 )
 

@@ -26,10 +26,13 @@ class AppOpenManager(
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    private val AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921"
-
     private fun loadAd() {
         if (isLoadingAd || isAdAvailable()) return
+
+        val adUnitId = RemoteConfigHelper.getAppOpenAdUnitId()
+        if (adUnitId.isBlank()) {
+            return
+        }
 
         isLoadingAd = true
 
@@ -38,7 +41,7 @@ class AppOpenManager(
         @Suppress("DEPRECATION")
         AppOpenAd.load(
             application,
-            AD_UNIT_ID,
+            adUnitId,
             request,
             AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT,
             object : AppOpenAd.AppOpenAdLoadCallback() {

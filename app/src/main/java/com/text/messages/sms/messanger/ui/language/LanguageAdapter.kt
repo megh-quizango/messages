@@ -30,14 +30,14 @@ class LanguageAdapter(
             selectedPosition = position
             notifyItemChanged(previousPosition)
             notifyItemChanged(selectedPosition)
-            onLanguageSelected(language.name)
+            onLanguageSelected(language.code)
         }
     }
 
     override fun getItemCount() = languages.size
 
-    fun updateSelection(languageName: String) {
-        val newPosition = languages.indexOfFirst { it.name == languageName }
+    fun updateSelection(languageCode: String) {
+        val newPosition = languages.indexOfFirst { it.code == languageCode }
         if (newPosition != -1 && newPosition != selectedPosition) {
             val previousPosition = selectedPosition
             selectedPosition = newPosition
@@ -52,7 +52,7 @@ class LanguageAdapter(
         private val imageEmptyCheck: ImageView = itemView.findViewById(R.id.imageEmptyCheck)
 
         fun bind(language: LanguageItem, isSelected: Boolean) {
-            textLanguage.text = language.name
+            textLanguage.text = language.displayName
             if (isSelected) {
                 imageCheck.visibility = View.VISIBLE
                 imageEmptyCheck.visibility = View.GONE

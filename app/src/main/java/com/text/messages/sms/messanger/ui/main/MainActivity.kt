@@ -2805,6 +2805,10 @@ class MainActivity : BaseActivity() {
         }
         
         val nativeAdUnitId = RemoteConfigHelper.getNativeAdUnitId()
+        if (nativeAdUnitId.isBlank()) {
+            nativeAdFrame.visibility = View.GONE
+            return
+        }
         val adLoader = AdLoader.Builder(this, nativeAdUnitId)
             .forNativeAd { ad ->
                 exitNativeAd = ad

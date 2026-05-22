@@ -224,8 +224,8 @@ class SettingsActivity : BaseActivity() {
         }
         
         val settingsItems = listOf(
-            SettingsItem("General", listOf(
-                SettingsOption("Default SMS apps Messages", getIcon("default_sms"), null, true) { 
+            SettingsItem(getString(R.string.settings_section_general), listOf(
+                SettingsOption(SettingsOptionId.DEFAULT_SMS_APP, getString(R.string.set_default_sms), getIcon("default_sms"), null, true) {
                     // Check if app is already default SMS app
                     val isDefaultSmsApp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         // Android 10+ - Use RoleManager
@@ -239,7 +239,7 @@ class SettingsActivity : BaseActivity() {
                     
                     if (isDefaultSmsApp) {
                         // App is already default - show toast
-                        Toast.makeText(this, "App is already set as default", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.settings_default_sms_already_set), Toast.LENGTH_SHORT).show()
                     } else {
                         // App is not default - open DefaultSmsActivity
                         startActivity(Intent(this, com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity::class.java).apply {
@@ -247,38 +247,38 @@ class SettingsActivity : BaseActivity() {
                         })
                     }
                 },
-                SettingsOption("Contacts colored icons", getIcon("contacts"), true, false),
-                SettingsOption("Color SIM card icons", getIcon("sim"), 
+                SettingsOption(SettingsOptionId.CONTACTS_COLORED_ICONS, getString(R.string.settings_contacts_colored_icons), getIcon("contacts"), true, false),
+                SettingsOption(SettingsOptionId.COLOR_SIM_CARD_ICONS, getString(R.string.settings_color_sim_card_icons), getIcon("sim"),
                     com.text.messages.sms.messanger.util.AppPreferences.getColorSimCardIcons(this), false),
-                SettingsOption("Quick access to OTP", getIcon("otp"), true, false)
+                SettingsOption(SettingsOptionId.QUICK_ACCESS_TO_OTP, getString(R.string.settings_quick_access_to_otp), getIcon("otp"), true, false)
             )),
-            SettingsItem("Go To", listOf(
-                SettingsOption("Manage Apps", getIcon("manage"), null, false) { startActivity(Intent(this, ManageAppsActivity::class.java)) },
-                SettingsOption("Private Conversations", getIcon("private_convo"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.pin.PinActivity::class.java)) },
-                SettingsOption("Spam & Block", getIcon("spam"), null, false) { startActivity(Intent(this, SpamBlockActivity::class.java)) },
-                SettingsOption("Archive", getIcon("archive"), null, false) { startActivity(Intent(this, ArchiveActivity::class.java)) },
-                SettingsOption("Recycle Bin", getIcon("recycle"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.recyclebin.RecycleBinActivity::class.java)) },
-                SettingsOption("Schedule Messages", getIcon("schedule"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.scheduled.ScheduledMessagesActivity::class.java)) },
-                SettingsOption("Caller Settings", getIcon("caller"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.caller.CallerSettingsActivity::class.java)) },
-                SettingsOption("Starred", getIcon("starred"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.starred.StarredActivity::class.java)) },
-                SettingsOption("Swipe Gestures", getIcon("swipe"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.swipe.SwipeGesturesActivity::class.java)) },
-                SettingsOption("Add Signature", getIcon("signature"), null, false) { showSignatureDialog() },
-                SettingsOption("Notifications", getIcon("notifications"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.notifications.NotificationsActivity::class.java)) },
-                SettingsOption("Language", getIcon("language"), null, false) { 
+            SettingsItem(getString(R.string.settings_section_go_to), listOf(
+                SettingsOption(SettingsOptionId.MANAGE_APPS, getString(R.string.manage_apps), getIcon("manage"), null, false) { startActivity(Intent(this, ManageAppsActivity::class.java)) },
+                SettingsOption(SettingsOptionId.PRIVATE_CONVERSATIONS, getString(R.string.private_conversations), getIcon("private_convo"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.pin.PinActivity::class.java)) },
+                SettingsOption(SettingsOptionId.SPAM_BLOCK, getString(R.string.spam_block), getIcon("spam"), null, false) { startActivity(Intent(this, SpamBlockActivity::class.java)) },
+                SettingsOption(SettingsOptionId.ARCHIVE, getString(R.string.settings_archive), getIcon("archive"), null, false) { startActivity(Intent(this, ArchiveActivity::class.java)) },
+                SettingsOption(SettingsOptionId.RECYCLE_BIN, getString(R.string.settings_recycle_bin), getIcon("recycle"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.recyclebin.RecycleBinActivity::class.java)) },
+                SettingsOption(SettingsOptionId.SCHEDULE_MESSAGES, getString(R.string.settings_schedule_messages), getIcon("schedule"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.scheduled.ScheduledMessagesActivity::class.java)) },
+                SettingsOption(SettingsOptionId.CALLER_SETTINGS, getString(R.string.settings_caller_settings), getIcon("caller"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.caller.CallerSettingsActivity::class.java)) },
+                SettingsOption(SettingsOptionId.STARRED, getString(R.string.settings_starred), getIcon("starred"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.starred.StarredActivity::class.java)) },
+                SettingsOption(SettingsOptionId.SWIPE_GESTURES, getString(R.string.settings_swipe_gestures), getIcon("swipe"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.swipe.SwipeGesturesActivity::class.java)) },
+                SettingsOption(SettingsOptionId.ADD_SIGNATURE, getString(R.string.settings_add_signature), getIcon("signature"), null, false) { showSignatureDialog() },
+                SettingsOption(SettingsOptionId.NOTIFICATIONS, getString(R.string.welcome_notifications_title), getIcon("notifications"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.notifications.NotificationsActivity::class.java)) },
+                SettingsOption(SettingsOptionId.LANGUAGE, getString(R.string.settings_language), getIcon("language"), null, false) {
                     startActivity(Intent(this, LanguageActivity::class.java).apply {
                         putExtra("from_settings", true)
                     })
                 },
-                SettingsOption("Advance", getIcon("advance"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.advance.AdvanceActivity::class.java)) },
-                SettingsOption("Feedback", getIcon("feedback"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.feedback.FeedbackActivity::class.java)) },
-                SettingsOption("Share App!", getIcon("share"), null, false),
-                SettingsOption("Rate Us", getIcon("rate_us"), null, false) { showRateUsBottomSheet() }
+                SettingsOption(SettingsOptionId.ADVANCE, getString(R.string.settings_advance), getIcon("advance"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.advance.AdvanceActivity::class.java)) },
+                SettingsOption(SettingsOptionId.FEEDBACK, getString(R.string.settings_feedback), getIcon("feedback"), null, false) { startActivity(Intent(this, com.text.messages.sms.messanger.ui.feedback.FeedbackActivity::class.java)) },
+                SettingsOption(SettingsOptionId.SHARE_APP, getString(R.string.settings_share_app), getIcon("share"), null, false) { openPlayStoreForSharing() },
+                SettingsOption(SettingsOptionId.RATE_US, getString(R.string.settings_rate_us), getIcon("rate_us"), null, false) { showRateUsBottomSheet() }
             )),
-            SettingsItem("Backups", listOf(
-                SettingsOption("Export Messages", getIcon("export"), null, false) {
+            SettingsItem(getString(R.string.settings_section_backups), listOf(
+                SettingsOption(SettingsOptionId.EXPORT_MESSAGES, getString(R.string.settings_export_messages), getIcon("export"), null, false) {
                     exportMessages()
                 },
-                SettingsOption("Import Messages", getIcon("import_message"), null, false) {
+                SettingsOption(SettingsOptionId.IMPORT_MESSAGES, getString(R.string.settings_import_messages), getIcon("import_message"), null, false) {
                     importMessages()
                 }
             ))
@@ -403,6 +403,37 @@ class SettingsActivity : BaseActivity() {
         
         dialog.show()
     }
+
+    private fun openPlayStoreForRating() {
+        try {
+            val appPackageName = packageName
+            val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appPackageName"))
+            try {
+                startActivity(marketIntent)
+            } catch (e: android.content.ActivityNotFoundException) {
+                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName"))
+                startActivity(webIntent)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, getString(R.string.settings_unable_open_play_store), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openPlayStoreForSharing() {
+        try {
+            val appPackageName = packageName
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    getString(R.string.settings_share_app_message, getString(R.string.app_name), appPackageName)
+                )
+            }
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.settings_share_app_chooser_title)))
+        } catch (e: Exception) {
+            Toast.makeText(this, getString(R.string.settings_unable_share_play_store_link), Toast.LENGTH_SHORT).show()
+        }
+    }
     
     private fun showRateUsBottomSheet() {
         val bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_rate_us, null)
@@ -443,8 +474,8 @@ class SettingsActivity : BaseActivity() {
         
         buttonRateUs?.setOnClickListener {
             if (selectedRating > 0) {
-                // TODO: Open Play Store rating or handle rating submission
                 bottomSheet.dismiss()
+                openPlayStoreForRating()
             }
         }
         
@@ -483,7 +514,7 @@ class SettingsActivity : BaseActivity() {
             exportFileLauncher.launch(defaultFileName)
         } catch (e: Exception) {
             Log.e("SettingsActivity", "Error launching export file picker", e)
-            Toast.makeText(this, "Error opening file picker", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.settings_error_opening_file_picker), Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -512,15 +543,15 @@ class SettingsActivity : BaseActivity() {
             importFileLauncher.launch(arrayOf("application/zip"))
         } catch (e: Exception) {
             Log.e("SettingsActivity", "Error launching import file picker", e)
-            Toast.makeText(this, "Error opening file picker", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.settings_error_opening_file_picker), Toast.LENGTH_SHORT).show()
         }
     }
     
     private fun handleExportResult(uri: Uri) {
         // Show progress dialog
         val progressDialog = AlertDialog.Builder(this)
-            .setTitle("Exporting Messages")
-            .setMessage("Please wait...")
+            .setTitle(getString(R.string.settings_exporting_messages))
+            .setMessage(getString(R.string.settings_please_wait))
             .setCancelable(false)
             .create()
         progressDialog.show()
@@ -531,14 +562,18 @@ class SettingsActivity : BaseActivity() {
                 progressDialog.dismiss()
                 
                 if (success) {
-                    Toast.makeText(this@SettingsActivity, "Messages exported successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@SettingsActivity, getString(R.string.settings_messages_exported_success), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this@SettingsActivity, "Failed to export messages", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@SettingsActivity, getString(R.string.settings_failed_export_messages), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 progressDialog.dismiss()
                 Log.e("SettingsActivity", "Error exporting messages", e)
-                Toast.makeText(this@SettingsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@SettingsActivity,
+                    getString(R.string.settings_error_with_reason, e.message ?: getString(R.string.settings_unknown_error)),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -546,8 +581,8 @@ class SettingsActivity : BaseActivity() {
     private fun handleImportResult(uri: Uri) {
         // Show progress dialog
         val progressDialog = AlertDialog.Builder(this)
-            .setTitle("Importing Messages")
-            .setMessage("Please wait...")
+            .setTitle(getString(R.string.settings_importing_messages))
+            .setMessage(getString(R.string.settings_please_wait))
             .setCancelable(false)
             .create()
         progressDialog.show()
@@ -558,18 +593,26 @@ class SettingsActivity : BaseActivity() {
                 progressDialog.dismiss()
                 
                 if (importedCount > 0) {
-                    Toast.makeText(this@SettingsActivity, "Imported $importedCount messages successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@SettingsActivity,
+                        resources.getQuantityString(R.plurals.settings_imported_messages_success, importedCount, importedCount),
+                        Toast.LENGTH_SHORT
+                    ).show()
                     // Refresh the main activity if it's in the back stack
                     // The messages will be visible when user navigates back
                 } else if (importedCount == 0) {
-                    Toast.makeText(this@SettingsActivity, "No new messages to import (all messages already exist)", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@SettingsActivity, getString(R.string.settings_no_new_messages_to_import), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this@SettingsActivity, "Failed to import messages", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@SettingsActivity, getString(R.string.settings_failed_import_messages), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 progressDialog.dismiss()
                 Log.e("SettingsActivity", "Error importing messages", e)
-                Toast.makeText(this@SettingsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@SettingsActivity,
+                    getString(R.string.settings_error_with_reason, e.message ?: getString(R.string.settings_unknown_error)),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -587,7 +630,33 @@ data class SettingsItem(
     val options: List<SettingsOption>
 )
 
+enum class SettingsOptionId {
+    DEFAULT_SMS_APP,
+    CONTACTS_COLORED_ICONS,
+    COLOR_SIM_CARD_ICONS,
+    QUICK_ACCESS_TO_OTP,
+    MANAGE_APPS,
+    PRIVATE_CONVERSATIONS,
+    SPAM_BLOCK,
+    ARCHIVE,
+    RECYCLE_BIN,
+    SCHEDULE_MESSAGES,
+    CALLER_SETTINGS,
+    STARRED,
+    SWIPE_GESTURES,
+    ADD_SIGNATURE,
+    NOTIFICATIONS,
+    LANGUAGE,
+    ADVANCE,
+    FEEDBACK,
+    SHARE_APP,
+    RATE_US,
+    EXPORT_MESSAGES,
+    IMPORT_MESSAGES
+}
+
 data class SettingsOption(
+    val id: SettingsOptionId,
     val title: String,
     val iconRes: Int?,
     val switchState: Boolean?,

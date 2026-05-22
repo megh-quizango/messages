@@ -39,6 +39,7 @@ import com.text.messages.sms.messanger.util.ThemeManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.ui.archive.ArchiveActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -112,8 +113,8 @@ class SettingsFragment : Fragment() {
     
     private fun setupRecyclerView() {
         val settingsItems = listOf(
-            SettingsItem("General", listOf(
-                SettingsOption("Default SMS apps Messages", com.text.messages.sms.messanger.R.drawable.default_sms, null, true) {
+            SettingsItem(getString(R.string.settings_section_general), listOf(
+                SettingsOption(SettingsOptionId.DEFAULT_SMS_APP, getString(R.string.set_default_sms), R.drawable.default_sms, null, true) {
                     // Check if app is already default SMS app
                     val isDefaultSmsApp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         val roleManager = requireContext().getSystemService(RoleManager::class.java)
@@ -124,74 +125,74 @@ class SettingsFragment : Fragment() {
                     }
                     
                     if (isDefaultSmsApp) {
-                        Toast.makeText(requireContext(), "App is already set as default", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.settings_default_sms_already_set), Toast.LENGTH_SHORT).show()
                     } else {
                         startActivity(Intent(requireContext(), DefaultSmsActivity::class.java).apply {
                             putExtra("from_settings", true)
                         })
                     }
                 },
-                SettingsOption("Contacts colored icons", com.text.messages.sms.messanger.R.drawable.contacts, true, false),
-                SettingsOption("Color SIM card icons", com.text.messages.sms.messanger.R.drawable.sim, false, false),
-                SettingsOption("Quick access to OTP", com.text.messages.sms.messanger.R.drawable.otp, true, false)
+                SettingsOption(SettingsOptionId.CONTACTS_COLORED_ICONS, getString(R.string.settings_contacts_colored_icons), R.drawable.contacts, true, false),
+                SettingsOption(SettingsOptionId.COLOR_SIM_CARD_ICONS, getString(R.string.settings_color_sim_card_icons), R.drawable.sim, false, false),
+                SettingsOption(SettingsOptionId.QUICK_ACCESS_TO_OTP, getString(R.string.settings_quick_access_to_otp), R.drawable.otp, true, false)
             )),
-            SettingsItem("Go To", listOf(
-                SettingsOption("Manage Apps", com.text.messages.sms.messanger.R.drawable.manage, null, false) { 
+            SettingsItem(getString(R.string.settings_section_go_to), listOf(
+                SettingsOption(SettingsOptionId.MANAGE_APPS, getString(R.string.manage_apps), R.drawable.manage, null, false) {
                     startActivity(Intent(requireContext(), ManageAppsActivity::class.java)) 
                 },
-                SettingsOption("Private Conversations", com.text.messages.sms.messanger.R.drawable.private_convo, null, false) {
+                SettingsOption(SettingsOptionId.PRIVATE_CONVERSATIONS, getString(R.string.private_conversations), R.drawable.private_convo, null, false) {
                     startActivity(Intent(requireContext(), PinActivity::class.java)) 
                 },
-                SettingsOption("Spam & Block", com.text.messages.sms.messanger.R.drawable.spam, null, false) { 
+                SettingsOption(SettingsOptionId.SPAM_BLOCK, getString(R.string.spam_block), R.drawable.spam, null, false) {
                     startActivity(Intent(requireContext(), SpamBlockActivity::class.java)) 
                 },
-                SettingsOption("Archive", com.text.messages.sms.messanger.R.drawable.archive, null, false){
+                SettingsOption(SettingsOptionId.ARCHIVE, getString(R.string.settings_archive), R.drawable.archive, null, false) {
                     startActivity(Intent(requireContext(), ArchiveActivity::class.java))
                 },
-                SettingsOption("Recycle Bin", com.text.messages.sms.messanger.R.drawable.recycle, null, false) {
+                SettingsOption(SettingsOptionId.RECYCLE_BIN, getString(R.string.settings_recycle_bin), R.drawable.recycle, null, false) {
                     startActivity(Intent(requireContext(), RecycleBinActivity::class.java)) 
                 },
-                SettingsOption("Schedule Messages", com.text.messages.sms.messanger.R.drawable.schedule, null, false) {
+                SettingsOption(SettingsOptionId.SCHEDULE_MESSAGES, getString(R.string.settings_schedule_messages), R.drawable.schedule, null, false) {
                     startActivity(Intent(requireContext(), ScheduledMessagesActivity::class.java)) 
                 },
-                SettingsOption("Caller Settings", com.text.messages.sms.messanger.R.drawable.caller, null, false) {
+                SettingsOption(SettingsOptionId.CALLER_SETTINGS, getString(R.string.settings_caller_settings), R.drawable.caller, null, false) {
                     startActivity(Intent(requireContext(), CallerSettingsActivity::class.java)) 
                 },
-                SettingsOption("Starred", com.text.messages.sms.messanger.R.drawable.starred, null, false) {
+                SettingsOption(SettingsOptionId.STARRED, getString(R.string.settings_starred), R.drawable.starred, null, false) {
                     startActivity(Intent(requireContext(), StarredActivity::class.java)) 
                 },
-                SettingsOption("Swipe Gestures", com.text.messages.sms.messanger.R.drawable.swipe, null, false) {
+                SettingsOption(SettingsOptionId.SWIPE_GESTURES, getString(R.string.settings_swipe_gestures), R.drawable.swipe, null, false) {
                     startActivity(Intent(requireContext(), SwipeGesturesActivity::class.java)) 
                 },
-                SettingsOption("Add Signature", com.text.messages.sms.messanger.R.drawable.signature, null, false) {
+                SettingsOption(SettingsOptionId.ADD_SIGNATURE, getString(R.string.settings_add_signature), R.drawable.signature, null, false) {
                     showSignatureDialog()
                 },
-                SettingsOption("Notifications", com.text.messages.sms.messanger.R.drawable.notifications, null, false) {
+                SettingsOption(SettingsOptionId.NOTIFICATIONS, getString(R.string.welcome_notifications_title), R.drawable.notifications, null, false) {
                     startActivity(Intent(requireContext(), NotificationsActivity::class.java)) 
                 },
-                SettingsOption("Language", com.text.messages.sms.messanger.R.drawable.language, null, false) {
+                SettingsOption(SettingsOptionId.LANGUAGE, getString(R.string.settings_language), R.drawable.language, null, false) {
                     startActivity(Intent(requireContext(), LanguageActivity::class.java).apply {
                         putExtra("from_settings", true)
                     })
                 },
-                SettingsOption("Advance", com.text.messages.sms.messanger.R.drawable.advance, null, false) {
+                SettingsOption(SettingsOptionId.ADVANCE, getString(R.string.settings_advance), R.drawable.advance, null, false) {
                     startActivity(Intent(requireContext(), AdvanceActivity::class.java)) 
                 },
-                SettingsOption("Feedback", com.text.messages.sms.messanger.R.drawable.feedback, null, false) {
+                SettingsOption(SettingsOptionId.FEEDBACK, getString(R.string.settings_feedback), R.drawable.feedback, null, false) {
                     startActivity(Intent(requireContext(), FeedbackActivity::class.java)) 
                 },
-                SettingsOption("Share App!", com.text.messages.sms.messanger.R.drawable.share, null, false) {
+                SettingsOption(SettingsOptionId.SHARE_APP, getString(R.string.settings_share_app), R.drawable.share, null, false) {
                     openPlayStoreForSharing()
                 },
-                SettingsOption("Rate Us", com.text.messages.sms.messanger.R.drawable.rate_us, null, false) {
+                SettingsOption(SettingsOptionId.RATE_US, getString(R.string.settings_rate_us), R.drawable.rate_us, null, false) {
                     showRateUsBottomSheet()
                 }
             )),
-            SettingsItem("Backups", listOf(
-                SettingsOption("Export Messages", com.text.messages.sms.messanger.R.drawable.export, null, false) {
+            SettingsItem(getString(R.string.settings_section_backups), listOf(
+                SettingsOption(SettingsOptionId.EXPORT_MESSAGES, getString(R.string.settings_export_messages), R.drawable.export, null, false) {
                     exportMessages()
                 },
-                SettingsOption("Import Messages", com.text.messages.sms.messanger.R.drawable.import_message, null, false) {
+                SettingsOption(SettingsOptionId.IMPORT_MESSAGES, getString(R.string.settings_import_messages), R.drawable.import_message, null, false) {
                     importMessages()
                 }
             ))
@@ -252,7 +253,7 @@ class SettingsFragment : Fragment() {
                 startActivity(webIntent)
             }
         } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Unable to open Play Store", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.settings_unable_open_play_store), Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -263,10 +264,10 @@ class SettingsFragment : Fragment() {
                 type = "text/plain"
                 putExtra(
                     Intent.EXTRA_TEXT,
-                    "Check out Messages App on Play Store: https://play.google.com/store/apps/details?id=$packageName"
+                    getString(R.string.settings_share_app_message, getString(R.string.app_name), packageName)
                 )
             }
-            context?.startActivity(Intent.createChooser(shareIntent, "Share App"))
+            context?.startActivity(Intent.createChooser(shareIntent, getString(R.string.settings_share_app_chooser_title)))
 //            val packageName = requireContext().packageName
 //            val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
 //            try {
@@ -277,7 +278,7 @@ class SettingsFragment : Fragment() {
 //                startActivity(webIntent)
 //            }
         } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Unable to share Play Store link", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.settings_unable_share_play_store_link), Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -366,7 +367,7 @@ class SettingsFragment : Fragment() {
             exportFileLauncher.launch(defaultFileName)
         } catch (e: Exception) {
             Log.e("SettingsFragment", "Error launching export file picker", e)
-            Toast.makeText(requireContext(), "Error opening file picker", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.settings_error_opening_file_picker), Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -395,15 +396,15 @@ class SettingsFragment : Fragment() {
             importFileLauncher.launch(arrayOf("application/zip"))
         } catch (e: Exception) {
             Log.e("SettingsFragment", "Error launching import file picker", e)
-            Toast.makeText(requireContext(), "Error opening file picker", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.settings_error_opening_file_picker), Toast.LENGTH_SHORT).show()
         }
     }
     
     private fun handleExportResult(uri: Uri) {
         // Show progress dialog
         val progressDialog = AlertDialog.Builder(requireContext())
-            .setTitle("Exporting Messages")
-            .setMessage("Please wait...")
+            .setTitle(getString(R.string.settings_exporting_messages))
+            .setMessage(getString(R.string.settings_please_wait))
             .setCancelable(false)
             .create()
         progressDialog.show()
@@ -414,14 +415,18 @@ class SettingsFragment : Fragment() {
                 progressDialog.dismiss()
                 
                 if (success) {
-                    Toast.makeText(requireContext(), "Messages exported successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.settings_messages_exported_success), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(requireContext(), "Failed to export messages", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.settings_failed_export_messages), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 progressDialog.dismiss()
                 Log.e("SettingsFragment", "Error exporting messages", e)
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.settings_error_with_reason, e.message ?: getString(R.string.settings_unknown_error)),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -429,8 +434,8 @@ class SettingsFragment : Fragment() {
     private fun handleImportResult(uri: Uri) {
         // Show progress dialog
         val progressDialog = AlertDialog.Builder(requireContext())
-            .setTitle("Importing Messages")
-            .setMessage("Please wait...")
+            .setTitle(getString(R.string.settings_importing_messages))
+            .setMessage(getString(R.string.settings_please_wait))
             .setCancelable(false)
             .create()
         progressDialog.show()
@@ -441,18 +446,26 @@ class SettingsFragment : Fragment() {
                 progressDialog.dismiss()
                 
                 if (importedCount > 0) {
-                    Toast.makeText(requireContext(), "Imported $importedCount messages successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        resources.getQuantityString(R.plurals.settings_imported_messages_success, importedCount, importedCount),
+                        Toast.LENGTH_SHORT
+                    ).show()
                     // Refresh the main activity if it's in the back stack
                     // The messages will be visible when user navigates back
                 } else if (importedCount == 0) {
-                    Toast.makeText(requireContext(), "No new messages to import (all messages already exist)", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.settings_no_new_messages_to_import), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(requireContext(), "Failed to import messages", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.settings_failed_import_messages), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 progressDialog.dismiss()
                 Log.e("SettingsFragment", "Error importing messages", e)
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.settings_error_with_reason, e.message ?: getString(R.string.settings_unknown_error)),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

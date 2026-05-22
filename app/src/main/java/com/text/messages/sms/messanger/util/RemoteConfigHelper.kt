@@ -10,12 +10,12 @@ object RemoteConfigHelper {
     @Volatile
     private var remoteConfig: FirebaseRemoteConfig? = null
 
-    // Default ad unit IDs (fallback values)
-    private const val DEFAULT_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
-    private const val DEFAULT_NATIVE_AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110"
-    private const val DEFAULT_NATIVE_VIDEO_AD_UNIT_ID = "ca-app-pub-3940256099942544/1044960115"
-    private const val DEFAULT_APP_OPEN_AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921"
-    private const val DEFAULT_ADMOB_APP_ID = "ca-app-pub-3940256099942544~3347511713"
+    // Leave ad unit defaults blank so ad loaders only use fetched/cached Remote Config values.
+    private const val DEFAULT_BANNER_AD_UNIT_ID = ""
+    private const val DEFAULT_NATIVE_AD_UNIT_ID = ""
+    private const val DEFAULT_NATIVE_VIDEO_AD_UNIT_ID = ""
+    private const val DEFAULT_APP_OPEN_AD_UNIT_ID = ""
+    private const val DEFAULT_ADMOB_APP_ID = ""
 
     // Remote Config keys
     private const val KEY_BANNER_AD_UNIT_ID = "banner_ad_unit_id"
@@ -62,31 +62,31 @@ object RemoteConfigHelper {
 
     fun getBannerAdUnitId(): String {
         val config = remoteConfig ?: return DEFAULT_BANNER_AD_UNIT_ID
-        val adUnitId = config.getString(KEY_BANNER_AD_UNIT_ID)
+        val adUnitId = config.getString(KEY_BANNER_AD_UNIT_ID).trim()
         return if (adUnitId.isBlank()) DEFAULT_BANNER_AD_UNIT_ID else adUnitId
     }
 
     fun getNativeAdUnitId(): String {
         val config = remoteConfig ?: return DEFAULT_NATIVE_AD_UNIT_ID
-        val adUnitId = config.getString(KEY_NATIVE_AD_UNIT_ID)
+        val adUnitId = config.getString(KEY_NATIVE_AD_UNIT_ID).trim()
         return if (adUnitId.isBlank()) DEFAULT_NATIVE_AD_UNIT_ID else adUnitId
     }
 
     fun getAppOpenAdUnitId(): String {
         val config = remoteConfig ?: return DEFAULT_APP_OPEN_AD_UNIT_ID
-        val adUnitId = config.getString(KEY_APP_OPEN_AD_UNIT_ID)
+        val adUnitId = config.getString(KEY_APP_OPEN_AD_UNIT_ID).trim()
         return if (adUnitId.isBlank()) DEFAULT_APP_OPEN_AD_UNIT_ID else adUnitId
     }
 
     fun getNativeVideoAdUnitId(): String {
         val config = remoteConfig ?: return DEFAULT_NATIVE_VIDEO_AD_UNIT_ID
-        val adUnitId = config.getString(KEY_NATIVE_VIDEO_AD_UNIT_ID)
+        val adUnitId = config.getString(KEY_NATIVE_VIDEO_AD_UNIT_ID).trim()
         return if (adUnitId.isBlank()) DEFAULT_NATIVE_VIDEO_AD_UNIT_ID else adUnitId
     }
 
     fun getAdMobAppId(): String {
         val config = remoteConfig ?: return DEFAULT_ADMOB_APP_ID
-        val appId = config.getString(KEY_ADMOB_APP_ID)
+        val appId = config.getString(KEY_ADMOB_APP_ID).trim()
         return if (appId.isBlank()) DEFAULT_ADMOB_APP_ID else appId
     }
 

@@ -170,6 +170,11 @@ object AppOpenAdManager {
             .build()
 
         val nativeVideoAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeVideoAdUnitId()
+        if (nativeVideoAdUnitId.isBlank()) {
+            Log.w(TAG, "Native video ad unit id is blank in Remote Config")
+            onAdFailed()
+            return
+        }
         val adLoader = AdLoader.Builder(activity, nativeVideoAdUnitId)
             .forNativeAd { nativeAd ->
                 Log.d(TAG, "Native ad #$adNumber loaded successfully")
@@ -417,6 +422,10 @@ object AppOpenAdManager {
             .build()
 
         val nativeVideoAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeVideoAdUnitId()
+        if (nativeVideoAdUnitId.isBlank()) {
+            Log.w(TAG, "Native video ad unit id is blank in Remote Config")
+            return
+        }
         val adLoader = AdLoader.Builder(activity, nativeVideoAdUnitId)
             .forNativeAd { nativeAd ->
                 Log.d(TAG, "Next ad #$nextAdNumber preloaded successfully")

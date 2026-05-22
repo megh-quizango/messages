@@ -12,21 +12,18 @@ import com.google.android.gms.ads.AdListener
 fun AdView.loadBannerAdWithRemoteConfig() {
     val remoteConfigAdUnitId = RemoteConfigHelper.getBannerAdUnitId()
     
-    // Ensure ad unit ID is valid
+    // Only load when Remote Config provides a real ad unit id.
     if (remoteConfigAdUnitId.isBlank()) {
-        android.util.Log.e("AdHelper", "Banner ad unit ID is empty, cannot load ad")
+        android.util.Log.w("AdHelper", "Banner ad unit ID is blank in Remote Config, skipping banner load")
+        this.visibility = android.view.View.GONE
         return
     }
-    
-    // AdView requires adUnitId to be set (either in XML or programmatically)
-    // Since XML already has it set, we'll use the existing value
-    // Remote Config values will be used when you update the XML files
-    val adUnitIdToUse = this.adUnitId ?: remoteConfigAdUnitId
-    
-    // Log which ad unit ID is being used for analytics
-    if (this.adUnitId != null && this.adUnitId != remoteConfigAdUnitId) {
-        android.util.Log.d("AdHelper", "Using XML adUnitId: ${this.adUnitId}, Remote Config has: $remoteConfigAdUnitId")
+
+    if (this.adUnitId != remoteConfigAdUnitId) {
+        android.util.Log.d("AdHelper", "Applying Remote Config banner ad unit id: $remoteConfigAdUnitId")
     }
+    this.visibility = android.view.View.VISIBLE
+    this.adUnitId = remoteConfigAdUnitId
     
     // Ensure ad size is set (should be set in XML, but verify)
     if (this.adSize == null) {
@@ -35,6 +32,7 @@ fun AdView.loadBannerAdWithRemoteConfig() {
     }
     
     val adRequest = AdRequest.Builder().build()
+    val adUnitIdToUse = remoteConfigAdUnitId
     
     this.adListener = object : AdListener() {
         override fun onAdLoaded() {

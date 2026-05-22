@@ -124,19 +124,20 @@ class SettingsAdapter(
                     switchToggle.setOnCheckedChangeListener(null)
                     switchToggle.setOnCheckedChangeListener { _, isChecked ->
                         // Handle toggle state change - save preference
-                        when (option.title) {
-                            "Color SIM card icons" -> {
+                        when (option.id) {
+                            SettingsOptionId.COLOR_SIM_CARD_ICONS -> {
                                 com.text.messages.sms.messanger.util.AppPreferences.setColorSimCardIcons(
                                     itemView.context,
                                     isChecked
                                 )
                                 Log.d(TAG, "Saved Color SIM card icons preference: $isChecked")
                             }
-                            "Contacts colored icons" -> {
+                            SettingsOptionId.CONTACTS_COLORED_ICONS -> {
                                 // Handle contacts colored icons if needed
                                 // For now, just log
                                 Log.d(TAG, "Contacts colored icons toggled: $isChecked")
                             }
+                            else -> Unit
                         }
                     }
                     // Apply theme after view is added to container

@@ -601,6 +601,10 @@ class CallAfterActivity : BaseActivity() {
 
     private fun loadNativeAd() {
         val nativeAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeAdUnitId()
+        if (nativeAdUnitId.isBlank()) {
+            nativeAdContainer.visibility = View.GONE
+            return
+        }
         val adLoader = AdLoader.Builder(this, nativeAdUnitId)
             .forNativeAd { nativeAd ->
                 // Destroy old ad if exists
