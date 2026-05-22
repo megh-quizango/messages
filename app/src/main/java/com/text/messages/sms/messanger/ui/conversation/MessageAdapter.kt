@@ -375,7 +375,7 @@ class MessageAdapter(
         private fun copyOTPToClipboard(otp: String) {
             try {
                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("OTP", otp)
+                val clip = ClipData.newPlainText(context.getString(R.string.clipboard_label_otp), otp)
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(context, context.getString(R.string.otp_copied, otp), Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {

@@ -96,6 +96,8 @@
     <string name="conversation_detail_message_deleted">Message deleted</string>
     <string name="main_please_enter_filter_name">Please enter a filter name</string>
     <string name="main_end_date_after_start">End date must be after start date</string>
+    <string name="main_add_conversation">Add Conversation</string>
+    <string name="main_add_conversation_description">Tap to add conversations to this filter</string>
     <string name="manage_apps_percentage_format">%1$d%%</string>
     <string name="manage_apps_ram_used_format">%1$d%% Used</string>
     <string name="manage_apps_total_apps_format">Total: %1$d</string>
@@ -258,6 +260,17 @@
     <string name="notification_option_button_1">Button 1</string>
     <string name="notification_option_button_2">Button 2</string>
     <string name="notification_option_button_3">Button 3</string>
+    <string name="caller_settings_missed_call_title">Missed call</string>
+    <string name="caller_settings_missed_call_description">After a missed call, get details and choose what to do with the contact information.</string>
+    <string name="caller_settings_completed_call_title">Completed call</string>
+    <string name="caller_settings_completed_call_description">After a call ends, see details and choose what to do with the contact information.</string>
+    <string name="caller_settings_no_answer_title">No answer</string>
+    <string name="caller_settings_no_answer_description">After a call goes unanswered, see details and choose what to do with the contact information.</string>
+    <string name="caller_settings_unknown_caller_title">Unknown caller</string>
+    <string name="caller_settings_unknown_caller_description">After getting a call from an unknown number, view details and choose how to handle the contact information.</string>
+    <string name="caller_settings_show_call_info_title">Show call info for contacts</string>
+    <string name="caller_settings_show_reminders_title">Show reminders in notifications</string>
+    <string name="clipboard_label_otp">OTP</string>
     <string name="notification_channel_name">SMS Notifications</string>
     <string name="notification_channel_description">Notifications for incoming SMS messages</string>
     <string name="notification_reply_label">Reply</string>

@@ -118,8 +118,8 @@ class ConversationAdapter(
         fun bind(conversation: Conversation) {
             // Handle "Add Conversation" special item
             if (conversation.threadId == -1L) {
-                textContactName.text = conversation.contactName ?: "Add Conversation"
-                textSnippet.text = conversation.snippet ?: "Tap to add conversations to this filter"
+                textContactName.text = conversation.contactName ?: itemView.context.getString(R.string.main_add_conversation)
+                textSnippet.text = conversation.snippet ?: itemView.context.getString(R.string.main_add_conversation_description)
                 textTime.text = ""
                 textUnreadDot.visibility = View.GONE
                 buttonStartChat.visibility = View.GONE
@@ -362,7 +362,7 @@ class ConversationAdapter(
         private fun copyOTPToClipboard(otp: String) {
             try {
                 val clipboard = itemView.context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("OTP", otp)
+                val clip = ClipData.newPlainText(itemView.context.getString(R.string.clipboard_label_otp), otp)
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(itemView.context, itemView.context.getString(R.string.otp_copied, otp), Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {

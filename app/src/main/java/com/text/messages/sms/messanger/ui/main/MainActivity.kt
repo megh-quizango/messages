@@ -1414,6 +1414,17 @@ class MainActivity : BaseActivity() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.editTextSearch.windowToken, 0)
     }
+
+    private fun createAddConversationItem(): Conversation {
+        return Conversation(
+            threadId = -1L,
+            contactName = getString(R.string.main_add_conversation),
+            snippet = getString(R.string.main_add_conversation_description),
+            address = "",
+            date = 0,
+            unreadCount = 0
+        )
+    }
     
     private fun filterConversations() {
         // Only update RecyclerView if MainActivity is in the foreground and adapter is initialized
@@ -1429,15 +1440,7 @@ class MainActivity : BaseActivity() {
             // Show all conversations for current category
             // For custom filters, prepend "Add Conversation" item
             if (currentCustomFilterId != null) {
-                val addConversationItem = Conversation(
-                    threadId = -1L,
-                    contactName = "Add Conversation",
-                    snippet = "Tap to add conversations to this filter",
-                    address = "",
-                    date = 0,
-                    unreadCount = 0
-                )
-                listOf(addConversationItem) + allConversations
+                listOf(createAddConversationItem()) + allConversations
             } else {
                 allConversations
             }
@@ -1461,15 +1464,7 @@ class MainActivity : BaseActivity() {
             
             // For custom filters, still show "Add Conversation" item even when searching
             if (currentCustomFilterId != null) {
-                val addConversationItem = Conversation(
-                    threadId = -1L,
-                    contactName = "Add Conversation",
-                    snippet = "Tap to add conversations to this filter",
-                    address = "",
-                    date = 0,
-                    unreadCount = 0
-                )
-                listOf(addConversationItem) + filtered
+                listOf(createAddConversationItem()) + filtered
             } else {
                 filtered
             }
@@ -2217,14 +2212,7 @@ class MainActivity : BaseActivity() {
             val conversationsToShow = if (currentCustomFilterId != null) {
                 Log.d(TAG, "observeConversations: Custom filter active, adding 'Add Conversation' item")
                 // Create a special conversation item for "Add Conversation"
-                val addConversationItem = Conversation(
-                    threadId = -1L, // Special ID to identify this item
-                    contactName = "Add Conversation",
-                    snippet = "Tap to add conversations to this filter",
-                    address = "",
-                    date = 0,
-                    unreadCount = 0
-                )
+                val addConversationItem = createAddConversationItem()
                 val result = listOf(addConversationItem) + newConversations
                 Log.d(TAG, "observeConversations: Final list size with 'Add Conversation': ${result.size}")
                 result
@@ -2281,15 +2269,7 @@ class MainActivity : BaseActivity() {
                         
                         // Prepend "Add Conversation" item if it's a custom filter
                         val finalList = if (currentCustomFilterId != null) {
-                            val addConversationItem = Conversation(
-                                threadId = -1L,
-                                contactName = "Add Conversation",
-                                snippet = "Tap to add conversations to this filter",
-                                address = "",
-                                date = 0,
-                                unreadCount = 0
-                            )
-                            listOf(addConversationItem) + sortedNewList
+                            listOf(createAddConversationItem()) + sortedNewList
                         } else {
                             sortedNewList
                         }
@@ -2325,15 +2305,7 @@ class MainActivity : BaseActivity() {
                         
                         // Prepend "Add Conversation" item if it's a custom filter
                         val finalList = if (currentCustomFilterId != null) {
-                            val addConversationItem = Conversation(
-                                threadId = -1L,
-                                contactName = "Add Conversation",
-                                snippet = "Tap to add conversations to this filter",
-                                address = "",
-                                date = 0,
-                                unreadCount = 0
-                            )
-                            listOf(addConversationItem) + mergedList
+                            listOf(createAddConversationItem()) + mergedList
                         } else {
                             mergedList
                         }
@@ -2766,6 +2738,8 @@ class MainActivity : BaseActivity() {
             Log.w(TAG, "Native ad frame not found in exit bottom sheet")
             return
         }
+
+        nativeAdFrame.visibility = View.GONE
         
         // Pre-inflate the native ad view structure so the layout is complete from the start
         exitNativeAdView = layoutInflater.inflate(R.layout.native_ad_layout, nativeAdFrame, false) as NativeAdView
@@ -2840,7 +2814,9 @@ class MainActivity : BaseActivity() {
     private fun populateExitNativeAdView(ad: NativeAd) {
         // Use the pre-inflated view instead of creating a new one
         val adView = exitNativeAdView ?: return
+        val nativeAdFrame = adView.parent as? View
         val adBinding = com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding.bind(adView)
+        nativeAdFrame?.visibility = View.VISIBLE
         
         // Set ad assets (view structure already exists, just populate with data)
         if (ad.headline != null) {

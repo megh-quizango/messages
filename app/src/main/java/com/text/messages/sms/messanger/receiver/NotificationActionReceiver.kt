@@ -530,7 +530,10 @@ class NotificationActionReceiver : BroadcastReceiver() {
             val otp = extractOTP(messageBody)
             if (otp != null) {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("OTP", otp)
+                val clip = ClipData.newPlainText(
+                    LocaleHelper.getLocalizedString(context, R.string.clipboard_label_otp),
+                    otp
+                )
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(context, LocaleHelper.getLocalizedString(context, R.string.otp_copied, otp), Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "OTP copied: $otp")

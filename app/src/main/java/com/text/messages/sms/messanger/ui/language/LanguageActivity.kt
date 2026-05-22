@@ -58,7 +58,7 @@ class LanguageActivity : BaseActivity() {
         selectedLanguageCode = LocaleHelper.getSavedLanguageCode(this)
         
         setupRecyclerView()
-        setupNextButton()
+        setupConfirmAction()
         initializeNativeAdView()
         loadNativeAd()
     }
@@ -82,8 +82,8 @@ class LanguageActivity : BaseActivity() {
         binding.recyclerViewLanguages.adapter = adapter
     }
     
-    private fun setupNextButton() {
-        binding.buttonNext.setOnClickListener {
+    private fun setupConfirmAction() {
+        binding.buttonConfirmLanguage.setOnClickListener {
             // Save language preference and apply locale
             LocaleHelper.updateLocale(this, selectedLanguageCode)
             

@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import android.view.View
+import androidx.annotation.StringRes
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -61,10 +62,17 @@ class CallerSettingsActivity : BaseActivity() {
     
     private fun setupSettings() {
         // Helper function to setup a toggle with theme styling
-        fun setupToggle(binding: ItemCallerSettingBinding, title: String, description: String, key: String, defaultValue: Boolean, showDescription: Boolean = true) {
-            binding.textTitle.text = title
+        fun setupToggle(
+            binding: ItemCallerSettingBinding,
+            @StringRes titleResId: Int,
+            @StringRes descriptionResId: Int?,
+            key: String,
+            defaultValue: Boolean,
+            showDescription: Boolean = true
+        ) {
+            binding.textTitle.setText(titleResId)
             if (showDescription) {
-                binding.textDescription.text = description
+                binding.textDescription.setText(descriptionResId ?: 0)
                 binding.textDescription.visibility = View.VISIBLE
             } else {
                 binding.textDescription.text = ""
@@ -82,8 +90,8 @@ class CallerSettingsActivity : BaseActivity() {
         // Missed call
         setupToggle(
             ItemCallerSettingBinding.bind(binding.itemMissedCall.root),
-            "Missed call",
-            "After a missed call, get details and choose what to do with the contact information.",
+            R.string.caller_settings_missed_call_title,
+            R.string.caller_settings_missed_call_description,
             KEY_MISSED_CALL,
             true
         )
@@ -91,8 +99,8 @@ class CallerSettingsActivity : BaseActivity() {
         // Completed call
         setupToggle(
             ItemCallerSettingBinding.bind(binding.itemCompletedCall.root),
-            "Completed call",
-            "After a call ends, see details and choose what to do with the contact information.",
+            R.string.caller_settings_completed_call_title,
+            R.string.caller_settings_completed_call_description,
             KEY_COMPLETED_CALL,
             true
         )
@@ -100,8 +108,8 @@ class CallerSettingsActivity : BaseActivity() {
         // No answer
         setupToggle(
             ItemCallerSettingBinding.bind(binding.itemNoAnswer.root),
-            "No answer",
-            "After a call goes unanswered, see details and choose what to do with the contact information.",
+            R.string.caller_settings_no_answer_title,
+            R.string.caller_settings_no_answer_description,
             KEY_NO_ANSWER,
             true
         )
@@ -109,8 +117,8 @@ class CallerSettingsActivity : BaseActivity() {
         // Unknown caller
         setupToggle(
             ItemCallerSettingBinding.bind(binding.itemUnknownCaller.root),
-            "Unknown caller",
-            "After getting a call from an unknown number, view details and choose how to handle the contact information.",
+            R.string.caller_settings_unknown_caller_title,
+            R.string.caller_settings_unknown_caller_description,
             KEY_UNKNOWN_CALLER,
             true
         )
@@ -118,8 +126,8 @@ class CallerSettingsActivity : BaseActivity() {
         // Show call info for contacts
         setupToggle(
             ItemCallerSettingBinding.bind(binding.itemShowCallInfo.root),
-            "Show call info for contacts",
-            "",
+            R.string.caller_settings_show_call_info_title,
+            null,
             KEY_SHOW_CALL_INFO,
             false,
             false
@@ -128,8 +136,8 @@ class CallerSettingsActivity : BaseActivity() {
         // Show reminders in notifications
         setupToggle(
             ItemCallerSettingBinding.bind(binding.itemShowReminders.root),
-            "Show reminders in notifications",
-            "",
+            R.string.caller_settings_show_reminders_title,
+            null,
             KEY_SHOW_REMINDERS,
             true,
             false

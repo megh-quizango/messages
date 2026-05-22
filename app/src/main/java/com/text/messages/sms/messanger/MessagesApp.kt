@@ -49,7 +49,6 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
     override fun onCreate() {
         super<Application>.onCreate()
         instance = this
-
         Log.d("MessagesApp", "onCreate called")
 
         OnboardingInstallGuard.resetRestoredOnboardingStateIfNeeded(this)
