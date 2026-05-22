@@ -11,8 +11,10 @@ import android.provider.Telephony
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.viewpager2.widget.ViewPager2
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityOverlayPermissionBinding
 import com.text.messages.sms.messanger.ui.base.BaseActivity
@@ -26,6 +28,7 @@ class OverlayPermissionActivity : BaseActivity() {
     private lateinit var binding: ActivityOverlayPermissionBinding
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var pagerAdapter: ImagePagerAdapter
+    private var buttonShimmer: ShimmerFrameLayout? = null
     private val guideLaunchHandler = Handler(Looper.getMainLooper())
     private var shouldShowOverlayGuide = false
 
@@ -44,6 +47,8 @@ class OverlayPermissionActivity : BaseActivity() {
 
         binding = ActivityOverlayPermissionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        buttonShimmer = binding.shimmerAllowPermission
+        configureStatusBar()
 
         val initialPaddingLeft = binding.root.paddingLeft
         val initialPaddingTop = binding.root.paddingTop
@@ -63,6 +68,11 @@ class OverlayPermissionActivity : BaseActivity() {
 
         sharedPreferences = getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
         setupUi()
+    }
+
+    private fun configureStatusBar() {
+        window.statusBarColor = getColor(android.R.color.white)
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
     }
 
     private fun setupUi() {
@@ -154,9 +164,15 @@ class OverlayPermissionActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        buttonShimmer?.startShimmer()
         if (PermissionManager.hasOverlayPermission(this)) {
             checkOverlayPermission()
         }
+    }
+
+    override fun onPause() {
+        buttonShimmer?.stopShimmer()
+        super.onPause()
     }
 
     override fun onDestroy() {
