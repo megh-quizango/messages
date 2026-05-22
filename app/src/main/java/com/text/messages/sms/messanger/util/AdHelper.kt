@@ -4,41 +4,34 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.AdListener
+import android.view.View
+import android.view.ViewGroup
 
 /**
  * Helper extension functions for loading ads with Remote Config and Analytics
  */
-fun AdView.loadBannerAdWithRemoteConfig() {
-    val remoteConfigAdUnitId = RemoteConfigHelper.getBannerAdUnitId()
-    
-    // Only load when Remote Config provides a real ad unit id.
-    if (remoteConfigAdUnitId.isBlank()) {
-        android.util.Log.w("AdHelper", "Banner ad unit ID is blank in Remote Config, skipping banner load")
-        this.visibility = android.view.View.GONE
-        return
+fun AdView.loadBannerAdWithRemoteConfig(): AdView {
+    val remoteConfigAdUnitId = RemoteConfigHelper.getBannerAdUnitId().trim()
+    val fallbackAdUnitId = this.adUnitId?.trim().orEmpty()
+    val adUnitIdToUse = remoteConfigAdUnitId.ifBlank { fallbackAdUnitId }
+
+    if (adUnitIdToUse.isBlank()) {
+        android.util.Log.w("AdHelper", "Banner ad unit ID is blank in both Remote Config and XML, skipping banner load")
+        this.visibility = View.GONE
+        return this
     }
 
-    if (this.adUnitId.isNullOrBlank()) {
-        android.util.Log.d("AdHelper", "Applying Remote Config banner ad unit id: $remoteConfigAdUnitId")
-        this.adUnitId = remoteConfigAdUnitId
-    } else if (this.adUnitId != remoteConfigAdUnitId) {
-        android.util.Log.w(
-            "AdHelper",
-            "AdView already has ad unit id '${this.adUnitId}'. Skipping reassignment to '$remoteConfigAdUnitId'."
-        )
-    }
-    this.visibility = android.view.View.VISIBLE
-    
-    // Ensure ad size is set (should be set in XML, but verify)
-    if (this.adSize == null) {
+    val adViewToLoad = ensureBannerAdView(adUnitIdToUse)
+    adViewToLoad.visibility = View.VISIBLE
+
+    if (adViewToLoad.adSize == null) {
         android.util.Log.e("AdHelper", "Ad size is not set, cannot load ad")
-        return
+        return adViewToLoad
     }
-    
+
     val adRequest = AdRequest.Builder().build()
-    val adUnitIdToUse = remoteConfigAdUnitId
-    
-    this.adListener = object : AdListener() {
+
+    adViewToLoad.adListener = object : AdListener() {
         override fun onAdLoaded() {
             super.onAdLoaded()
             AnalyticsHelper.logAdLoad("banner", adUnitIdToUse, true)
@@ -60,7 +53,57 @@ fun AdView.loadBannerAdWithRemoteConfig() {
             AnalyticsHelper.logAdImpression("banner", adUnitIdToUse)
         }
     }
-    
-    this.loadAd(adRequest)
+
+    adViewToLoad.loadAd(adRequest)
+    return adViewToLoad
+}
+
+private fun AdView.ensureBannerAdView(desiredAdUnitId: String): AdView {
+    val currentAdUnitId = this.adUnitId?.trim().orEmpty()
+
+    if (currentAdUnitId.isBlank()) {
+        android.util.Log.d("AdHelper", "Applying banner ad unit id: $desiredAdUnitId")
+        this.adUnitId = desiredAdUnitId
+        return this
+    }
+
+    if (currentAdUnitId == desiredAdUnitId) {
+        return this
+    }
+
+    val parentGroup = parent as? ViewGroup
+    if (parentGroup == null) {
+        android.util.Log.w(
+            "AdHelper",
+            "AdView already has ad unit id '$currentAdUnitId' and has no parent for replacement. Using existing view."
+        )
+        return this
+    }
+
+    android.util.Log.d(
+        "AdHelper",
+        "Replacing AdView to switch ad unit id from '$currentAdUnitId' to '$desiredAdUnitId'."
+    )
+
+    val currentAdSize = this.adSize
+    if (currentAdSize == null) {
+        android.util.Log.w("AdHelper", "Current AdView has no ad size set. Using existing view.")
+        return this
+    }
+
+    val replacement = AdView(context).apply {
+        id = this@ensureBannerAdView.id
+        layoutParams = this@ensureBannerAdView.layoutParams
+        setAdSize(currentAdSize)
+        adUnitId = desiredAdUnitId
+        visibility = this@ensureBannerAdView.visibility
+    }
+
+    val childIndex = parentGroup.indexOfChild(this)
+    parentGroup.removeView(this)
+    parentGroup.addView(replacement, childIndex)
+    this.destroy()
+
+    return replacement
 }
 

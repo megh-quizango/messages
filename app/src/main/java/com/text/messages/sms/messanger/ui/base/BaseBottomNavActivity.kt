@@ -109,7 +109,7 @@ abstract class BaseBottomNavActivity : BaseActivity() {
     
     private fun setupBannerAd() {
         adViewBanner = findViewById(R.id.adViewBanner)
-        adViewBanner.loadBannerAdWithRemoteConfig()
+        adViewBanner = adViewBanner.loadBannerAdWithRemoteConfig()
     }
     
     override fun onResume() {

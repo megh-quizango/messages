@@ -278,6 +278,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:adSize="BANNER"
+        app:adUnitId="@string/banner_ad_unit_placeholder"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -300,6 +301,7 @@
         android:layout_marginBottom="12dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 
 
