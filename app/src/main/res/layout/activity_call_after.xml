@@ -351,14 +351,18 @@
         <FrameLayout
             android:id="@+id/nativeAdContainer"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:minHeight="220dp"
             android:background="@drawable/bg_ad_container"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:visibility="visible"
             app:layout_constraintTop_toBottomOf="@id/messageInputContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="1.0">
 
             <!-- Shimmer/Loading Placeholder -->
             <LinearLayout
