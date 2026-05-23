@@ -97,20 +97,6 @@ class ConversationDetailActivity : BaseActivity() {
     private var selectedContactNumber: String? = null
     private var currentPhotoPath: String? = null
 
-    private val requestCallPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            initiatePhoneCall()
-        } else {
-            Toast.makeText(
-                this,
-                getString(R.string.phone_permission_required_to_make_calls),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-    
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
@@ -1019,17 +1005,7 @@ class ConversationDetailActivity : BaseActivity() {
             return
         }
 
-        // Check if permission is granted
-        if (ContextCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.CALL_PHONE
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            initiatePhoneCall()
-        } else {
-            // Request permission
-            requestCallPermissionLauncher.launch(android.Manifest.permission.CALL_PHONE)
-        }
+        initiatePhoneCall()
     }
 
     private fun lookupContactName(phoneNumber: String): String? {
@@ -1086,7 +1062,7 @@ class ConversationDetailActivity : BaseActivity() {
     private fun initiatePhoneCall() {
         val phoneNumber = address.trim()
         if (phoneNumber.isNotEmpty()) {
-            val intent = Intent(Intent.ACTION_CALL).apply {
+            val intent = Intent(Intent.ACTION_DIAL).apply {
                 data = Uri.parse("tel:$phoneNumber")
             }
             try {

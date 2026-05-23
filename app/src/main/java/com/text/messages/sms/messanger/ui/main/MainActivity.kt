@@ -81,7 +81,6 @@ class MainActivity : BaseActivity() {
     private lateinit var adapter: ConversationAdapter
     private var selectedTab: TextView? = null
     private var isSettingSelectedItem = false
-    private var pendingPhoneCall: String? = null
     private var allConversations: List<Conversation> = emptyList()
     private var currentSearchQuery: String = ""
     private var smsContentObserver: SmsContentObserver? = null
@@ -120,30 +119,6 @@ class MainActivity : BaseActivity() {
                 getString(R.string.sms_permission_required_display_messages),
                 Toast.LENGTH_LONG
             ).show()
-        }
-    }
-    
-    private val requestCallPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted && pendingPhoneCall != null) {
-            val phoneNumber = pendingPhoneCall!!
-            pendingPhoneCall = null
-            val dialIntent = Intent(Intent.ACTION_CALL).apply {
-                data = Uri.parse("tel:$phoneNumber")
-            }
-            if (dialIntent.resolveActivity(packageManager) != null) {
-                startActivity(dialIntent)
-            } else {
-                Toast.makeText(this, getString(R.string.no_app_found_to_make_calls), Toast.LENGTH_SHORT).show()
-            }
-        } else if (!isGranted) {
-            Toast.makeText(
-                this,
-                getString(R.string.phone_permission_required_to_make_calls),
-                Toast.LENGTH_SHORT
-            ).show()
-            pendingPhoneCall = null
         }
     }
     
@@ -1829,18 +1804,13 @@ class MainActivity : BaseActivity() {
     }
     
     private fun makePhoneCall(phoneNumber: String) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-            val dialIntent = Intent(Intent.ACTION_CALL).apply {
-                data = Uri.parse("tel:$phoneNumber")
-            }
-            if (dialIntent.resolveActivity(packageManager) != null) {
-                startActivity(dialIntent)
-            } else {
-                Toast.makeText(this, getString(R.string.no_app_found_to_make_calls), Toast.LENGTH_SHORT).show()
-            }
+        val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+            data = Uri.parse("tel:$phoneNumber")
+        }
+        if (dialIntent.resolveActivity(packageManager) != null) {
+            startActivity(dialIntent)
         } else {
-            pendingPhoneCall = phoneNumber
-            requestCallPermissionLauncher.launch(Manifest.permission.CALL_PHONE)
+            Toast.makeText(this, getString(R.string.no_app_found_to_make_calls), Toast.LENGTH_SHORT).show()
         }
     }
     

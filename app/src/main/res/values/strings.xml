@@ -206,6 +206,7 @@
     <string name="action_delete">Delete</string>
     <string name="permission_required_title">Permissions Required</string>
     <string name="welcome_permissions_required_message">Notification and Phone permissions are required for the app to function properly. Please enable them in app settings.</string>
+    <string name="welcome_combined_permissions_required_message">Default SMS, notification, SMS, and phone permissions are required for the app to function properly. Please enable them in app settings.</string>
     <string name="default_sms_help_title">Need Help?</string>
     <string name="default_sms_help_message">If the default SMS prompt does not appear, open your phone settings and set #Messages as the default SMS app from the Default apps section.</string>
     <string name="default_sms_permissions_required_message">SMS and Phone permissions are required for the app to function properly. Please enable them in app settings.</string>

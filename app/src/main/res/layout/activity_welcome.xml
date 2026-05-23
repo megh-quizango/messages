@@ -42,9 +42,9 @@
             android:layout_marginTop="22dp"
             android:layout_marginEnd="10dp"
             android:adjustViewBounds="true"
-            android:contentDescription="@string/welcome_illustration"
+            android:contentDescription="@string/default_sms_illustration"
             android:scaleType="fitCenter"
-            android:src="@drawable/welcome" />
+            android:src="@drawable/sms" />
 
         <LinearLayout
             android:id="@+id/layoutCalls"

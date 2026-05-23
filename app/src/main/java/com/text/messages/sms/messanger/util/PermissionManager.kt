@@ -20,18 +20,6 @@ object PermissionManager {
         add(Manifest.permission.RECEIVE_SMS)
         add(Manifest.permission.READ_PHONE_STATE)
         add(Manifest.permission.READ_CONTACTS)
-        add(Manifest.permission.CALL_PHONE)
-        
-        // Storage permissions (only needed up to API 32)
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-            add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            }
-        }
-        
-        // Camera permission
-        add(Manifest.permission.CAMERA)
         
         // Notification permission (Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

@@ -369,6 +369,7 @@ class DefaultSmsActivity : BaseActivity() {
         requiredPermissions.add(Manifest.permission.READ_SMS)
         requiredPermissions.add(Manifest.permission.SEND_SMS)
         requiredPermissions.add(Manifest.permission.RECEIVE_SMS)
+        requiredPermissions.add(Manifest.permission.READ_PHONE_STATE)
         
         return requiredPermissions
     }
