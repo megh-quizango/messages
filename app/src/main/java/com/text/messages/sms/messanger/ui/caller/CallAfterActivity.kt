@@ -515,11 +515,7 @@ class CallAfterActivity : BaseActivity() {
         }
 
         try {
-            val intent = Intent(Intent.ACTION_DIAL).apply {
-                data = Uri.parse("tel:$callerNumber")
-            }
-            startActivity(intent)
-            finish()
+            openDialerForNumber(callerNumber!!)
         } catch (e: Exception) {
             Log.e(TAG, "Error making call", e)
             Toast.makeText(this, R.string.call_failed, Toast.LENGTH_SHORT).show()
@@ -549,17 +545,7 @@ class CallAfterActivity : BaseActivity() {
             finish()
         } catch (e: Exception) {
             Log.e(TAG, "Error opening conversation", e)
-            // Fallback to SMS intent
-            try {
-                val intent = Intent(Intent.ACTION_SENDTO).apply {
-                    data = Uri.parse("smsto:$number")
-                }
-                startActivity(intent)
-                finish()
-            } catch (e2: Exception) {
-                Log.e(TAG, "Error opening SMS", e2)
-                Toast.makeText(this, R.string.message_failed, Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(this, R.string.message_failed, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -570,26 +556,20 @@ class CallAfterActivity : BaseActivity() {
             return
         }
 
-        val contactInfo = viewModel.contactInfo.value
-        if (contactInfo?.isKnownContact == true) {
-            Toast.makeText(
-                this,
-                R.string.contact_already_exists,
-                Toast.LENGTH_SHORT
-            ).show()
-            return
-        }
-
         try {
-            val intent = Intent(Intent.ACTION_INSERT).apply {
-                type = ContactsContract.Contacts.CONTENT_TYPE
-                putExtra(ContactsContract.Intents.Insert.PHONE, number)
-            }
-            startActivity(intent)
+            openDialerForNumber(number)
         } catch (e: Exception) {
             Log.e(TAG, "Error adding to contacts", e)
             Toast.makeText(this, R.string.add_contact_failed, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun openDialerForNumber(number: String) {
+        val intent = Intent(Intent.ACTION_DIAL).apply {
+            data = Uri.parse("tel:$number")
+        }
+        startActivity(intent)
+        finish()
     }
 
 
