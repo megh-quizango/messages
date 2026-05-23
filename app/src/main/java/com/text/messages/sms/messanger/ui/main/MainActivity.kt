@@ -2523,18 +2523,23 @@ class MainActivity : BaseActivity() {
      * Show shimmer loading effect
      */
     private fun showShimmer() {
-        val shimmer = findViewById<ShimmerFrameLayout>(R.id.shimmerLayout)
-        shimmer?.visibility = View.VISIBLE
-        shimmer?.startShimmer()
+        val shimmer = binding.shimmerLayout.root
+        shimmer.visibility = View.VISIBLE
+        shimmer.stopShimmer()
+        shimmer.post {
+            if (!isFinishing && !isDestroyed && shimmer.visibility == View.VISIBLE) {
+                shimmer.startShimmer()
+            }
+        }
     }
 
     /**
      * Hide shimmer loading effect
      */
     private fun hideShimmer() {
-        val shimmer = findViewById<ShimmerFrameLayout>(R.id.shimmerLayout)
-        shimmer?.stopShimmer()
-        shimmer?.visibility = View.GONE
+        val shimmer = binding.shimmerLayout.root
+        shimmer.stopShimmer()
+        shimmer.visibility = View.GONE
     }
 
     /**
