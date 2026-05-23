@@ -53,7 +53,8 @@ class LandingActivity : BaseActivity() {
         if (sharedPreferences.getBoolean(PREF_HAS_SHOWN_SPLASH, false)) {
             Log.d("LandingActivity", "Splash already shown before - routing immediately")
             navigateToNextActivity(
-                hasSeenWelcome = sharedPreferences.getBoolean("HAS_SEEN_WELCOME", false)
+                hasSeenWelcome = sharedPreferences.getBoolean("HAS_SEEN_WELCOME", false),
+                showResumeScreen = true
             )
             return
         }
@@ -129,11 +130,11 @@ class LandingActivity : BaseActivity() {
 
         // Show a cold-start app open ad before navigating
         AppOpenAdManager.showColdStartAppOpenAd(this) {
-            navigateToNextActivity(hasSeenWelcome)
+            navigateToNextActivity(hasSeenWelcome, showResumeScreen = false)
         }
     }
     
-    private fun navigateToNextActivity(hasSeenWelcome: Boolean) {
+    private fun navigateToNextActivity(hasSeenWelcome: Boolean, showResumeScreen: Boolean) {
         if (!hasSeenWelcome) {
             // First time - show welcome screen
             Log.d("LandingActivity", "Redirecting to WelcomeActivity")
@@ -155,11 +156,16 @@ class LandingActivity : BaseActivity() {
                 Log.d("LandingActivity", "Redirecting to DefaultSmsActivity")
                 startActivity(Intent(this, com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity::class.java))
             } else {
-                // App is default SMS app - go to main
-                Log.d("LandingActivity", "App is default - redirecting to MainActivity")
+                // App is default SMS app - continue to main flow
                 // Also update SharedPreferences to reflect current state
                 sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
-                startActivity(Intent(this, MainActivity::class.java))
+                if (showResumeScreen) {
+                    Log.d("LandingActivity", "App is default - redirecting to ResumeActivity")
+                    startActivity(Intent(this, ResumeActivity::class.java))
+                } else {
+                    Log.d("LandingActivity", "App is default - redirecting to MainActivity")
+                    startActivity(Intent(this, MainActivity::class.java))
+                }
             }
         }
         finish()

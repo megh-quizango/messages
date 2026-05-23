@@ -91,6 +91,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.splash.ResumeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages.Resume" />
+
         <!-- WelcomeActivity -->
         <activity
             android:name=".ui.welcome.WelcomeActivity"
