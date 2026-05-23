@@ -27,8 +27,11 @@ object AdLoadingShimmerHelper {
     }
 
     fun showBannerContent(adView: AdView) {
+        val bannerHeight = getBannerHeightPx(adView)
+        updateViewHeight(adView, bannerHeight)
         findBannerShimmer(adView)?.let(::stopAndHideShimmer)
         adView.visibility = View.VISIBLE
+        adView.requestLayout()
     }
 
     fun hideBanner(adView: AdView) {

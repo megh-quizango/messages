@@ -6,6 +6,9 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.AdListener
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 
 /**
  * Helper extension functions for loading ads with Remote Config and Analytics
@@ -99,7 +102,7 @@ private fun AdView.ensureBannerAdView(desiredAdUnitId: String): AdView {
 
     val replacement = AdView(context).apply {
         id = this@ensureBannerAdView.id
-        layoutParams = this@ensureBannerAdView.layoutParams
+        layoutParams = copyLayoutParams(this@ensureBannerAdView.layoutParams)
         setAdSize(currentAdSize)
         adUnitId = desiredAdUnitId
         visibility = this@ensureBannerAdView.visibility
@@ -111,5 +114,15 @@ private fun AdView.ensureBannerAdView(desiredAdUnitId: String): AdView {
     this.destroy()
 
     return replacement
+}
+
+private fun copyLayoutParams(layoutParams: ViewGroup.LayoutParams): ViewGroup.LayoutParams {
+    return when (layoutParams) {
+        is ConstraintLayout.LayoutParams -> ConstraintLayout.LayoutParams(layoutParams)
+        is FrameLayout.LayoutParams -> FrameLayout.LayoutParams(layoutParams)
+        is LinearLayout.LayoutParams -> LinearLayout.LayoutParams(layoutParams)
+        is ViewGroup.MarginLayoutParams -> ViewGroup.MarginLayoutParams(layoutParams)
+        else -> ViewGroup.LayoutParams(layoutParams)
+    }
 }
 
