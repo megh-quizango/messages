@@ -22,6 +22,7 @@ object LanguageTransitionAdManager {
     private var nativeFullscreenAd: NativeAd? = null
     private var isLoadingInterstitial = false
     private var isLoadingNativeFullscreen = false
+    private var didInterstitialLoadFail = false
 
     fun preload(context: Context) {
         val appContext = context.applicationContext
@@ -43,7 +44,14 @@ object LanguageTransitionAdManager {
         onDismiss: () -> Unit,
         onFallbackToNative: () -> Unit
     ): Boolean {
-        val ad = interstitialAd ?: return false
+        val ad = interstitialAd
+        if (ad == null) {
+            if (didInterstitialLoadFail && hasNativeFullscreenAd()) {
+                onFallbackToNative()
+                return true
+            }
+            return false
+        }
         interstitialAd = null
         val adUnitId = RemoteConfigHelper.getLanguageInterstitialAdUnitId()
 
@@ -64,11 +72,7 @@ object LanguageTransitionAdManager {
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                 AnalyticsHelper.logAdError("interstitial", adUnitId, adError.code.toString())
                 preload(activity.applicationContext)
-                if (hasNativeFullscreenAd()) {
-                    onFallbackToNative()
-                } else {
-                    onDismiss()
-                }
+                onDismiss()
             }
         }
 
@@ -101,6 +105,7 @@ object LanguageTransitionAdManager {
         }
 
         isLoadingInterstitial = true
+        didInterstitialLoadFail = false
         InterstitialAd.load(
             context,
             adUnitId,
@@ -109,12 +114,14 @@ object LanguageTransitionAdManager {
                 override fun onAdLoaded(ad: InterstitialAd) {
                     interstitialAd = ad
                     isLoadingInterstitial = false
+                    didInterstitialLoadFail = false
                     AnalyticsHelper.logAdLoad("interstitial", adUnitId, true)
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                     interstitialAd = null
                     isLoadingInterstitial = false
+                    didInterstitialLoadFail = true
                     AnalyticsHelper.logAdLoad("interstitial", adUnitId, false)
                     AnalyticsHelper.logAdError("interstitial", adUnitId, loadAdError.code.toString())
                     Log.w(TAG, "Language interstitial failed to load: ${loadAdError.message}")
