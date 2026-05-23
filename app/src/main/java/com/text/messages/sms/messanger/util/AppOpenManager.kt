@@ -10,6 +10,7 @@ import com.google.android.gms.ads.appopen.AppOpenAd
 import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.language.LanguageNativeFullscreenAdActivity
+import com.text.messages.sms.messanger.ui.language.LanguageTransitionAdActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionGuideActivity
 import com.text.messages.sms.messanger.ui.splash.LandingActivity
@@ -188,6 +189,7 @@ class AppOpenManager(
             activity !is OverlayPermissionActivity &&
             activity !is OverlayPermissionGuideActivity &&
             activity !is LanguageActivity &&
+            activity !is LanguageTransitionAdActivity &&
             activity !is LanguageNativeFullscreenAdActivity
     }
 }
