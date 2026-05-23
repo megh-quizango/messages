@@ -7,6 +7,8 @@ import android.os.Handler
 import android.os.Looper
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.appopen.AppOpenAd
+import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
+import com.text.messages.sms.messanger.ui.splash.LandingActivity
 
 class AppOpenManager(
     private val application: Application
@@ -72,6 +74,12 @@ class AppOpenManager(
      */
     private fun showAdIfAvailable(showWhenLoaded: Boolean = false) {
         if (isShowingAd) return
+        val activity = currentActivity
+        if (activity == null || !shouldShowAppOpenOn(activity)) {
+            pendingShowOnLoad = false
+            loadAd()
+            return
+        }
         if (!isAdAvailable()) {
             if (showWhenLoaded) pendingShowOnLoad = true
             loadAd()
@@ -98,9 +106,7 @@ class AppOpenManager(
                 }
             }
 
-        currentActivity?.let {
-            appOpenAd?.show(it)
-        }
+        appOpenAd?.show(activity)
     }
 
     // 🔹 Lifecycle callbacks
@@ -111,6 +117,11 @@ class AppOpenManager(
 
     override fun onActivityResumed(activity: Activity) {
         currentActivity = activity
+        if (!shouldShowAppOpenOn(activity)) {
+            pendingShowOnLoad = false
+            loadAd()
+            return
+        }
         // Show app open ad only when resuming from background, not on initial app launch
         if (wasInBackground) {
             wasInBackground = false
@@ -144,4 +155,8 @@ class AppOpenManager(
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
     override fun onActivityDestroyed(activity: Activity) {}
+
+    private fun shouldShowAppOpenOn(activity: Activity): Boolean {
+        return activity !is CallAfterActivity && activity !is LandingActivity
+    }
 }
