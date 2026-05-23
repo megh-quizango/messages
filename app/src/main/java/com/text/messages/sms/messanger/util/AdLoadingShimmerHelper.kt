@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.gms.ads.AdView
+import kotlin.math.roundToInt
 import com.text.messages.sms.messanger.R
 
 object AdLoadingShimmerHelper {
@@ -17,6 +18,9 @@ object AdLoadingShimmerHelper {
 
     fun showBannerLoading(adView: AdView) {
         val shimmer = ensureBannerShimmer(adView) ?: return
+        val bannerHeight = getBannerHeightPx(adView)
+        updateViewHeight(adView, bannerHeight)
+        updateViewHeight(shimmer, bannerHeight)
         adView.visibility = View.INVISIBLE
         shimmer.visibility = View.VISIBLE
         restartShimmer(shimmer)
@@ -123,6 +127,20 @@ object AdLoadingShimmerHelper {
     private fun stopAndHideShimmer(shimmer: ShimmerFrameLayout) {
         shimmer.stopShimmer()
         shimmer.visibility = View.GONE
+    }
+
+    private fun updateViewHeight(view: View, heightPx: Int) {
+        val params = view.layoutParams ?: return
+        if (params.height != heightPx) {
+            params.height = heightPx
+            view.layoutParams = params
+        }
+    }
+
+    private fun getBannerHeightPx(adView: AdView): Int {
+        val context = adView.context
+        return adView.adSize?.getHeightInPixels(context)
+            ?: (50f * context.resources.displayMetrics.density).roundToInt()
     }
 
     private fun copyLayoutParams(layoutParams: ViewGroup.LayoutParams): ViewGroup.LayoutParams {
