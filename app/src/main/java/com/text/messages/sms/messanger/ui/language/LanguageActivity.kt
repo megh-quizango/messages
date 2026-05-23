@@ -23,6 +23,7 @@ import com.text.messages.sms.messanger.databinding.ActivityLanguageBinding
 import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
+import com.text.messages.sms.messanger.util.AppOpenManager
 import com.text.messages.sms.messanger.util.LanguageTransitionAdManager
 import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
@@ -114,6 +115,7 @@ class LanguageActivity : BaseActivity() {
     }
 
     private fun showTransitionAdThenContinue() {
+        AppOpenManager.suppressAppOpenFor(8000L)
         if (LanguageTransitionAdManager.shouldUseNativeFullscreenOnly()) {
             launchNativeFullscreenFallbackOrContinue()
             return

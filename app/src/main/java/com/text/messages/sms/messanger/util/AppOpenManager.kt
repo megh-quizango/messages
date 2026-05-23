@@ -9,6 +9,7 @@ import com.google.android.gms.ads.*
 import com.google.android.gms.ads.appopen.AppOpenAd
 import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
+import com.text.messages.sms.messanger.ui.language.LanguageNativeFullscreenAdActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionGuideActivity
 import com.text.messages.sms.messanger.ui.splash.LandingActivity
@@ -16,6 +17,22 @@ import com.text.messages.sms.messanger.ui.splash.LandingActivity
 class AppOpenManager(
     private val application: Application
 ) : Application.ActivityLifecycleCallbacks {
+
+    companion object {
+        @Volatile
+        private var suppressAppOpenUntilElapsedMs: Long = 0L
+
+        fun suppressAppOpenFor(durationMs: Long) {
+            val until = android.os.SystemClock.elapsedRealtime() + durationMs
+            if (until > suppressAppOpenUntilElapsedMs) {
+                suppressAppOpenUntilElapsedMs = until
+            }
+        }
+
+        private fun isAppOpenSuppressed(): Boolean {
+            return android.os.SystemClock.elapsedRealtime() < suppressAppOpenUntilElapsedMs
+        }
+    }
 
     private var appOpenAd: AppOpenAd? = null
     private var isLoadingAd = false
@@ -120,6 +137,12 @@ class AppOpenManager(
 
     override fun onActivityResumed(activity: Activity) {
         currentActivity = activity
+        if (isAppOpenSuppressed()) {
+            pendingShowOnLoad = false
+            wasInBackground = false
+            loadAd()
+            return
+        }
         if (!shouldShowAppOpenOn(activity)) {
             pendingShowOnLoad = false
             loadAd()
@@ -164,6 +187,7 @@ class AppOpenManager(
             activity !is LandingActivity &&
             activity !is OverlayPermissionActivity &&
             activity !is OverlayPermissionGuideActivity &&
-            activity !is LanguageActivity
+            activity !is LanguageActivity &&
+            activity !is LanguageNativeFullscreenAdActivity
     }
 }

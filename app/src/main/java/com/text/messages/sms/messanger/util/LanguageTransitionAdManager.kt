@@ -68,13 +68,13 @@ object LanguageTransitionAdManager {
             }
 
             override fun onAdDismissedFullScreenContent() {
-                onDismiss()
+                mainHandler.postAtFrontOfQueue { onDismiss() }
                 mainHandler.post { preload(activity.applicationContext) }
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                 AnalyticsHelper.logAdError("interstitial", adUnitId, adError.code.toString())
-                onDismiss()
+                mainHandler.postAtFrontOfQueue { onDismiss() }
                 mainHandler.post { preload(activity.applicationContext) }
             }
         }
