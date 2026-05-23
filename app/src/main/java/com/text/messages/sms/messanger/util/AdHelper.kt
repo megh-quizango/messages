@@ -12,7 +12,7 @@ import android.view.ViewGroup
  */
 fun AdView.loadBannerAdWithRemoteConfig(): AdView {
     val remoteConfigAdUnitId = RemoteConfigHelper.getBannerAdUnitId().trim()
-    val fallbackAdUnitId = this.adUnitId?.trim().orEmpty()
+    val fallbackAdUnitId = this.adUnitId.trim()
     val adUnitIdToUse = remoteConfigAdUnitId.ifBlank { fallbackAdUnitId }
 
     if (adUnitIdToUse.isBlank()) {
@@ -65,7 +65,7 @@ fun AdView.loadBannerAdWithRemoteConfig(): AdView {
 }
 
 private fun AdView.ensureBannerAdView(desiredAdUnitId: String): AdView {
-    val currentAdUnitId = this.adUnitId?.trim().orEmpty()
+    val currentAdUnitId = this.adUnitId.trim()
 
     if (currentAdUnitId.isBlank()) {
         android.util.Log.d("AdHelper", "Applying banner ad unit id: $desiredAdUnitId")
@@ -77,11 +77,39 @@ private fun AdView.ensureBannerAdView(desiredAdUnitId: String): AdView {
         return this
     }
 
+    val parentGroup = parent as? ViewGroup
+    if (parentGroup == null) {
+        android.util.Log.w(
+            "AdHelper",
+            "AdView already has ad unit id '$currentAdUnitId' and has no parent for replacement. Using existing view."
+        )
+        return this
+    }
+
     android.util.Log.d(
         "AdHelper",
-        "Updating existing AdView ad unit id from '$currentAdUnitId' to '$desiredAdUnitId'."
+        "Replacing AdView to switch ad unit id from '$currentAdUnitId' to '$desiredAdUnitId'."
     )
-    this.adUnitId = desiredAdUnitId
-    return this
+
+    val currentAdSize = this.adSize
+    if (currentAdSize == null) {
+        android.util.Log.w("AdHelper", "Current AdView has no ad size set. Using existing view.")
+        return this
+    }
+
+    val replacement = AdView(context).apply {
+        id = this@ensureBannerAdView.id
+        layoutParams = this@ensureBannerAdView.layoutParams
+        setAdSize(currentAdSize)
+        adUnitId = desiredAdUnitId
+        visibility = this@ensureBannerAdView.visibility
+    }
+
+    val childIndex = parentGroup.indexOfChild(this)
+    parentGroup.removeView(this)
+    parentGroup.addView(replacement, childIndex)
+    this.destroy()
+
+    return replacement
 }
 
