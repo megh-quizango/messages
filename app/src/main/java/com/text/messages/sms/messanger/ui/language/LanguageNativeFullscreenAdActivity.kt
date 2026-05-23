@@ -13,8 +13,13 @@ import com.text.messages.sms.messanger.util.LanguageTransitionAdManager
 
 class LanguageNativeFullscreenAdActivity : BaseActivity() {
 
+    companion object {
+        const val EXTRA_FROM_SETTINGS = "from_settings"
+    }
+
     private lateinit var binding: ActivityLanguageNativeFullscreenAdBinding
     private var nativeAd: NativeAd? = null
+    private var hasNavigated = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +35,7 @@ class LanguageNativeFullscreenAdActivity : BaseActivity() {
 
         nativeAd = LanguageTransitionAdManager.consumeNativeFullscreenAd()
         if (nativeAd == null) {
-            finish()
+            navigateToNextScreen()
             return
         }
 
@@ -40,11 +45,35 @@ class LanguageNativeFullscreenAdActivity : BaseActivity() {
 
     private fun setupDismissActions() {
         binding.buttonCloseAd.setOnClickListener {
-            finish()
+            navigateToNextScreen()
         }
         binding.textContinue.setOnClickListener {
-            finish()
+            navigateToNextScreen()
         }
+    }
+
+    private fun navigateToNextScreen() {
+        if (hasNavigated) {
+            return
+        }
+        hasNavigated = true
+
+        val intent = if (intent.getBooleanExtra(EXTRA_FROM_SETTINGS, false)) {
+            android.content.Intent(this, com.text.messages.sms.messanger.ui.main.MainActivity::class.java).apply {
+                flags = android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION
+            }
+        } else {
+            android.content.Intent(this, com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity::class.java).apply {
+                addFlags(android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            }
+        }
+
+        startActivity(intent)
+        @Suppress("DEPRECATION")
+        overridePendingTransition(0, 0)
+        finish()
     }
 
     private fun bindNativeAd(ad: NativeAd) {

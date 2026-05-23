@@ -2,8 +2,6 @@ package com.text.messages.sms.messanger.util
 
 import android.app.Activity
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdListener
@@ -19,7 +17,6 @@ import com.google.android.gms.ads.AdLoader
 object LanguageTransitionAdManager {
 
     private const val TAG = "LanguageTransitionAds"
-    private val mainHandler = Handler(Looper.getMainLooper())
 
     private var interstitialAd: InterstitialAd? = null
     private var nativeFullscreenAd: NativeAd? = null
@@ -68,14 +65,14 @@ object LanguageTransitionAdManager {
             }
 
             override fun onAdDismissedFullScreenContent() {
-                mainHandler.postAtFrontOfQueue { onDismiss() }
-                mainHandler.post { preload(activity.applicationContext) }
+                onDismiss()
+                preload(activity.applicationContext)
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                 AnalyticsHelper.logAdError("interstitial", adUnitId, adError.code.toString())
-                mainHandler.postAtFrontOfQueue { onDismiss() }
-                mainHandler.post { preload(activity.applicationContext) }
+                onDismiss()
+                preload(activity.applicationContext)
             }
         }
 
