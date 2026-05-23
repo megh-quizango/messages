@@ -115,10 +115,8 @@ class LandingActivity : BaseActivity() {
         
         Log.d("LandingActivity", "redirectToActivity - hasSeenWelcome: $hasSeenWelcome")
 
-        // Show App Open Ad(s) before navigating
-        // DEBUG: Shows 2 ads back-to-back
-        // RELEASE: Shows 1 ad only
-        AppOpenAdManager.showDoubleAppOpenIfDebug(this) {
+        // Show a cold-start app open ad before navigating
+        AppOpenAdManager.showColdStartAppOpenAd(this) {
             navigateToNextActivity(hasSeenWelcome)
         }
     }
