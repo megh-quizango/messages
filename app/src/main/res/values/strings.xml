@@ -197,6 +197,8 @@
     <string name="overlay_guide_secure">#Message is safe &amp; secure</string>
     <string name="overlay_guide_instruction">Find #Messages and allow permission</string>
     <string name="overlay_guide_shield">Security badge</string>
+    <string name="language_fullscreen_ad_close">Close ad</string>
+    <string name="language_fullscreen_ad_continue">Continue</string>
     <string name="action_open_settings">Open Settings</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_close">Close</string>

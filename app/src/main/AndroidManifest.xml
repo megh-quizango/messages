@@ -115,6 +115,11 @@
             android:exported="false"
             android:theme="@style/Theme.Messages" />
 
+        <activity
+            android:name=".ui.language.LanguageNativeFullscreenAdActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
         <!-- MainActivity -->
         <activity
             android:name=".ui.main.MainActivity"

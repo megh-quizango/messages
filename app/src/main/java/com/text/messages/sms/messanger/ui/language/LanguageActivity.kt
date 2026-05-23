@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,6 +23,7 @@ import com.text.messages.sms.messanger.databinding.ActivityLanguageBinding
 import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
+import com.text.messages.sms.messanger.util.LanguageTransitionAdManager
 import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
 import com.text.messages.sms.messanger.util.ThemeManager
@@ -36,6 +38,12 @@ class LanguageActivity : BaseActivity() {
     private var isFromSettings: Boolean = false
     private var nativeAdView: NativeAdView? = null
     private var adaptiveBannerView: AdView? = null
+
+    private val nativeFullscreenFallbackLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        restartApp()
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +72,8 @@ class LanguageActivity : BaseActivity() {
         
         // Load saved language preference
         selectedLanguageCode = LocaleHelper.getSavedLanguageCode(this)
-        
+
+        LanguageTransitionAdManager.preload(applicationContext)
         setupRecyclerView()
         setupConfirmAction()
         initializeNativeAdView()
@@ -94,13 +103,39 @@ class LanguageActivity : BaseActivity() {
         binding.buttonConfirmLanguage.setOnClickListener {
             // Save language preference and apply locale
             LocaleHelper.updateLocale(this, selectedLanguageCode)
-            
+
             // Save additional preference
             sharedPreferences.edit()
                 .putBoolean("IS_LANGUAGE_SET", true)
                 .apply()
-            
-            // Restart the app to apply language changes
+
+            showTransitionAdThenContinue()
+        }
+    }
+
+    private fun showTransitionAdThenContinue() {
+        if (LanguageTransitionAdManager.shouldUseNativeFullscreenOnly()) {
+            launchNativeFullscreenFallbackOrContinue()
+            return
+        }
+
+        val showedInterstitial = LanguageTransitionAdManager.showInterstitialIfAvailable(
+            activity = this,
+            onDismiss = { restartApp() },
+            onFallbackToNative = { launchNativeFullscreenFallbackOrContinue() }
+        )
+
+        if (!showedInterstitial) {
+            launchNativeFullscreenFallbackOrContinue()
+        }
+    }
+
+    private fun launchNativeFullscreenFallbackOrContinue() {
+        if (LanguageTransitionAdManager.hasNativeFullscreenAd()) {
+            nativeFullscreenFallbackLauncher.launch(
+                Intent(this, LanguageNativeFullscreenAdActivity::class.java)
+            )
+        } else {
             restartApp()
         }
     }
