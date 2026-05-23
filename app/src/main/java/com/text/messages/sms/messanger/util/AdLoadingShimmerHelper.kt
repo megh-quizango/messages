@@ -14,9 +14,11 @@ import com.text.messages.sms.messanger.R
 object AdLoadingShimmerHelper {
 
     private const val BANNER_SHIMMER_TAG = "banner_ad_loading_shimmer"
+    private const val BANNER_HOST_TAG = "banner_ad_host_container"
     private const val NATIVE_SHIMMER_TAG = "native_ad_loading_shimmer"
 
     fun showBannerLoading(adView: AdView) {
+        setBannerHostVisibility(adView, View.VISIBLE)
         val shimmer = ensureBannerShimmer(adView) ?: return
         val bannerHeight = getBannerHeightPx(adView)
         updateViewHeight(adView, bannerHeight)
@@ -27,6 +29,7 @@ object AdLoadingShimmerHelper {
     }
 
     fun showBannerContent(adView: AdView) {
+        setBannerHostVisibility(adView, View.VISIBLE)
         val bannerHeight = getBannerHeightPx(adView)
         updateViewHeight(adView, bannerHeight)
         findBannerShimmer(adView)?.let(::stopAndHideShimmer)
@@ -37,6 +40,7 @@ object AdLoadingShimmerHelper {
     fun hideBanner(adView: AdView) {
         findBannerShimmer(adView)?.let(::stopAndHideShimmer)
         adView.visibility = View.GONE
+        setBannerHostVisibility(adView, View.GONE)
     }
 
     fun showNativeLoading(container: ViewGroup, adView: View? = null) {
@@ -80,6 +84,13 @@ object AdLoadingShimmerHelper {
     private fun findBannerShimmer(adView: AdView): ShimmerFrameLayout? {
         val parent = adView.parent as? ViewGroup ?: return null
         return parent.children().firstOrNull { it.tag == BANNER_SHIMMER_TAG } as? ShimmerFrameLayout
+    }
+
+    private fun setBannerHostVisibility(adView: AdView, visibility: Int) {
+        val parent = adView.parent as? ViewGroup ?: return
+        if (parent.tag == BANNER_HOST_TAG && parent.visibility != visibility) {
+            parent.visibility = visibility
+        }
     }
 
     private fun ensureNativeShimmer(container: ViewGroup): ShimmerFrameLayout? {
