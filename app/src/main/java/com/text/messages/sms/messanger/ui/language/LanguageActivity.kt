@@ -147,14 +147,22 @@ class LanguageActivity : BaseActivity() {
         if (isFromSettings) {
             // Restart the entire app by going to MainActivity, which will show the new language
             val intent = Intent(this, com.text.messages.sms.messanger.ui.main.MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                Intent.FLAG_ACTIVITY_NO_ANIMATION
             startActivity(intent)
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
             finish()
         } else {
             // For first-time setup, navigate to Default SMS Activity
             val intent = Intent(this, com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                Intent.FLAG_ACTIVITY_NO_ANIMATION
             startActivity(intent)
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
             finish()
         }
     }
