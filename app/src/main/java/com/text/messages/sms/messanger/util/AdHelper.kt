@@ -77,39 +77,11 @@ private fun AdView.ensureBannerAdView(desiredAdUnitId: String): AdView {
         return this
     }
 
-    val parentGroup = parent as? ViewGroup
-    if (parentGroup == null) {
-        android.util.Log.w(
-            "AdHelper",
-            "AdView already has ad unit id '$currentAdUnitId' and has no parent for replacement. Using existing view."
-        )
-        return this
-    }
-
     android.util.Log.d(
         "AdHelper",
-        "Replacing AdView to switch ad unit id from '$currentAdUnitId' to '$desiredAdUnitId'."
+        "Updating existing AdView ad unit id from '$currentAdUnitId' to '$desiredAdUnitId'."
     )
-
-    val currentAdSize = this.adSize
-    if (currentAdSize == null) {
-        android.util.Log.w("AdHelper", "Current AdView has no ad size set. Using existing view.")
-        return this
-    }
-
-    val replacement = AdView(context).apply {
-        id = this@ensureBannerAdView.id
-        layoutParams = this@ensureBannerAdView.layoutParams
-        setAdSize(currentAdSize)
-        adUnitId = desiredAdUnitId
-        visibility = this@ensureBannerAdView.visibility
-    }
-
-    val childIndex = parentGroup.indexOfChild(this)
-    parentGroup.removeView(this)
-    parentGroup.addView(replacement, childIndex)
-    this.destroy()
-
-    return replacement
+    this.adUnitId = desiredAdUnitId
+    return this
 }
 
