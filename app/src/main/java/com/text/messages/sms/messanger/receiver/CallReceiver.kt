@@ -23,10 +23,12 @@ class CallReceiver : BroadcastReceiver() {
         private const val KEY_COMPLETED_CALL = "completed_call"
         private const val KEY_NO_ANSWER = "no_answer"
         private const val KEY_UNKNOWN_CALLER = "unknown_caller"
+        private const val KEY_SHOW_CALL_INFO = "show_call_info"
         private const val KEY_CALL_STATE = "call_state"
         private const val KEY_INCOMING_NUMBER = "incoming_number"
         private const val KEY_CALL_START_TIME = "call_start_time"
         private const val KEY_IS_INCOMING = "is_incoming"
+        private const val KEY_WAS_OFFHOOK = "was_offhook"
 
         private var cachedNumber: String? = null
         private var callStartTime: Long = 0L
@@ -52,6 +54,8 @@ class CallReceiver : BroadcastReceiver() {
                 Log.d(TAG, "RINGING: Incoming call from $incomingNumber")
                 prefs.edit().apply {
                     putBoolean(KEY_IS_INCOMING, true)
+                    putBoolean(KEY_WAS_OFFHOOK, false)
+                    putString(KEY_CALL_STATE, TelephonyManager.EXTRA_STATE_RINGING)
                     putString(KEY_INCOMING_NUMBER, incomingNumber)
                     putLong(KEY_CALL_START_TIME, System.currentTimeMillis())
                     apply()
@@ -62,6 +66,22 @@ class CallReceiver : BroadcastReceiver() {
                 // Call answered or outgoing call started
                 Log.d(TAG, "OFFHOOK: Call active")
                 val isIncoming = prefs.getBoolean(KEY_IS_INCOMING, false)
+
+                prefs.edit().apply {
+                    putBoolean(KEY_WAS_OFFHOOK, true)
+                    putString(KEY_CALL_STATE, TelephonyManager.EXTRA_STATE_OFFHOOK)
+                    if (isIncoming) {
+                        // Reset start time to when the incoming call was actually answered.
+                        putLong(KEY_CALL_START_TIME, System.currentTimeMillis())
+                    } else {
+                        putBoolean(KEY_IS_INCOMING, false)
+                        putLong(KEY_CALL_START_TIME, System.currentTimeMillis())
+                        if (!incomingNumber.isNullOrEmpty()) {
+                            putString(KEY_INCOMING_NUMBER, incomingNumber)
+                        }
+                    }
+                    apply()
+                }
 
                 // If this is an outgoing call (no RINGING state before), get the dialed number
 //                if (!isIncoming) {
@@ -109,6 +129,7 @@ class CallReceiver : BroadcastReceiver() {
     ) {
         val callStartTime = prefs.getLong(KEY_CALL_START_TIME, 0)
         val isIncoming = prefs.getBoolean(KEY_IS_INCOMING, false)
+        val wasOffhook = prefs.getBoolean(KEY_WAS_OFFHOOK, false)
         val storedNumber = prefs.getString(KEY_INCOMING_NUMBER, null)
 
         // Use stored number if available, otherwise use incomingNumber from intent
@@ -127,8 +148,8 @@ class CallReceiver : BroadcastReceiver() {
 
         // Determine call type
         val callType = when {
-            callDuration == 0L && isIncoming -> "missed"
-            callDuration < 5000 && isIncoming -> "no_answer" // Less than 5 seconds
+            isIncoming && !wasOffhook -> "missed"
+            !isIncoming && wasOffhook && callDuration in 1..4_999 -> "no_answer"
             else -> "completed"
         }
 
@@ -159,8 +180,10 @@ class CallReceiver : BroadcastReceiver() {
         // Clear call state
         prefs.edit().apply {
             remove(KEY_IS_INCOMING)
+            remove(KEY_WAS_OFFHOOK)
             remove(KEY_INCOMING_NUMBER)
             remove(KEY_CALL_START_TIME)
+            remove(KEY_CALL_STATE)
             apply()
         }
 
@@ -216,12 +239,19 @@ class CallReceiver : BroadcastReceiver() {
         callType: String,
         isUnknownCaller: Boolean
     ): Boolean {
-        return when (callType) {
+        val isCallTypeEnabled = when (callType) {
             "missed" -> prefs.getBoolean(KEY_MISSED_CALL, true)
             "completed" -> prefs.getBoolean(KEY_COMPLETED_CALL, true)
             "no_answer" -> prefs.getBoolean(KEY_NO_ANSWER, true)
             else -> false
-        } && (!isUnknownCaller || prefs.getBoolean(KEY_UNKNOWN_CALLER, true))
+        }
+        val shouldShowForCaller = if (isUnknownCaller) {
+            prefs.getBoolean(KEY_UNKNOWN_CALLER, true)
+        } else {
+            prefs.getBoolean(KEY_SHOW_CALL_INFO, false)
+        }
+
+        return isCallTypeEnabled && shouldShowForCaller
     }
 
     private fun isContactInPhonebook(context: Context, phoneNumber: String?): Boolean {
