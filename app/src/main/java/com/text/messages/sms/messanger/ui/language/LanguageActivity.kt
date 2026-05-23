@@ -267,7 +267,7 @@ class LanguageActivity : BaseActivity() {
             bannerView.setAdSize(adSize)
             bannerView.layoutParams = android.widget.FrameLayout.LayoutParams(
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                adSize.getHeightInPixels(this)
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
             )
             bannerView.visibility = android.view.View.GONE
             bannerView.adListener = object : AdListener() {
@@ -327,17 +327,7 @@ class LanguageActivity : BaseActivity() {
 
     private fun getLanguageAdaptiveAdSize(adWidthPx: Int): AdSize {
         val adWidthDp = (adWidthPx / resources.displayMetrics.density).toInt().coerceAtLeast(1)
-        val slotHeightPx = measureLanguageAdSlotHeightPx(adWidthPx)
-        val slotHeightDp = (slotHeightPx / resources.displayMetrics.density).toInt().coerceAtLeast(1)
-        return AdSize.getInlineAdaptiveBannerAdSize(adWidthDp, slotHeightDp)
-    }
-
-    private fun measureLanguageAdSlotHeightPx(adWidthPx: Int): Int {
-        val adView = nativeAdView ?: return (220 * resources.displayMetrics.density).toInt()
-        val widthSpec = android.view.View.MeasureSpec.makeMeasureSpec(adWidthPx, android.view.View.MeasureSpec.EXACTLY)
-        val heightSpec = android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
-        adView.measure(widthSpec, heightSpec)
-        return adView.measuredHeight.coerceAtLeast((220 * resources.displayMetrics.density).toInt())
+        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidthDp)
     }
     
     override fun onDestroy() {
