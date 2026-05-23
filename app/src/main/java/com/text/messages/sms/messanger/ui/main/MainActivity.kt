@@ -48,6 +48,7 @@ import com.text.messages.sms.messanger.data.model.CustomFilter
 import com.text.messages.sms.messanger.util.CustomFilterStorage
 import com.text.messages.sms.messanger.util.BlockedConversationStorage
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
+import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
 import android.provider.Telephony
@@ -2744,10 +2745,11 @@ class MainActivity : BaseActivity() {
             return
         }
 
-        nativeAdFrame.visibility = View.GONE
+        AdLoadingShimmerHelper.showNativeLoading(nativeAdFrame)
         
         // Pre-inflate the native ad view structure so the layout is complete from the start
         exitNativeAdView = layoutInflater.inflate(R.layout.native_ad_layout, nativeAdFrame, false) as NativeAdView
+        exitNativeAdView!!.visibility = View.GONE
         nativeAdFrame.addView(exitNativeAdView)
         
         val adBinding = com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding.bind(exitNativeAdView!!)
@@ -2785,7 +2787,7 @@ class MainActivity : BaseActivity() {
         
         val nativeAdUnitId = RemoteConfigHelper.getNativeAdUnitId()
         if (nativeAdUnitId.isBlank()) {
-            nativeAdFrame.visibility = View.GONE
+            AdLoadingShimmerHelper.hideNative(nativeAdFrame, exitNativeAdView)
             return
         }
         val adLoader = AdLoader.Builder(this, nativeAdUnitId)
@@ -2797,6 +2799,7 @@ class MainActivity : BaseActivity() {
             .withAdListener(object : com.google.android.gms.ads.AdListener() {
                 override fun onAdFailedToLoad(loadAdError: com.google.android.gms.ads.LoadAdError) {
                     super.onAdFailedToLoad(loadAdError)
+                    AdLoadingShimmerHelper.hideNative(nativeAdFrame, exitNativeAdView)
                     AnalyticsHelper.logAdLoad("native", nativeAdUnitId, false)
                     AnalyticsHelper.logAdError("native", nativeAdUnitId, loadAdError.code.toString())
                 }
@@ -2819,9 +2822,8 @@ class MainActivity : BaseActivity() {
     private fun populateExitNativeAdView(ad: NativeAd) {
         // Use the pre-inflated view instead of creating a new one
         val adView = exitNativeAdView ?: return
-        val nativeAdFrame = adView.parent as? View
+        val nativeAdFrame = adView.parent as? ViewGroup
         val adBinding = com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding.bind(adView)
-        nativeAdFrame?.visibility = View.VISIBLE
         
         // Set ad assets (view structure already exists, just populate with data)
         if (ad.headline != null) {
@@ -2852,6 +2854,7 @@ class MainActivity : BaseActivity() {
         
         // Register the view
         adView.setNativeAd(ad)
+        nativeAdFrame?.let { AdLoadingShimmerHelper.showNativeContent(it, adView) }
     }
     
 

@@ -37,6 +37,7 @@
         android:minHeight="0dp"
         android:paddingStart="18dp"
         android:paddingEnd="18dp"
+        android:tag="exclude_from_theme_textcolor"
         android:text="@string/next"
         android:textAllCaps="false"
         android:textColor="@color/white"

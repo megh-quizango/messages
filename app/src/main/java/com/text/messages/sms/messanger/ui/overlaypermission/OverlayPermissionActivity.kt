@@ -26,12 +26,17 @@ import com.text.messages.sms.messanger.util.PermissionManager
 
 class OverlayPermissionActivity : BaseActivity() {
 
+    companion object {
+        private const val OVERLAY_GUIDE_LAUNCH_DELAY_MS = 1200L
+    }
+
     private lateinit var binding: ActivityOverlayPermissionBinding
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var pagerAdapter: ImagePagerAdapter
     private var buttonShimmerAnimator: ObjectAnimator? = null
     private val guideLaunchHandler = Handler(Looper.getMainLooper())
     private var shouldShowOverlayGuide = false
+    private var isWaitingForOverlaySettings = false
 
     private val overlayPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -110,13 +115,9 @@ class OverlayPermissionActivity : BaseActivity() {
                 onOverlayPermissionGranted()
             } else {
                 shouldShowOverlayGuide = true
+                isWaitingForOverlaySettings = true
+                cancelOverlayGuideLaunch()
                 overlayPermissionLauncher.launch(PermissionManager.getOverlayPermissionIntent(this))
-                guideLaunchHandler.postDelayed({
-                    if (shouldShowOverlayGuide && !isFinishing && !isDestroyed) {
-                        startActivity(Intent(this, OverlayPermissionGuideActivity::class.java))
-                        overridePendingTransition(0, 0)
-                    }
-                }, 160L)
             }
         }
     }
@@ -132,10 +133,31 @@ class OverlayPermissionActivity : BaseActivity() {
 
     private fun checkOverlayPermission() {
         shouldShowOverlayGuide = false
-        guideLaunchHandler.removeCallbacksAndMessages(null)
+        isWaitingForOverlaySettings = false
+        cancelOverlayGuideLaunch()
         if (PermissionManager.hasOverlayPermission(this)) {
             onOverlayPermissionGranted()
         }
+    }
+
+    private fun scheduleOverlayGuideLaunch() {
+        cancelOverlayGuideLaunch()
+        guideLaunchHandler.postDelayed({
+            if (
+                shouldShowOverlayGuide &&
+                isWaitingForOverlaySettings &&
+                !PermissionManager.hasOverlayPermission(this) &&
+                !isFinishing &&
+                !isDestroyed
+            ) {
+                startActivity(Intent(this, OverlayPermissionGuideActivity::class.java))
+                overridePendingTransition(0, 0)
+            }
+        }, OVERLAY_GUIDE_LAUNCH_DELAY_MS)
+    }
+
+    private fun cancelOverlayGuideLaunch() {
+        guideLaunchHandler.removeCallbacksAndMessages(null)
     }
 
     private fun onOverlayPermissionGranted() {
@@ -164,6 +186,7 @@ class OverlayPermissionActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        cancelOverlayGuideLaunch()
         binding.viewAllowPermissionShimmer.post {
             buttonShimmerAnimator = ButtonShimmerAnimator.start(
                 binding.viewAllowPermissionShimmer,
@@ -181,8 +204,21 @@ class OverlayPermissionActivity : BaseActivity() {
         super.onPause()
     }
 
+    override fun onStop() {
+        super.onStop()
+        if (
+            shouldShowOverlayGuide &&
+            isWaitingForOverlaySettings &&
+            !PermissionManager.hasOverlayPermission(this)
+        ) {
+            scheduleOverlayGuideLaunch()
+        } else {
+            cancelOverlayGuideLaunch()
+        }
+    }
+
     override fun onDestroy() {
-        guideLaunchHandler.removeCallbacksAndMessages(null)
+        cancelOverlayGuideLaunch()
         super.onDestroy()
     }
 }

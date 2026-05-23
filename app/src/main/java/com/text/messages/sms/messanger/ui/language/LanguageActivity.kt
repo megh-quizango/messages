@@ -16,6 +16,7 @@ import com.google.android.gms.ads.nativead.NativeAdView
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityLanguageBinding
 import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
+import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 
@@ -115,10 +116,12 @@ class LanguageActivity : BaseActivity() {
     }
     
     private fun initializeNativeAdView() {
+        AdLoadingShimmerHelper.showNativeLoading(binding.nativeAdFrame)
+
         // Pre-inflate the native ad view structure so the layout is complete from the start
         nativeAdView = layoutInflater.inflate(R.layout.native_ad_layout, binding.nativeAdFrame, false) as NativeAdView
+        nativeAdView!!.visibility = android.view.View.GONE
         binding.nativeAdFrame.addView(nativeAdView)
-        binding.nativeAdFrame.visibility = android.view.View.GONE
         
         // Apply theme to the pre-inflated view
         val themeColor = ThemeManager.getThemeColor(this)
@@ -147,7 +150,7 @@ class LanguageActivity : BaseActivity() {
     private fun loadNativeAd() {
         val nativeAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeAdUnitId()
         if (nativeAdUnitId.isBlank()) {
-            binding.nativeAdFrame.visibility = android.view.View.GONE
+            AdLoadingShimmerHelper.hideNative(binding.nativeAdFrame, nativeAdView)
             return
         }
         val adLoader = AdLoader.Builder(this, nativeAdUnitId)
@@ -159,7 +162,7 @@ class LanguageActivity : BaseActivity() {
             .withAdListener(object : com.google.android.gms.ads.AdListener() {
                 override fun onAdFailedToLoad(loadAdError: com.google.android.gms.ads.LoadAdError) {
                     super.onAdFailedToLoad(loadAdError)
-                    binding.nativeAdFrame.visibility = android.view.View.GONE
+                    AdLoadingShimmerHelper.hideNative(binding.nativeAdFrame, nativeAdView)
                     com.text.messages.sms.messanger.util.AnalyticsHelper.logAdLoad("native", nativeAdUnitId, false)
                     com.text.messages.sms.messanger.util.AnalyticsHelper.logAdError("native", nativeAdUnitId, loadAdError.code.toString())
                 }
@@ -183,7 +186,6 @@ class LanguageActivity : BaseActivity() {
         // Use the pre-inflated view instead of creating a new one
         val adView = nativeAdView ?: return
         val adBinding = NativeAdLayoutBinding.bind(adView)
-        binding.nativeAdFrame.visibility = android.view.View.VISIBLE
         
         // Set ad assets (view structure already exists, just populate with data)
         if (ad.headline != null) {
@@ -214,6 +216,7 @@ class LanguageActivity : BaseActivity() {
         
         // Register the view
         adView.setNativeAd(ad)
+        AdLoadingShimmerHelper.showNativeContent(binding.nativeAdFrame, adView)
     }
     
     override fun onDestroy() {

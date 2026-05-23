@@ -37,6 +37,7 @@ import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.material.button.MaterialButton
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
+import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AvatarHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 import de.hdodenhof.circleimageview.CircleImageView
@@ -215,6 +216,9 @@ class CallAfterActivity : BaseActivity() {
         nativeAdContainer = findViewById(R.id.nativeAdContainer)
         nativeAdView = findViewById(R.id.nativeAdView)
         adLoadingPlaceholder = findViewById(R.id.adLoadingPlaceholder)
+        adLoadingPlaceholder.visibility = View.GONE
+        nativeAdView.visibility = View.GONE
+        AdLoadingShimmerHelper.showNativeLoading(nativeAdContainer, nativeAdView)
     }
 
     private fun setupUI() {
@@ -602,7 +606,7 @@ class CallAfterActivity : BaseActivity() {
     private fun loadNativeAd() {
         val nativeAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeAdUnitId()
         if (nativeAdUnitId.isBlank()) {
-            nativeAdContainer.visibility = View.GONE
+            AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
             return
         }
         val adLoader = AdLoader.Builder(this, nativeAdUnitId)
@@ -621,8 +625,7 @@ class CallAfterActivity : BaseActivity() {
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                     Log.e(TAG, "Native ad failed to load: ${loadAdError.message}")
-                    // Hide ad container on failure
-                    nativeAdContainer.visibility = View.GONE
+                    AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
                 }
 
                 override fun onAdLoaded() {
@@ -640,10 +643,6 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun populateNativeAdView(nativeAd: NativeAd) {
-        // Hide loading placeholder
-        adLoadingPlaceholder.visibility = View.GONE
-        nativeAdView.visibility = View.VISIBLE
-
         // Media
         val mediaView = nativeAdView.findViewById<MediaView>(R.id.adMedia)
         nativeAdView.mediaView = mediaView
@@ -671,6 +670,7 @@ class CallAfterActivity : BaseActivity() {
 
         // Register the native ad view
         nativeAdView.setNativeAd(nativeAd)
+        AdLoadingShimmerHelper.showNativeContent(nativeAdContainer, nativeAdView)
     }
 
     override fun onDestroy() {

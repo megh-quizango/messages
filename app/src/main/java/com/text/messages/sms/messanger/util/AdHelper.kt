@@ -22,10 +22,14 @@ fun AdView.loadBannerAdWithRemoteConfig(): AdView {
     }
 
     val adViewToLoad = ensureBannerAdView(adUnitIdToUse)
-    adViewToLoad.visibility = View.VISIBLE
+    if (adViewToLoad.visibility != View.VISIBLE) {
+        return adViewToLoad
+    }
+    AdLoadingShimmerHelper.showBannerLoading(adViewToLoad)
 
     if (adViewToLoad.adSize == null) {
         android.util.Log.e("AdHelper", "Ad size is not set, cannot load ad")
+        AdLoadingShimmerHelper.hideBanner(adViewToLoad)
         return adViewToLoad
     }
 
@@ -34,11 +38,13 @@ fun AdView.loadBannerAdWithRemoteConfig(): AdView {
     adViewToLoad.adListener = object : AdListener() {
         override fun onAdLoaded() {
             super.onAdLoaded()
+            AdLoadingShimmerHelper.showBannerContent(adViewToLoad)
             AnalyticsHelper.logAdLoad("banner", adUnitIdToUse, true)
         }
         
         override fun onAdFailedToLoad(loadAdError: LoadAdError) {
             super.onAdFailedToLoad(loadAdError)
+            AdLoadingShimmerHelper.hideBanner(adViewToLoad)
             AnalyticsHelper.logAdLoad("banner", adUnitIdToUse, false)
             AnalyticsHelper.logAdError("banner", adUnitIdToUse, loadAdError.code.toString())
         }

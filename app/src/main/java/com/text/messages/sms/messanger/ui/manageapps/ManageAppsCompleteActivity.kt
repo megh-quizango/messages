@@ -13,6 +13,7 @@ import com.google.android.gms.ads.nativead.NativeAdView
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityManageAppsCompleteBinding
 import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
+import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 
 class ManageAppsCompleteActivity : BaseActivity() {
@@ -56,8 +57,11 @@ class ManageAppsCompleteActivity : BaseActivity() {
     }
 
     private fun initializeNativeAdView() {
+        AdLoadingShimmerHelper.showNativeLoading(binding.nativeAdContainer)
+
         // Pre-inflate the native ad view structure so the layout is complete from the start
         nativeAdView = layoutInflater.inflate(R.layout.native_ad_layout, binding.nativeAdContainer, false) as NativeAdView
+        nativeAdView!!.visibility = android.view.View.GONE
         binding.nativeAdContainer.addView(nativeAdView)
         
         val adBinding = NativeAdLayoutBinding.bind(nativeAdView!!)
@@ -72,7 +76,7 @@ class ManageAppsCompleteActivity : BaseActivity() {
     private fun loadNativeAd() {
         val nativeAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeAdUnitId()
         if (nativeAdUnitId.isBlank()) {
-            binding.nativeAdContainer.visibility = android.view.View.GONE
+            AdLoadingShimmerHelper.hideNative(binding.nativeAdContainer, nativeAdView)
             return
         }
         val adLoader = AdLoader.Builder(this, nativeAdUnitId)
@@ -84,6 +88,7 @@ class ManageAppsCompleteActivity : BaseActivity() {
             .withAdListener(object : com.google.android.gms.ads.AdListener() {
                 override fun onAdFailedToLoad(loadAdError: com.google.android.gms.ads.LoadAdError) {
                     super.onAdFailedToLoad(loadAdError)
+                    AdLoadingShimmerHelper.hideNative(binding.nativeAdContainer, nativeAdView)
                     com.text.messages.sms.messanger.util.AnalyticsHelper.logAdLoad("native", nativeAdUnitId, false)
                     com.text.messages.sms.messanger.util.AnalyticsHelper.logAdError("native", nativeAdUnitId, loadAdError.code.toString())
                 }
@@ -134,6 +139,7 @@ class ManageAppsCompleteActivity : BaseActivity() {
         }
         
         adView.setNativeAd(ad)
+        AdLoadingShimmerHelper.showNativeContent(binding.nativeAdContainer, adView)
     }
 
     override fun onDestroy() {
