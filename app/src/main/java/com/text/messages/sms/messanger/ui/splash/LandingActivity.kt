@@ -31,6 +31,8 @@ class LandingActivity : BaseActivity() {
         /** Timestamp of cold start, used to enforce minimum delay before ads */
         @Volatile
         var coldStartTimestampMs: Long = 0L
+
+        private const val PREF_HAS_SHOWN_SPLASH = "HAS_SHOWN_SPLASH"
     }
 
     private lateinit var binding: ActivityLandingBinding
@@ -45,6 +47,18 @@ class LandingActivity : BaseActivity() {
         if (coldStartTimestampMs == 0L) {
             coldStartTimestampMs = android.os.SystemClock.elapsedRealtime()
         }
+
+        sharedPreferences = getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
+
+        if (sharedPreferences.getBoolean(PREF_HAS_SHOWN_SPLASH, false)) {
+            Log.d("LandingActivity", "Splash already shown before - routing immediately")
+            navigateToNextActivity(
+                hasSeenWelcome = sharedPreferences.getBoolean("HAS_SEEN_WELCOME", false)
+            )
+            return
+        }
+
+        sharedPreferences.edit().putBoolean(PREF_HAS_SHOWN_SPLASH, true).apply()
 
         enableEdgeToEdge()
 
@@ -63,8 +77,6 @@ class LandingActivity : BaseActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        
-        sharedPreferences = getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
         
         // Animate progress bar
         animateProgressBar()
@@ -129,18 +141,7 @@ class LandingActivity : BaseActivity() {
         } else {
             // Welcome screen already shown, proceed with normal flow
             val isLanguageSet = sharedPreferences.getBoolean("IS_LANGUAGE_SET", false)
-            
-            // Check if app is actually the default SMS app
-            // Use RoleManager for Android 10+ (more reliable), fallback to Telephony for older versions
-            val isDefaultSmsApp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Android 10+ - Use RoleManager
-                val roleManager = getSystemService(RoleManager::class.java)
-                roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-            } else {
-                // Android 9 and below - Use Telephony
-                val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
-                defaultSmsPackage != null && packageName == defaultSmsPackage
-            }
+            val isDefaultSmsApp = isDefaultSmsApp()
             
             Log.d("LandingActivity", "redirectToActivity - isDefaultSmsApp: $isDefaultSmsApp")
             Log.d("LandingActivity", "redirectToActivity - isLanguageSet: $isLanguageSet")
@@ -162,6 +163,16 @@ class LandingActivity : BaseActivity() {
             }
         }
         finish()
+    }
+
+    private fun isDefaultSmsApp(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = getSystemService(RoleManager::class.java)
+            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
+        } else {
+            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
+            defaultSmsPackage != null && packageName == defaultSmsPackage
+        }
     }
 
     override fun onDestroy() {
