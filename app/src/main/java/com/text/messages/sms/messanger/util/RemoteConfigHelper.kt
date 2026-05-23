@@ -16,6 +16,9 @@ object RemoteConfigHelper {
     private const val DEFAULT_NATIVE_VIDEO_AD_UNIT_ID = ""
     private const val DEFAULT_APP_OPEN_AD_UNIT_ID = ""
     private const val DEFAULT_ADMOB_APP_ID = ""
+    private const val DEFAULT_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID = ""
+    private const val DEFAULT_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID = ""
+    private const val DEFAULT_LANGUAGE_ADAPTIVE_BANNER_ONLY = false
 
     // Remote Config keys
     private const val KEY_BANNER_AD_UNIT_ID = "banner_ad_unit_id"
@@ -23,6 +26,9 @@ object RemoteConfigHelper {
     private const val KEY_NATIVE_VIDEO_AD_UNIT_ID = "native_video_ad_unit_id"
     private const val KEY_APP_OPEN_AD_UNIT_ID = "app_open_ad_unit_id"
     private const val KEY_ADMOB_APP_ID = "admob_app_id"
+    private const val KEY_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID = "native_banner_ad_language"
+    private const val KEY_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID = "banner_language_fallback"
+    private const val KEY_LANGUAGE_ADAPTIVE_BANNER_ONLY = "language_adaptive_banner_only"
 
     fun initialize(remoteConfigInstance: FirebaseRemoteConfig) {
         remoteConfig = remoteConfigInstance
@@ -39,7 +45,10 @@ object RemoteConfigHelper {
             KEY_NATIVE_AD_UNIT_ID to DEFAULT_NATIVE_AD_UNIT_ID,
             KEY_NATIVE_VIDEO_AD_UNIT_ID to DEFAULT_NATIVE_VIDEO_AD_UNIT_ID,
             KEY_APP_OPEN_AD_UNIT_ID to DEFAULT_APP_OPEN_AD_UNIT_ID,
-            KEY_ADMOB_APP_ID to DEFAULT_ADMOB_APP_ID
+            KEY_ADMOB_APP_ID to DEFAULT_ADMOB_APP_ID,
+            KEY_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID to DEFAULT_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID,
+            KEY_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID to DEFAULT_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID,
+            KEY_LANGUAGE_ADAPTIVE_BANNER_ONLY to DEFAULT_LANGUAGE_ADAPTIVE_BANNER_ONLY
         )
         remoteConfigInstance.setDefaultsAsync(defaultValues)
 
@@ -88,6 +97,23 @@ object RemoteConfigHelper {
         val config = remoteConfig ?: return DEFAULT_ADMOB_APP_ID
         val appId = config.getString(KEY_ADMOB_APP_ID).trim()
         return if (appId.isBlank()) DEFAULT_ADMOB_APP_ID else appId
+    }
+
+    fun getLanguageNativeBannerAdUnitId(): String {
+        val config = remoteConfig ?: return DEFAULT_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID
+        val adUnitId = config.getString(KEY_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID).trim()
+        return if (adUnitId.isBlank()) DEFAULT_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID else adUnitId
+    }
+
+    fun getLanguageFallbackBannerAdUnitId(): String {
+        val config = remoteConfig ?: return DEFAULT_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID
+        val adUnitId = config.getString(KEY_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID).trim()
+        return if (adUnitId.isBlank()) DEFAULT_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID else adUnitId
+    }
+
+    fun shouldUseLanguageAdaptiveBannerOnly(): Boolean {
+        val config = remoteConfig ?: return DEFAULT_LANGUAGE_ADAPTIVE_BANNER_ONLY
+        return config.getBoolean(KEY_LANGUAGE_ADAPTIVE_BANNER_ONLY)
     }
 
     fun fetchRemoteConfig() {

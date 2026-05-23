@@ -40,7 +40,7 @@ class LandingActivity : BaseActivity() {
     private var resumeBinding: ActivityResumeBinding? = null
     private lateinit var sharedPreferences: SharedPreferences
     private val handler = Handler(Looper.getMainLooper())
-    private val splashDuration = 3000L // 3 seconds
+    private val splashDuration = 1500L // 1.5 seconds
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,7 +85,7 @@ class LandingActivity : BaseActivity() {
         // This will make MainActivity load instantly from cache
         handler.postDelayed({
             preloadConversations()
-        }, 1000)
+        }, 250)
         
         // After splash duration, navigate to next activity
         handler.postDelayed({

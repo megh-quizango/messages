@@ -8,6 +8,9 @@ import android.os.Looper
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.appopen.AppOpenAd
 import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
+import com.text.messages.sms.messanger.ui.language.LanguageActivity
+import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
+import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionGuideActivity
 import com.text.messages.sms.messanger.ui.splash.LandingActivity
 
 class AppOpenManager(
@@ -157,6 +160,10 @@ class AppOpenManager(
     override fun onActivityDestroyed(activity: Activity) {}
 
     private fun shouldShowAppOpenOn(activity: Activity): Boolean {
-        return activity !is CallAfterActivity && activity !is LandingActivity
+        return activity !is CallAfterActivity &&
+            activity !is LandingActivity &&
+            activity !is OverlayPermissionActivity &&
+            activity !is OverlayPermissionGuideActivity &&
+            activity !is LanguageActivity
     }
 }

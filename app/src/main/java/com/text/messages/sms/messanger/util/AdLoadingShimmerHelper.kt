@@ -43,8 +43,12 @@ object AdLoadingShimmerHelper {
         setBannerHostVisibility(adView, View.GONE)
     }
 
-    fun showNativeLoading(container: ViewGroup, adView: View? = null) {
-        val shimmer = ensureNativeShimmer(container) ?: return
+    fun showNativeLoading(
+        container: ViewGroup,
+        adView: View? = null,
+        shimmerLayoutRes: Int = R.layout.layout_native_ad_shimmer
+    ) {
+        val shimmer = ensureNativeShimmer(container, shimmerLayoutRes) ?: return
         container.visibility = View.VISIBLE
         adView?.visibility = View.GONE
         shimmer.visibility = View.VISIBLE
@@ -93,14 +97,14 @@ object AdLoadingShimmerHelper {
         }
     }
 
-    private fun ensureNativeShimmer(container: ViewGroup): ShimmerFrameLayout? {
+    private fun ensureNativeShimmer(container: ViewGroup, shimmerLayoutRes: Int): ShimmerFrameLayout? {
         val existing = findNativeShimmer(container)
         if (existing != null) {
             return existing
         }
 
         val shimmer = LayoutInflater.from(container.context)
-            .inflate(R.layout.layout_native_ad_shimmer, container, false) as ShimmerFrameLayout
+            .inflate(shimmerLayoutRes, container, false) as ShimmerFrameLayout
         shimmer.tag = NATIVE_SHIMMER_TAG
 
         if (container is FrameLayout) {

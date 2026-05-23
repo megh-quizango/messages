@@ -12,14 +12,13 @@ android {
 
     defaultConfig {
         applicationId = "com.text.messages.sms.messanger"
-        minSdk = 26
+        minSdk = 29
         targetSdk = 35
         versionCode = 8
         versionName = "1.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        // Ensure only arm64-v8a is included (16KB requirement is for 64-bit)
+
         ndk {
             abiFilters += listOf("arm64-v8a")
         }
