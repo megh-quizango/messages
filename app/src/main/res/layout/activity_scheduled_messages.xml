@@ -143,19 +143,29 @@
         android:contentDescription="@string/gen_activity_scheduled_messages_content_description_8"
         app:backgroundTint="#0C56CF"
         app:tint="@color/white"
-        app:layout_constraintBottom_toTopOf="@id/adViewBanner"
+        app:layout_constraintBottom_toTopOf="@id/bannerAdContainer"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- ================= BANNER AD ================= -->
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adViewBanner"
+    <FrameLayout
+        android:id="@+id/bannerAdContainer"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_placeholder"
+        android:layout_height="50dp"
+        android:clipChildren="true"
+        android:clipToPadding="true"
+        android:tag="banner_ad_host_container"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adViewBanner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:adSize="BANNER"
+            app:adUnitId="@string/banner_ad_unit_placeholder" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

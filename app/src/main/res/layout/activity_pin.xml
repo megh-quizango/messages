@@ -144,7 +144,7 @@
         app:layout_constraintTop_toBottomOf="@id/textForgotPassword"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/adViewBanner">
+        app:layout_constraintBottom_toTopOf="@id/bannerAdContainer">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button1"
@@ -277,16 +277,26 @@
 
     <!-- ================= BANNER AD ================= -->
 
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adViewBanner"
+    <FrameLayout
+        android:id="@+id/bannerAdContainer"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginTop="16dp"
-        app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_placeholder"
+        android:clipChildren="true"
+        android:clipToPadding="true"
+        android:tag="banner_ad_host_container"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adViewBanner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:adSize="BANNER"
+            app:adUnitId="@string/banner_ad_unit_placeholder" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

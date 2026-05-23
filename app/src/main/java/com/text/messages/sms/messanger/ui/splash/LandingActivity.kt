@@ -18,6 +18,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityLandingBinding
+import com.text.messages.sms.messanger.databinding.ActivityResumeBinding
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.main.MainViewModel
@@ -36,6 +37,7 @@ class LandingActivity : BaseActivity() {
     }
 
     private lateinit var binding: ActivityLandingBinding
+    private var resumeBinding: ActivityResumeBinding? = null
     private lateinit var sharedPreferences: SharedPreferences
     private val handler = Handler(Looper.getMainLooper())
     private val splashDuration = 3000L // 3 seconds
@@ -52,10 +54,7 @@ class LandingActivity : BaseActivity() {
 
         if (sharedPreferences.getBoolean(PREF_HAS_SHOWN_SPLASH, false)) {
             Log.d("LandingActivity", "Splash already shown before - routing immediately")
-            navigateToNextActivity(
-                hasSeenWelcome = sharedPreferences.getBoolean("HAS_SEEN_WELCOME", false),
-                showResumeScreen = true
-            )
+            showRepeatOpenFlow()
             return
         }
 
@@ -135,6 +134,7 @@ class LandingActivity : BaseActivity() {
     }
     
     private fun navigateToNextActivity(hasSeenWelcome: Boolean, showResumeScreen: Boolean) {
+        var staysOnLauncher = false
         if (!hasSeenWelcome) {
             // First time - show welcome screen
             Log.d("LandingActivity", "Redirecting to WelcomeActivity")
@@ -160,15 +160,18 @@ class LandingActivity : BaseActivity() {
                 // Also update SharedPreferences to reflect current state
                 sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
                 if (showResumeScreen) {
-                    Log.d("LandingActivity", "App is default - redirecting to ResumeActivity")
-                    startActivity(Intent(this, ResumeActivity::class.java))
+                    Log.d("LandingActivity", "App is default - showing in-place resume screen")
+                    staysOnLauncher = true
+                    showResumeScreenAndNavigate()
                 } else {
                     Log.d("LandingActivity", "App is default - redirecting to MainActivity")
                     startActivity(Intent(this, MainActivity::class.java))
                 }
             }
         }
-        finish()
+        if (!staysOnLauncher) {
+            finish()
+        }
     }
 
     private fun isDefaultSmsApp(): Boolean {
@@ -181,8 +184,37 @@ class LandingActivity : BaseActivity() {
         }
     }
 
+    private fun showRepeatOpenFlow() {
+        val hasSeenWelcome = sharedPreferences.getBoolean("HAS_SEEN_WELCOME", false)
+        navigateToNextActivity(hasSeenWelcome = hasSeenWelcome, showResumeScreen = true)
+    }
+
+    private fun showResumeScreenAndNavigate() {
+        enableEdgeToEdge()
+
+        val binding = ActivityResumeBinding.inflate(layoutInflater)
+        resumeBinding = binding
+        setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        preloadConversations()
+
+        binding.root.post {
+            if (!isFinishing && !isDestroyed) {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            }
+        }
+    }
+
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
+        resumeBinding = null
         super.onDestroy()
     }
 }
