@@ -5,8 +5,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.lifecycle.Lifecycle
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -26,6 +24,7 @@ import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AppOpenManager
 import com.text.messages.sms.messanger.util.LanguageTransitionAdManager
+import com.text.messages.sms.messanger.util.LanguageTransitionIntentHelper
 import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
 import com.text.messages.sms.messanger.util.ThemeManager
@@ -40,13 +39,6 @@ class LanguageActivity : BaseActivity() {
     private var isFromSettings: Boolean = false
     private var nativeAdView: NativeAdView? = null
     private var adaptiveBannerView: AdView? = null
-    private var pendingPostAdNavigation = false
-
-    private val nativeFullscreenFallbackLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        restartApp()
-    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,62 +110,27 @@ class LanguageActivity : BaseActivity() {
 
     private fun showTransitionAdThenContinue() {
         AppOpenManager.suppressAppOpenFor(8000L)
-        if (LanguageTransitionAdManager.shouldUseNativeFullscreenOnly()) {
-            launchNativeFullscreenFallbackOrContinue()
-            return
-        }
-
-        val showedInterstitial = LanguageTransitionAdManager.showInterstitialIfAvailable(
-            activity = this,
-            onDismiss = { continueAfterTransitionAd() },
-            onFallbackToNative = { launchNativeFullscreenFallbackOrContinue() }
-        )
-
-        if (!showedInterstitial) {
-            launchNativeFullscreenFallbackOrContinue()
-        }
-    }
-
-    private fun continueAfterTransitionAd() {
-        pendingPostAdNavigation = true
-        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-            binding.root.post {
-                if (pendingPostAdNavigation && !isFinishing && !isDestroyed) {
-                    pendingPostAdNavigation = false
-                    restartApp()
-                }
-            }
-        }
-    }
-
-    private fun launchNativeFullscreenFallbackOrContinue() {
-        if (LanguageTransitionAdManager.hasNativeFullscreenAd()) {
-            nativeFullscreenFallbackLauncher.launch(
-                Intent(this, LanguageNativeFullscreenAdActivity::class.java)
-            )
-        } else {
-            restartApp()
-        }
+        restartApp()
     }
     
     private fun restartApp() {
-        if (isFromSettings) {
+        val intent = if (isFromSettings) {
             val intent = Intent(this, com.text.messages.sms.messanger.ui.main.MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
                 Intent.FLAG_ACTIVITY_SINGLE_TOP or
                 Intent.FLAG_ACTIVITY_NO_ANIMATION
-            startActivity(intent)
-            @Suppress("DEPRECATION")
-            overridePendingTransition(0, 0)
-            finish()
+            intent
         } else {
             val intent = Intent(this, com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-            startActivity(intent)
-            @Suppress("DEPRECATION")
-            overridePendingTransition(0, 0)
-            finish()
+            intent
         }
+
+        LanguageTransitionIntentHelper.markForTransitionAd(intent)
+        startActivity(intent)
+        @Suppress("DEPRECATION")
+        overridePendingTransition(0, 0)
+        finish()
     }
     
     private fun initializeNativeAdView() {
@@ -407,18 +364,6 @@ class LanguageActivity : BaseActivity() {
         adaptiveBannerView?.destroy()
         adaptiveBannerView = null
         super.onDestroy()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (pendingPostAdNavigation && !isFinishing && !isDestroyed) {
-            pendingPostAdNavigation = false
-            binding.root.post {
-                if (!isFinishing && !isDestroyed) {
-                    restartApp()
-                }
-            }
-        }
     }
 }
 

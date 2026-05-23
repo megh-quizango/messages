@@ -26,6 +26,7 @@ import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
 import com.text.messages.sms.messanger.util.ButtonShimmerAnimator
+import com.text.messages.sms.messanger.util.LanguageTransitionIntentHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 
 class DefaultSmsActivity : BaseActivity() {
@@ -241,6 +242,15 @@ class DefaultSmsActivity : BaseActivity() {
         ButtonShimmerAnimator.stop(binding.viewSetDefaultShimmer, buttonShimmerAnimator)
         buttonShimmerAnimator = null
         super.onPause()
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        window.decorView.post {
+            if (!isFinishing && !isDestroyed) {
+                LanguageTransitionIntentHelper.maybeShowPendingTransitionAd(this)
+            }
+        }
     }
     
     @Suppress("DEPRECATION")

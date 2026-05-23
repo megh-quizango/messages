@@ -50,6 +50,7 @@ import com.text.messages.sms.messanger.util.BlockedConversationStorage
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
+import com.text.messages.sms.messanger.util.LanguageTransitionIntentHelper
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
 import android.provider.Telephony
 import android.content.ContentValues
@@ -2499,6 +2500,15 @@ class MainActivity : BaseActivity() {
         shimmer.post {
             if (!isFinishing && !isDestroyed && shimmer.visibility == View.VISIBLE) {
                 shimmer.startShimmer()
+            }
+        }
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        window.decorView.post {
+            if (!isFinishing && !isDestroyed) {
+                LanguageTransitionIntentHelper.maybeShowPendingTransitionAd(this)
             }
         }
     }
