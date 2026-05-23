@@ -36,7 +36,7 @@ import com.google.android.gms.ads.nativead.NativeAdView
 import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.material.button.MaterialButton
 import com.text.messages.sms.messanger.R
-import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
+import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AvatarHelper
 import com.text.messages.sms.messanger.util.ThemeManager
@@ -270,8 +270,8 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun setupQuickResponses() {
-        quickResponseAdapter = QuickResponseAdapter { position ->
-            viewModel.selectQuickResponse(position)
+        quickResponseAdapter = QuickResponseAdapter {
+            navigateToMainActivity()
         }
 
         recyclerQuickResponses.apply {
@@ -374,6 +374,7 @@ class CallAfterActivity : BaseActivity() {
                 is CallAfterViewModel.SendResult.Success -> {
                     Toast.makeText(this, R.string.sms_sent_success, Toast.LENGTH_SHORT).show()
                     viewModel.clearSendResult()
+                    navigateToMainActivity()
                 }
                 is CallAfterViewModel.SendResult.Error -> {
                     Toast.makeText(this, result.message, Toast.LENGTH_SHORT).show()
@@ -509,13 +510,8 @@ class CallAfterActivity : BaseActivity() {
 
 
     private fun makeCall() {
-        if (callerNumber.isNullOrEmpty()) {
-            Toast.makeText(this, R.string.invalid_number, Toast.LENGTH_SHORT).show()
-            return
-        }
-
         try {
-            openDialerForNumber(callerNumber!!)
+            openDialerForNumber(null)
         } catch (e: Exception) {
             Log.e(TAG, "Error making call", e)
             Toast.makeText(this, R.string.call_failed, Toast.LENGTH_SHORT).show()
@@ -523,52 +519,34 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun openConversation() {
-        val number = callerNumber
-        if (number.isNullOrEmpty()) {
-            Toast.makeText(this, R.string.invalid_number, Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        try {
-            // Get thread ID for the phone number
-            val threadId = android.provider.Telephony.Threads.getOrCreateThreadId(this, number)
-
-            // Get contact name if available
-            val contactName = viewModel.contactInfo.value?.name ?: number
-
-            val intent = Intent(this, ConversationDetailActivity::class.java).apply {
-                putExtra("thread_id", threadId)
-                putExtra("address", number)
-                putExtra("contact_name", contactName)
-            }
-            startActivity(intent)
-            finish()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error opening conversation", e)
-            Toast.makeText(this, R.string.message_failed, Toast.LENGTH_SHORT).show()
-        }
+        navigateToMainActivity()
     }
 
     private fun addToContacts() {
-        val number = callerNumber
-        if (number.isNullOrEmpty()) {
-            Toast.makeText(this, R.string.invalid_number, Toast.LENGTH_SHORT).show()
-            return
-        }
-
         try {
-            openDialerForNumber(number)
+            openDialerForNumber(null)
         } catch (e: Exception) {
             Log.e(TAG, "Error adding to contacts", e)
             Toast.makeText(this, R.string.add_contact_failed, Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun openDialerForNumber(number: String) {
+    private fun openDialerForNumber(number: String?) {
         val intent = Intent(Intent.ACTION_DIAL).apply {
-            data = Uri.parse("tel:$number")
+            if (!number.isNullOrBlank()) {
+                data = Uri.parse("tel:$number")
+            }
         }
         startActivity(intent)
+        finish()
+    }
+
+    private fun navigateToMainActivity() {
+        startActivity(
+            Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            }
+        )
         finish()
     }
 
@@ -576,6 +554,10 @@ class CallAfterActivity : BaseActivity() {
     private fun sendMessage() {
         val message = editMessage.text.toString().trim()
         if (message.isEmpty()) {
+            return
+        }
+        if (callerNumber.isNullOrBlank()) {
+            navigateToMainActivity()
             return
         }
         viewModel.sendMessage()
