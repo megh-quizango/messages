@@ -74,6 +74,9 @@ class SingleContactSelectionActivity : BaseActivity() {
     }
 
     private fun setupToolbar() {
+        binding.toolbar.setNavigationIcon(R.drawable.ic_close)
+        binding.toolbar.navigationIcon?.setTint(ContextCompat.getColor(this, R.color.black))
+        binding.toolbar.navigationContentDescription = getString(R.string.action_close)
         binding.toolbar.setNavigationOnClickListener {
             finish()
         }
@@ -91,6 +94,12 @@ class SingleContactSelectionActivity : BaseActivity() {
     }
 
     private fun setupDoneButton() {
+        binding.buttonDone.backgroundTintList = null
+        binding.buttonDone.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            ThemeManager.getThemeColor(this)
+        )
+        binding.buttonDone.setTextColor(ContextCompat.getColor(this, R.color.white))
+
         binding.buttonDone.setOnClickListener {
             selectedContact?.let { contact ->
                 val resultIntent = Intent().apply {

@@ -1,4 +1,3 @@
-import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -12,7 +11,7 @@ plugins {
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties().apply {
     if (keystorePropertiesFile.exists()) {
-        load(FileInputStream(keystorePropertiesFile))
+        keystorePropertiesFile.inputStream().use { load(it) }
     }
 }
 
@@ -54,12 +53,12 @@ android {
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
-                // v1 + v2 + v3: required for reliable sideload (Drive / WhatsApp / Files).
-                // v2-only APKs often install via adb but fail with "App not installed" in Package Installer.
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile")!!)
+                storePassword = keystoreProperties.getProperty("storePassword")
+                // v1 + v2 required for reliable sideload (WhatsApp / Drive / Discord).
+                // v2-only APKs often install via adb but fail with "App not installed" from file apps.
                 enableV1Signing = true
                 enableV2Signing = true
                 enableV3Signing = true
@@ -69,15 +68,15 @@ android {
 
     buildTypes {
         release {
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (keystorePropertiesFile.exists()) {
-                signingConfig = signingConfigs.getByName("release")
-            }
         }
     }
     
@@ -112,6 +111,25 @@ android {
 // Realm Kotlin 1.16.0 still uses 4KB-aligned native libraries (librealmc.so)
 // Replaced with Room (SQLite) which is 16KB-compatible and Google-backed
 // Build AAB for Play Store: ./gradlew bundleRelease
+// Signed APK for sideloading: configure keystore.properties, then ./gradlew assembleRelease
+// Output: app/build/outputs/apk/release/app-release.apk (copy to testers via Drive, not WhatsApp if possible)
+
+afterEvaluate {
+    tasks.register<Copy>("copyInstallableReleaseApk") {
+        group = "distribution"
+        description = "Copies signed release APK to app/release/ for sharing"
+        dependsOn("assembleRelease")
+        from(layout.buildDirectory.file("outputs/apk/release/app-release.apk"))
+        into(layout.projectDirectory.dir("release"))
+        rename { "messages-installable.apk" }
+        doFirst {
+            val apk = layout.buildDirectory.file("outputs/apk/release/app-release.apk").get().asFile
+            if (!apk.exists()) {
+                error("Signed app-release.apk not found. Add keystore.properties and run assembleRelease.")
+            }
+        }
+    }
+}
 
 dependencies {
     // Core AndroidX

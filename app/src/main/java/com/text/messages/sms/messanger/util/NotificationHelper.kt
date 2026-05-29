@@ -207,44 +207,21 @@ object NotificationHelper {
         }
         
         // Configure action buttons
-        var actions = listOf(
+        val configuredActions = listOf(
             button1Action to 1,
             button2Action to 2,
             button3Action to 3
         ).filter { it.first != null && it.first != ButtonAction.NONE.name }
-        
-        // If OTP is detected, replace one of the existing action buttons with COPY_OTP
-        // Priority: Keep REPLY if present, otherwise replace the last button
-        if (hasOTP && otp != null && !actions.any { it.first == ButtonAction.COPY_OTP.name }) {
-            if (actions.isEmpty()) {
-                // No existing actions, add COPY_OTP as the first action
-                actions = listOf(ButtonAction.COPY_OTP.name to 1)
-            } else {
-                // Replace the last non-REPLY button, or if all are REPLY, replace the last one
-                val replyIndex = actions.indexOfFirst { it.first == ButtonAction.REPLY.name }
-                val indexToReplace = if (replyIndex >= 0 && actions.size > 1) {
-                    // Keep REPLY, replace the last non-REPLY button
-                    val nonReplyActions = actions.filterIndexed { index, _ -> index != replyIndex }
-                    if (nonReplyActions.isNotEmpty()) {
-                        actions.indexOf(nonReplyActions.last())
-                    } else {
-                        actions.size - 1
-                    }
-                } else {
-                    // No REPLY or only REPLY exists, replace the last button
-                    actions.size - 1
-                }
-                
-                // Replace the button at indexToReplace with COPY_OTP
-                actions = actions.mapIndexed { index, action ->
-                    if (index == indexToReplace) {
-                        ButtonAction.COPY_OTP.name to action.second
-                    } else {
-                        action
-                    }
-                }
-            }
-            Log.d(TAG, "Replaced action button with COPY_OTP for OTP: $otp")
+        val actions = if (hasOTP && otp != null) {
+            listOf(ButtonAction.COPY_OTP.name) +
+                configuredActions.mapNotNull { it.first }.filter { it != ButtonAction.COPY_OTP.name }
+        } else {
+            configuredActions.mapNotNull { it.first }
+        }.take(3).mapIndexed { index, actionName ->
+            actionName to (index + 1)
+        }
+        if (hasOTP && otp != null) {
+            Log.d(TAG, "Prioritized COPY_OTP as the default notification action for OTP: $otp")
         }
         
         // Build standard notification (no custom view)
@@ -254,7 +231,7 @@ object NotificationHelper {
             .setContentTitle(title) // Contact name
             .setContentText(text) // Message text
             .setStyle(NotificationCompat.BigTextStyle().bigText(text)) // Expandable text style
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
@@ -698,7 +675,7 @@ object NotificationHelper {
                 .setContentTitle(contactName)
                 .setContentText(messageText)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(messageText))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)

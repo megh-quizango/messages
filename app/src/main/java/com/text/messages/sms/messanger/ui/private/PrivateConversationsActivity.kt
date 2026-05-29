@@ -10,7 +10,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.gms.ads.AdRequest
 import com.text.messages.sms.messanger.databinding.ActivityPrivateConversationsBinding
 import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
 import com.text.messages.sms.messanger.ui.main.ConversationSelectionActivity
@@ -100,10 +99,11 @@ class PrivateConversationsActivity : BaseActivity() {
 
     private fun setupIcons() {
         binding.imageAdd.setOnClickListener {
-            // Open conversation selection activity for private conversations
-            val intent = Intent(this, ConversationSelectionActivity::class.java)
-            intent.putExtra("is_private", true)
-            conversationSelectionLauncher.launch(intent)
+            openConversationSelection()
+        }
+
+        binding.buttonAddConversation.setOnClickListener {
+            openConversationSelection()
         }
 
         binding.imageSettings.setOnClickListener {
@@ -175,6 +175,12 @@ class PrivateConversationsActivity : BaseActivity() {
         
         binding.recyclerViewConversations.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewConversations.adapter = adapter
+    }
+
+    private fun openConversationSelection() {
+        val intent = Intent(this, ConversationSelectionActivity::class.java)
+        intent.putExtra("is_private", true)
+        conversationSelectionLauncher.launch(intent)
     }
 
     private fun enterSelectionMode(threadId: Long) {

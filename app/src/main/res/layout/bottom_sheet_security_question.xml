@@ -48,13 +48,15 @@
             android:id="@+id/editTextQuestion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="none"
-            android:focusable="false"
             android:clickable="true"
-            android:paddingStart="16dp"
+            android:focusable="false"
+            android:inputType="none"
             android:paddingEnd="16dp"
             android:paddingBottom="16dp"
-            android:paddingTop="24dp"/>
+            android:paddingStart="16dp"
+            android:paddingTop="24dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray_dark" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -79,10 +81,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingBottom="16dp"
-            android:paddingTop="24dp"/>
+            android:paddingStart="16dp"
+            android:paddingTop="24dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray_dark" />
 
     </com.google.android.material.textfield.TextInputLayout>
 

@@ -25,12 +25,14 @@
         android:layout_marginTop="16dp"
         android:minHeight="200dp"
         android:maxHeight="500dp"
-        android:clipToPadding="false"
-        android:padding="8dp"
+        android:clipToPadding="true"
+        android:overScrollMode="ifContentScrolls"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
         app:layout_constraintTop_toBottomOf="@id/textTitle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

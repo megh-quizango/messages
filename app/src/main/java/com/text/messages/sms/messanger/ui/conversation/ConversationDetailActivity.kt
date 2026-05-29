@@ -487,14 +487,12 @@ class ConversationDetailActivity : BaseActivity() {
     private fun loadStarredMessages() {
         val prefs = getSharedPreferences("starred_messages", MODE_PRIVATE)
         val starredJson = prefs.getString("starred_messages_list", null)
-        if (starredJson != null) {
-            val gson = com.google.gson.Gson()
-            val type = object : com.google.gson.reflect.TypeToken<List<com.text.messages.sms.messanger.ui.starred.StarredMessageData>>() {}.type
-            val starredMessages = gson.fromJson<List<com.text.messages.sms.messanger.ui.starred.StarredMessageData>>(starredJson, type)
-            starredMessageIds.clear()
-            starredMessageIds.addAll(starredMessages.map { it.messageId })
-            adapter.setStarredMessages(starredMessageIds)
-        }
+        val gson = com.google.gson.Gson()
+        val starredMessages = com.text.messages.sms.messanger.util.ConversationStorageParser
+            .parseStarredMessages(starredJson, gson)
+        starredMessageIds.clear()
+        starredMessageIds.addAll(starredMessages.map { it.messageId })
+        adapter.setStarredMessages(starredMessageIds)
     }
     
     private fun starSelectedMessages() {
@@ -504,9 +502,8 @@ class ConversationDetailActivity : BaseActivity() {
         val prefs = getSharedPreferences("starred_messages", MODE_PRIVATE)
         val starredJson = prefs.getString("starred_messages_list", null)
         val gson = com.google.gson.Gson()
-        val type = object : com.google.gson.reflect.TypeToken<List<com.text.messages.sms.messanger.ui.starred.StarredMessageData>>() {}.type
         val starredMessages = if (starredJson != null) {
-            gson.fromJson<List<com.text.messages.sms.messanger.ui.starred.StarredMessageData>>(starredJson, type).toMutableList()
+            com.text.messages.sms.messanger.util.ConversationStorageParser.parseStarredMessages(starredJson, gson)
         } else {
             mutableListOf()
         }
@@ -530,6 +527,7 @@ class ConversationDetailActivity : BaseActivity() {
             } else null
         }
         
+        starredMessages.removeAll { existing -> selectedIds.contains(existing.messageId) }
         starredMessages.addAll(messagesToStar)
         starredMessageIds.addAll(selectedIds)
         

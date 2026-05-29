@@ -10,10 +10,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.ads.AdRequest
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityStarredBinding
 import com.text.messages.sms.messanger.data.model.Message
+import com.text.messages.sms.messanger.util.ConversationStorageParser
 import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
@@ -85,8 +85,7 @@ class StarredActivity : BaseActivity() {
     private fun loadStarredMessages() {
         val starredJson = prefs.getString(KEY_STARRED_MESSAGES, null)
         val starredMessages = if (starredJson != null) {
-            val type = object : TypeToken<List<StarredMessageData>>() {}.type
-            val messages = gson.fromJson<List<StarredMessageData>>(starredJson, type)
+            val messages = ConversationStorageParser.parseStarredMessages(starredJson, gson)
             // Update contact names
             messages.map { message ->
                 if (message.contactName.isNullOrEmpty()) {

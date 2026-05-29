@@ -13,14 +13,14 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:background="@drawable/bg_back_button"
         android:src="@drawable/ic_arrow_back"
         android:contentDescription="@string/gen_activity_pin_content_description_1"
         android:scaleType="centerInside"
         android:padding="12dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <!-- ================= HEADING ================= -->
 
@@ -35,245 +35,244 @@
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="@id/buttonBack"
         app:layout_constraintBottom_toBottomOf="@id/buttonBack"
-        app:layout_constraintStart_toEndOf="@id/buttonBack"/>
-
-    <!-- ================= LOCK ICON ================= -->
-
-    <ImageView
-        android:id="@+id/imageLock"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="44dp"
-        android:src="@drawable/lock"
-        android:contentDescription="@string/gen_activity_pin_content_description_3"
-        app:layout_constraintTop_toBottomOf="@id/buttonBack"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- ================= PIN TEXT ================= -->
-
-    <TextView
-        android:id="@+id/textPinInstruction"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="@string/gen_activity_pin_text_4"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/imageLock"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- ================= PIN DOTS ================= -->
+        app:layout_constraintStart_toEndOf="@id/buttonBack" />
 
     <LinearLayout
-        android:id="@+id/layoutPinDots"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/textPinInstruction"
+        android:id="@+id/layoutPinContent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintTop_toBottomOf="@id/buttonBack"
+        app:layout_constraintBottom_toTopOf="@id/bannerAdContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <View
-            android:id="@+id/dot1"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_margin="8dp"
-            android:background="@drawable/bg_pin_dot"
-            android:alpha="0.3"/>
+        <!-- ================= LOCK ICON ================= -->
 
-        <View
-            android:id="@+id/dot2"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_margin="8dp"
-            android:background="@drawable/bg_pin_dot"
-            android:alpha="0.3"/>
+        <ImageView
+            android:id="@+id/imageLock"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:src="@drawable/lock"
+            android:contentDescription="@string/gen_activity_pin_content_description_3" />
 
-        <View
-            android:id="@+id/dot3"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_margin="8dp"
-            android:background="@drawable/bg_pin_dot"
-            android:alpha="0.3"/>
+        <!-- ================= PIN TEXT ================= -->
 
-        <View
-            android:id="@+id/dot4"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_margin="8dp"
-            android:background="@drawable/bg_pin_dot"
-            android:alpha="0.3"/>
+        <TextView
+            android:id="@+id/textPinInstruction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/gen_activity_pin_text_4"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-    </LinearLayout>
+        <!-- ================= PIN DOTS ================= -->
 
-    <!-- ================= FORGOT PASSWORD ================= -->
+        <LinearLayout
+            android:id="@+id/layoutPinDots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/textForgotPassword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:text="@string/gen_activity_pin_text_5"
-        android:textColor="@color/gray_dark"
-        android:textSize="14sp"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="8dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/layoutPinDots"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <View
+                android:id="@+id/dot1"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_margin="6dp"
+                android:alpha="0.3"
+                android:background="@drawable/bg_pin_dot" />
 
-    <!-- ================= KEYPAD ================= -->
+            <View
+                android:id="@+id/dot2"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_margin="6dp"
+                android:alpha="0.3"
+                android:background="@drawable/bg_pin_dot" />
 
-    <GridLayout
-        android:id="@+id/gridKeypad"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="16dp"
-        android:columnCount="3"
-        android:rowCount="4"
-        android:alignmentMode="alignMargins"
-        app:layout_constraintTop_toBottomOf="@id/textForgotPassword"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bannerAdContainer">
+            <View
+                android:id="@+id/dot3"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_margin="6dp"
+                android:alpha="0.3"
+                android:background="@drawable/bg_pin_dot" />
+
+            <View
+                android:id="@+id/dot4"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_margin="6dp"
+                android:alpha="0.3"
+                android:background="@drawable/bg_pin_dot" />
+
+        </LinearLayout>
+
+        <!-- ================= FORGOT PASSWORD ================= -->
+
+        <TextView
+            android:id="@+id/textForgotPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:text="@string/gen_activity_pin_text_5"
+            android:textColor="@color/gray_dark"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <!-- ================= KEYPAD ================= -->
+
+        <GridLayout
+            android:id="@+id/gridKeypad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:columnCount="3"
+            android:rowCount="4"
+            android:alignmentMode="alignMargins">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button1"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_6"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button2"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_7"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button3"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_8"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button4"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_9"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button5"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_10"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button6"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_11"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button7"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_12"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button8"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_13"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button9"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_14"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <View
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"/>
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button0"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
             android:text="@string/gen_activity_pin_text_15"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textColor="@color/black"
             android:backgroundTint="#E6F0FF"
-            app:cornerRadius="50dp"/>
+            app:cornerRadius="32dp" />
 
         <ImageButton
             android:id="@+id/buttonDelete"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="8dp"
-            android:src="@drawable/ic_delete"
             android:background="@drawable/bg_keypad_button"
             android:contentDescription="@string/gen_activity_pin_content_description_16"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="6dp"
+            android:padding="16dp"
             android:scaleType="centerInside"
-            android:padding="20dp"
-            app:tint="@color/black"/>
+            android:src="@drawable/ic_backspace"
+            app:tint="@color/black" />
 
-    </GridLayout>
+        </GridLayout>
+
+    </LinearLayout>
 
     <!-- ================= BANNER AD ================= -->
 
@@ -281,7 +280,7 @@
         android:id="@+id/bannerAdContainer"
         android:layout_width="0dp"
         android:layout_height="50dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:clipChildren="true"
         android:clipToPadding="true"
         android:tag="banner_ad_host_container"

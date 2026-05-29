@@ -13,11 +13,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import com.text.messages.sms.messanger.ui.base.BaseActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.ads.AdRequest
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityPinBinding
@@ -96,7 +96,6 @@ class PinActivity : BaseActivity() {
     }
 
     private fun setupKeypad() {
-        // Set backgroundTint to null for all keypad buttons and apply theme light color
         val themeColorLight = ThemeManager.getThemeColorLight(this)
         val keypadButtons = listOf(
             binding.button0, binding.button1, binding.button2, binding.button3,
@@ -105,14 +104,17 @@ class PinActivity : BaseActivity() {
         )
         keypadButtons.forEach { button ->
             button.backgroundTintList = null
-            // Apply theme light color directly using backgroundTintList
             button.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColorLight)
-            // Also set background drawable
             val circleDrawable = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.OVAL
                 setColor(themeColorLight)
             }
             button.background = circleDrawable
+        }
+
+        binding.buttonDelete.background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.OVAL
+            setColor(themeColorLight)
         }
         
         binding.button0.setOnClickListener { addDigit("0") }
@@ -215,10 +217,10 @@ class PinActivity : BaseActivity() {
         // Apply theme after bottom sheet is shown
         bottomSheet.setOnShowListener {
             ThemeManager.applyTheme(this, sheetBinding.root)
-            // Apply theme to TextInputLayout focus colors
             val themeColor = ThemeManager.getThemeColor(this)
             sheetBinding.inputLayoutQuestion.setBoxStrokeColor(themeColor)
             sheetBinding.inputLayoutAnswer.setBoxStrokeColor(themeColor)
+            applyReadableInputColors(sheetBinding.editTextQuestion, sheetBinding.editTextAnswer)
         }
 
         sheetBinding.editTextQuestion.setOnClickListener {
@@ -317,10 +319,10 @@ class PinActivity : BaseActivity() {
         // Apply theme after bottom sheet is shown
         bottomSheet.setOnShowListener {
             ThemeManager.applyTheme(this, sheetBinding.root)
-            // Apply theme to TextInputLayout focus colors
             val themeColor = ThemeManager.getThemeColor(this)
             sheetBinding.inputLayoutQuestion.setBoxStrokeColor(themeColor)
             sheetBinding.inputLayoutAnswer.setBoxStrokeColor(themeColor)
+            applyReadableInputColors(sheetBinding.editTextQuestion, sheetBinding.editTextAnswer)
         }
 
         sheetBinding.editTextAnswer.addTextChangedListener(object : TextWatcher {
@@ -366,6 +368,15 @@ class PinActivity : BaseActivity() {
         val question = sheetBinding.editTextQuestion.text.toString()
         val answer = sheetBinding.editTextAnswer.text.toString()
         sheetBinding.buttonSave.isEnabled = question.isNotEmpty() && answer.isNotEmpty()
+    }
+
+    private fun applyReadableInputColors(vararg views: TextView) {
+        val textColor = ContextCompat.getColor(this, R.color.black)
+        val hintColor = ContextCompat.getColor(this, R.color.gray_dark)
+        views.forEach { view ->
+            view.setTextColor(textColor)
+            view.setHintTextColor(hintColor)
+        }
     }
 
     private fun updatePinDots() {
