@@ -22,7 +22,6 @@ import com.text.messages.sms.messanger.databinding.ActivityLanguageBinding
 import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
-import com.text.messages.sms.messanger.util.AppOpenManager
 import com.text.messages.sms.messanger.util.LanguageTransitionAdManager
 import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
@@ -108,54 +107,12 @@ class LanguageActivity : BaseActivity() {
     }
 
     private fun showTransitionAdThenContinue() {
-        AppOpenManager.suppressAppOpenFor(8000L)
-        if (LanguageTransitionAdManager.shouldUseNativeFullscreenOnly()) {
-            launchNativeFullscreenFallbackOrContinue()
-            return
-        }
-
-        val handled = LanguageTransitionAdManager.showInterstitialIfAvailable(
-            activity = this,
-            onDismiss = { navigateToNextScreen() },
-            onFallbackToNative = { launchNativeFullscreenFallbackOrContinue() }
-        )
-
-        if (!handled) {
-            navigateToNextScreen()
-        }
-    }
-
-    private fun launchNativeFullscreenFallbackOrContinue() {
-        if (!LanguageTransitionAdManager.hasNativeFullscreenAd()) {
-            navigateToNextScreen()
-            return
-        }
-
         startActivity(
-            Intent(this, LanguageNativeFullscreenAdActivity::class.java).apply {
-                putExtra(LanguageNativeFullscreenAdActivity.EXTRA_FROM_SETTINGS, isFromSettings)
+            Intent(this, LanguageTransitionAdActivity::class.java).apply {
+                putExtra(LanguageTransitionAdActivity.EXTRA_FROM_SETTINGS, isFromSettings)
                 addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
             }
         )
-        @Suppress("DEPRECATION")
-        overridePendingTransition(0, 0)
-        finish()
-    }
-
-    private fun navigateToNextScreen() {
-        val intent = if (isFromSettings) {
-            val intent = Intent(this, com.text.messages.sms.messanger.ui.main.MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                Intent.FLAG_ACTIVITY_NO_ANIMATION
-            intent
-        } else {
-            val intent = Intent(this, com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-            intent
-        }
-
-        startActivity(intent)
         @Suppress("DEPRECATION")
         overridePendingTransition(0, 0)
         finish()

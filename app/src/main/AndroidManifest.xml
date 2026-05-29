@@ -116,6 +116,12 @@
             android:theme="@style/Theme.Messages" />
 
         <activity
+            android:name=".ui.language.LanguageTransitionAdActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Messages.Resume" />
+
+        <activity
             android:name=".ui.language.LanguageNativeFullscreenAdActivity"
             android:exported="false"
             android:theme="@style/Theme.Messages" />
