@@ -22,6 +22,12 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
+    <!-- After-call (no overlay): full-screen intent on lock screen -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Outgoing number on API 28 and below -->
+    <uses-permission
+        android:name="android.permission.PROCESS_OUTGOING_CALLS"
+        android:maxSdkVersion="28" />
 
     <!-- Call Overlay Permissions -->
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
@@ -46,7 +52,7 @@
         <!-- AdMob App ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="${admobAppId}" />
 
         <!-- Resolve AD_SERVICES_CONFIG conflict between AdMob and Firebase Analytics -->
         <property
@@ -304,8 +310,11 @@
         <activity
             android:name=".ui.caller.CallAfterActivity"
             android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:theme="@style/Theme.Messages"
-            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize" />
 
         <!-- StarredActivity -->
@@ -445,13 +454,27 @@
             android:name=".receiver.NotificationActionReceiver"
             android:exported="false" />
 
-        <!-- Call Receiver -->
+        <!-- After-call: overlay path (priority 998, system call broadcasts only) -->
         <receiver
             android:name=".receiver.CallReceiver"
             android:enabled="true"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_CALL">
             <intent-filter android:priority="998">
                 <action android:name="android.intent.action.PHONE_STATE" />
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
+            </intent-filter>
+        </receiver>
+
+        <!-- After-call: notification / full-screen intent when overlay is denied -->
+        <receiver
+            android:name=".receiver.CallEndReceiver"
+            android:directBootAware="true"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.PHONE_STATE" />
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
             </intent-filter>
         </receiver>
 

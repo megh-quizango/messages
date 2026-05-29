@@ -38,8 +38,12 @@ import com.google.android.material.button.MaterialButton
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
+import com.text.messages.sms.messanger.util.AfterCallAdPreloader
+import com.text.messages.sms.messanger.util.AfterCallNotificationHelper
 import com.text.messages.sms.messanger.util.AvatarHelper
+import com.text.messages.sms.messanger.util.CallAfterLauncher
 import com.text.messages.sms.messanger.util.ThemeManager
+import android.os.Build
 import de.hdodenhof.circleimageview.CircleImageView
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -108,6 +112,14 @@ class CallAfterActivity : BaseActivity() {
             insets
         }
 
+        if (intent.getBooleanExtra(CallAfterLauncher.EXTRA_FROM_CALL_END, false)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                setShowWhenLocked(true)
+                setTurnScreenOn(true)
+            }
+            AfterCallNotificationHelper.cancelPostCallNotification(this)
+        }
+
         // Get intent extras
         extractIntentExtras()
 
@@ -131,9 +143,10 @@ class CallAfterActivity : BaseActivity() {
 
         // 1️⃣ Try all known sources
         callerNumber =
-            intent.getStringExtra("CALLER_NUMBER")
+            intent.getStringExtra(CallAfterLauncher.EXTRA_CALLER_NUMBER)
+                ?: intent.getStringExtra("CALLER_NUMBER")
                 ?: intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER)
-                        ?: intent.data?.schemeSpecificPart
+                ?: intent.data?.schemeSpecificPart
 
         // 2️⃣ Normalize
         callerNumber = callerNumber
@@ -151,10 +164,21 @@ class CallAfterActivity : BaseActivity() {
         }
 
         // call info
-        callType = intent.getStringExtra("CALL_TYPE") ?: "completed"
-        callEndTime = intent.getLongExtra("CALL_END_TIME", System.currentTimeMillis())
-        callStartTime = intent.getLongExtra("CALL_START_TIME", callEndTime)
-        isIncoming = intent.getBooleanExtra("IS_INCOMING", false)
+        callType = intent.getStringExtra(CallAfterLauncher.EXTRA_CALL_TYPE)
+            ?: intent.getStringExtra("CALL_TYPE")
+            ?: "completed"
+        callEndTime = intent.getLongExtra(
+            CallAfterLauncher.EXTRA_CALL_END_TIME,
+            intent.getLongExtra("CALL_END_TIME", System.currentTimeMillis())
+        )
+        callStartTime = intent.getLongExtra(
+            CallAfterLauncher.EXTRA_CALL_START_TIME,
+            intent.getLongExtra("CALL_START_TIME", callEndTime)
+        )
+        isIncoming = intent.getBooleanExtra(
+            CallAfterLauncher.EXTRA_IS_INCOMING,
+            intent.getBooleanExtra("IS_INCOMING", false)
+        )
 
         val duration =
             if (callEndTime > callStartTime) callEndTime - callStartTime else 0L
@@ -218,7 +242,11 @@ class CallAfterActivity : BaseActivity() {
         adLoadingPlaceholder = findViewById(R.id.adLoadingPlaceholder)
         adLoadingPlaceholder.visibility = View.GONE
         nativeAdView.visibility = View.GONE
-        AdLoadingShimmerHelper.showNativeLoading(nativeAdContainer, nativeAdView)
+        AdLoadingShimmerHelper.showNativeLoading(
+            nativeAdContainer,
+            nativeAdView,
+            R.layout.layout_native_ad_shimmer_full_bleed
+        )
     }
 
     private fun setupUI() {
@@ -566,7 +594,18 @@ class CallAfterActivity : BaseActivity() {
     // ================== NATIVE AD ==================
 
     private fun loadNativeAd() {
-        val nativeAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeAdUnitId()
+        val preloaded = AfterCallAdPreloader.consumePreloadedAd()
+        if (preloaded != null) {
+            if (!isDestroyed && !isFinishing) {
+                currentNativeAd?.destroy()
+                currentNativeAd = preloaded
+                populateNativeAdView(preloaded)
+                return
+            }
+            preloaded.destroy()
+        }
+
+        val nativeAdUnitId = com.text.messages.sms.messanger.util.AdConfig.resolveAfterCallNativeAdUnitId(this)
         if (nativeAdUnitId.isBlank()) {
             AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
             return
@@ -586,7 +625,11 @@ class CallAfterActivity : BaseActivity() {
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    Log.e(TAG, "Native ad failed to load: ${loadAdError.message}")
+                    Log.e(
+                        TAG,
+                        "After-call native failed: code=${loadAdError.code} ${loadAdError.message} " +
+                            "unit=$nativeAdUnitId"
+                    )
                     AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
                 }
 

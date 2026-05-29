@@ -17,6 +17,8 @@ import android.content.Context
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsLogger
 import com.text.messages.sms.messanger.data.database.AppDatabase
+import com.text.messages.sms.messanger.BuildConfig
+import com.text.messages.sms.messanger.util.AdConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AppForegroundActivityTracker
 import com.text.messages.sms.messanger.util.AppOpenManager
@@ -106,7 +108,8 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
 
         // AdMob init (callback-based, safe on main thread after first frame)
         MobileAds.initialize(this) {
-            Log.d("MessagesApp", "AdMob SDK initialized (deferred)")
+            Log.d("MessagesApp", "AdMob SDK initialized (deferred) appId=${BuildConfig.ADMOB_APP_ID}")
+            AdConfig.logResolvedIds(this@MessagesApp)
         }
 
         // AppOpenManager registration (after first frame)

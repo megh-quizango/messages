@@ -49,6 +49,11 @@
 # ---- Application classes ----
 -keep class com.text.messages.sms.messanger.MessagesApp { *; }
 -keep class com.text.messages.sms.messanger.receiver.** { *; }
+-keep class com.text.messages.sms.messanger.util.CallEndEvent { *; }
+-keep class com.text.messages.sms.messanger.util.CallStateTracker { *; }
+-keep class com.text.messages.sms.messanger.util.CallAfterLauncher { *; }
+-keep class com.text.messages.sms.messanger.util.AfterCallNotificationHelper { *; }
+-keep class com.text.messages.sms.messanger.util.AfterCallPolicy { *; }
 -keep class com.text.messages.sms.messanger.service.** { *; }
 -keep class com.text.messages.sms.messanger.data.database.** { *; }
 -keep class com.text.messages.sms.messanger.data.model.** { *; }

@@ -3,6 +3,7 @@ package com.text.messages.sms.messanger.util
 import android.util.Log
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
+import com.text.messages.sms.messanger.R
 
 object RemoteConfigHelper {
     private const val TAG = "RemoteConfigHelper"
@@ -26,6 +27,7 @@ object RemoteConfigHelper {
     // Remote Config keys
     private const val KEY_BANNER_AD_UNIT_ID = "banner_ad_unit_id"
     private const val KEY_NATIVE_AD_UNIT_ID = "native_ad_unit_id"
+    private const val KEY_AFTER_CALL_NATIVE_AD_UNIT_ID = "after_call_native_ad_unit_id"
     private const val KEY_NATIVE_VIDEO_AD_UNIT_ID = "native_video_ad_unit_id"
     private const val KEY_APP_OPEN_AD_UNIT_ID = "app_open_ad_unit_id"
     private const val KEY_ADMOB_APP_ID = "admob_app_id"
@@ -60,6 +62,7 @@ object RemoteConfigHelper {
             KEY_LANGUAGE_NATIVE_FULLSCREEN_ONLY to DEFAULT_LANGUAGE_NATIVE_FULLSCREEN_ONLY
         )
         remoteConfigInstance.setDefaultsAsync(defaultValues)
+        remoteConfigInstance.setDefaultsAsync(R.xml.remote_config_defaults)
 
         // Fetch and activate
         fetchAndActivate()
@@ -88,6 +91,13 @@ object RemoteConfigHelper {
         val config = remoteConfig ?: return DEFAULT_NATIVE_AD_UNIT_ID
         val adUnitId = config.getString(KEY_NATIVE_AD_UNIT_ID).trim()
         return if (adUnitId.isBlank()) DEFAULT_NATIVE_AD_UNIT_ID else adUnitId
+    }
+
+    /** Dedicated native unit for the after-call screen (Firebase key: after_call_native_ad_unit_id). */
+    fun getAfterCallNativeAdUnitId(): String {
+        val config = remoteConfig ?: return ""
+        val adUnitId = config.getString(KEY_AFTER_CALL_NATIVE_AD_UNIT_ID).trim()
+        return adUnitId
     }
 
     fun getAppOpenAdUnitId(): String {

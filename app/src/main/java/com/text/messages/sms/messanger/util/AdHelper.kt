@@ -14,12 +14,11 @@ import androidx.constraintlayout.widget.ConstraintLayout
  * Helper extension functions for loading ads with Remote Config and Analytics
  */
 fun AdView.loadBannerAdWithRemoteConfig(): AdView {
-    val remoteConfigAdUnitId = RemoteConfigHelper.getBannerAdUnitId().trim()
-    val fallbackAdUnitId = this.adUnitId.trim()
-    val adUnitIdToUse = remoteConfigAdUnitId.ifBlank { fallbackAdUnitId }
+    val adUnitIdToUse = AdConfig.resolveBannerAdUnitId(context).trim()
 
     if (adUnitIdToUse.isBlank()) {
-        android.util.Log.w("AdHelper", "Banner ad unit ID is blank in both Remote Config and XML, skipping banner load")
+        android.util.Log.w("AdHelper", "Banner ad unit ID is blank, skipping banner load")
+        AdLoadingShimmerHelper.hideBanner(this)
         this.visibility = View.GONE
         return this
     }
@@ -50,6 +49,11 @@ fun AdView.loadBannerAdWithRemoteConfig(): AdView {
             AdLoadingShimmerHelper.hideBanner(adViewToLoad)
             AnalyticsHelper.logAdLoad("banner", adUnitIdToUse, false)
             AnalyticsHelper.logAdError("banner", adUnitIdToUse, loadAdError.code.toString())
+            android.util.Log.w(
+                "AdHelper",
+                "Banner failed: code=${loadAdError.code} domain=${loadAdError.domain} " +
+                    "message=${loadAdError.message} unit=$adUnitIdToUse"
+            )
         }
         
         override fun onAdClicked() {

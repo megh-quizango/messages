@@ -1,9 +1,19 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
+}
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        load(FileInputStream(keystorePropertiesFile))
+    }
 }
 
 android {
@@ -19,8 +29,41 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        val admobAppIdProperty = project.findProperty("ADMOB_APPLICATION_ID") as String?
+        val admobAppId = admobAppIdProperty?.trim().orEmpty().ifBlank {
+            "ca-app-pub-3940256099942544~3347511713"
+        }
+        val useTestAdsProperty = project.findProperty("USE_TEST_ADS") as String?
+        val useTestAds = when {
+            useTestAdsProperty.equals("true", ignoreCase = true) -> true
+            useTestAdsProperty.equals("false", ignoreCase = true) -> false
+            else -> admobAppIdProperty.isNullOrBlank()
+        }
+
+        manifestPlaceholders["admobAppId"] = admobAppId
+        buildConfigField("String", "ADMOB_APP_ID", "\"$admobAppId\"")
+        buildConfigField("boolean", "USE_TEST_ADS", useTestAds.toString())
+
+        // Include 32-bit + 64-bit ARM so sideloaded release APKs install on more devices.
+        // (arm64-only builds fail with "App not installed" on many older / 32-bit phones.)
         ndk {
-            abiFilters += listOf("arm64-v8a")
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
+    }
+
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                // v1 + v2 + v3: required for reliable sideload (Drive / WhatsApp / Files).
+                // v2-only APKs often install via adb but fail with "App not installed" in Package Installer.
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+            }
         }
     }
 
@@ -32,6 +75,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     
@@ -50,6 +96,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
+        buildConfig = true
     }
     
     // Enable kapt for Room annotation processing

@@ -198,7 +198,7 @@ class ManageAppsDetailActivity : BaseActivity() {
     }
     
     private fun loadNativeAd() {
-        val nativeAdUnitId = com.text.messages.sms.messanger.util.RemoteConfigHelper.getNativeAdUnitId()
+        val nativeAdUnitId = com.text.messages.sms.messanger.util.AdConfig.resolveNativeAdUnitId(this)
         if (nativeAdUnitId.isBlank()) {
             AdLoadingShimmerHelper.hideNative(binding.nativeAdContainer, nativeAdView)
             return

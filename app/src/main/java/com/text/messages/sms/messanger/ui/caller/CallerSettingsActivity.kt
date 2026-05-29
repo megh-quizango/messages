@@ -12,6 +12,7 @@ import com.google.android.gms.ads.AdRequest
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityCallerSettingsBinding
 import com.text.messages.sms.messanger.databinding.ItemCallerSettingBinding
+import com.text.messages.sms.messanger.util.CallStateTracker
 import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
@@ -22,12 +23,12 @@ class CallerSettingsActivity : BaseActivity() {
     private lateinit var prefs: SharedPreferences
 
     companion object {
-        private const val PREFS_NAME = "caller_settings"
-        private const val KEY_MISSED_CALL = "missed_call"
-        private const val KEY_COMPLETED_CALL = "completed_call"
-        private const val KEY_NO_ANSWER = "no_answer"
-        private const val KEY_UNKNOWN_CALLER = "unknown_caller"
-        private const val KEY_SHOW_CALL_INFO = "show_call_info"
+        private const val PREFS_NAME = CallStateTracker.PREFS_NAME
+        private const val KEY_MISSED_CALL = CallStateTracker.KEY_MISSED_CALL
+        private const val KEY_COMPLETED_CALL = CallStateTracker.KEY_COMPLETED_CALL
+        private const val KEY_NO_ANSWER = CallStateTracker.KEY_NO_ANSWER
+        private const val KEY_UNKNOWN_CALLER = CallStateTracker.KEY_UNKNOWN_CALLER
+        private const val KEY_SHOW_CALL_INFO = CallStateTracker.KEY_SHOW_CALL_INFO
         private const val KEY_SHOW_REMINDERS = "show_reminders"
     }
 

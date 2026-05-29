@@ -50,6 +50,7 @@ import com.text.messages.sms.messanger.util.BlockedConversationStorage
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
+import com.text.messages.sms.messanger.util.AdConfig
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
 import android.provider.Telephony
 import android.content.ContentValues
@@ -2754,7 +2755,7 @@ class MainActivity : BaseActivity() {
             return
         }
         
-        val nativeAdUnitId = RemoteConfigHelper.getNativeAdUnitId()
+        val nativeAdUnitId = AdConfig.resolveNativeAdUnitId(this)
         if (nativeAdUnitId.isBlank()) {
             AdLoadingShimmerHelper.hideNative(nativeAdFrame, exitNativeAdView)
             return

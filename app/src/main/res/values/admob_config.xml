@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Production ad units (publisher 9014156375881181). App ID is set via gradle.properties ADMOB_APPLICATION_ID. -->
+
+    <!-- Production ad units (Messages app) -->
+    <string name="admob_app_open_messages" translatable="false">ca-app-pub-9014156375881181/5350588778</string>
+    <string name="admob_banner_messages" translatable="false">ca-app-pub-9014156375881181/9054505429</string>
+    <string name="admob_banner_language_fallback" translatable="false">ca-app-pub-9014156375881181/122941280</string>
+    <string name="admob_interstitial_language" translatable="false">ca-app-pub-9014156375881181/4128987276</string>
+    <string name="admob_native_banner_language" translatable="false">ca-app-pub-9014156375881181/5559968535</string>
+    <string name="admob_native_fullscreen_language" translatable="false">ca-app-pub-9014156375881181/7603677948</string>
+    <string name="admob_native_messages" translatable="false">ca-app-pub-9014156375881181/7678349157</string>
+    <string name="admob_native_video_messages" translatable="false">ca-app-pub-9014156375881181/5821837423</string>
+
+    <!-- After-call screen only: create a new Native advanced unit in AdMob and replace this ID -->
+    <string name="admob_native_after_call" translatable="false">ca-app-pub-9014156375881181/1613048301</string>
+
+    <!-- Google sample IDs for local debug when USE_TEST_ADS=true in gradle.properties -->
+    <string name="admob_test_application_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="admob_test_banner" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="admob_test_native" translatable="false">ca-app-pub-3940256099942544/2247696110</string>
+</resources>
