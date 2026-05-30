@@ -424,7 +424,7 @@ class CallAfterActivity : BaseActivity() {
 
         recyclerQuickActions.apply {
             layoutManager = object : GridLayoutManager(this@CallAfterActivity, 3) {
-                override fun canScrollVertically(): Boolean = false
+                override fun canScrollVertically(): Boolean = true
             }
             adapter = quickActionAdapter
             itemAnimator = null
@@ -565,10 +565,10 @@ class CallAfterActivity : BaseActivity() {
                     renderReminderColorChoices()
                 }
             }
-            val size = (40 * resources.displayMetrics.density).toInt()
+            val size = (34 * resources.displayMetrics.density).toInt()
             val params = LinearLayout.LayoutParams(size, size).apply {
-                marginStart = (7 * resources.displayMetrics.density).toInt()
-                marginEnd = (7 * resources.displayMetrics.density).toInt()
+                marginStart = (5 * resources.displayMetrics.density).toInt()
+                marginEnd = (5 * resources.displayMetrics.density).toInt()
             }
             reminderColorRow.addView(swatch, params)
         }
