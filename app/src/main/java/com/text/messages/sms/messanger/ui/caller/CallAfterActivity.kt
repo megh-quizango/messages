@@ -1,51 +1,64 @@
 package com.text.messages.sms.messanger.ui.caller
 
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import android.os.Handler
-import android.os.Looper
 import android.os.SystemClock
+import android.provider.AlarmClock
 import android.provider.ContactsContract
-import android.text.Editable
-import android.text.TextWatcher
+import android.provider.Telephony
+import android.text.InputType
 import android.util.Log
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
-import com.text.messages.sms.messanger.ui.base.BaseActivity
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.nativead.NativeAdView
-import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.material.button.MaterialButton
+import com.text.messages.sms.messanger.MessagesApp
 import com.text.messages.sms.messanger.R
+import com.text.messages.sms.messanger.data.model.Conversation
+import com.text.messages.sms.messanger.ui.base.BaseActivity
+import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AfterCallAdPreloader
 import com.text.messages.sms.messanger.util.AfterCallNotificationHelper
-import com.text.messages.sms.messanger.util.AvatarHelper
 import com.text.messages.sms.messanger.util.CallAfterLauncher
+import com.text.messages.sms.messanger.util.ConversationCache
 import com.text.messages.sms.messanger.util.ThemeManager
-import android.os.Build
-import de.hdodenhof.circleimageview.CircleImageView
+import com.squareup.picasso.Picasso
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -56,59 +69,108 @@ class CallAfterActivity : BaseActivity() {
         private const val DEBOUNCE_DELAY_MS = 500L
     }
 
+    private enum class AfterCallTab {
+        MESSAGES,
+        QUICK_MESSAGES,
+        REMINDERS,
+        ACTIONS
+    }
+
     private val viewModel: CallAfterViewModel by viewModels()
 
-    // Views
-    private lateinit var imageAvatar: CircleImageView
+    private lateinit var imageAvatar: ImageView
     private lateinit var textAvatarLetter: TextView
     private lateinit var textContactName: TextView
     private lateinit var textCallTime: TextView
     private lateinit var textCallStatus: TextView
-    private lateinit var textCallDuration: TextView
-    private lateinit var buttonCall: LinearLayout
-    private lateinit var buttonMessage: LinearLayout
-    private lateinit var buttonAddContact: LinearLayout
+    private lateinit var buttonCall: ImageButton
+
+    private lateinit var tabMessages: LinearLayout
+    private lateinit var tabQuickMessages: LinearLayout
+    private lateinit var tabReminders: LinearLayout
+    private lateinit var tabActions: LinearLayout
+    private lateinit var imageTabMessages: ImageView
+    private lateinit var imageTabQuickMessages: ImageView
+    private lateinit var imageTabReminders: ImageView
+    private lateinit var imageTabActions: ImageView
+    private lateinit var indicatorTabMessages: View
+    private lateinit var indicatorTabQuickMessages: View
+    private lateinit var indicatorTabReminders: View
+    private lateinit var indicatorTabActions: View
+
+    private lateinit var messagesContent: FrameLayout
+    private lateinit var recyclerRecentMessages: RecyclerView
+    private lateinit var textMessagesEmpty: TextView
     private lateinit var recyclerQuickResponses: RecyclerView
-    private lateinit var editMessage: EditText
-    private lateinit var buttonSend: ImageButton
+    private lateinit var remindersContent: View
+    private lateinit var reminderEmptyState: LinearLayout
+    private lateinit var reminderEditorState: LinearLayout
+    private lateinit var reminderSavedState: LinearLayout
+    private lateinit var buttonAddReminder: MaterialButton
+    private lateinit var editReminderTitle: EditText
+    private lateinit var pickerReminderDay: NumberPicker
+    private lateinit var pickerReminderHour: NumberPicker
+    private lateinit var pickerReminderMinute: NumberPicker
+    private lateinit var reminderColorRow: LinearLayout
+    private lateinit var buttonCancelReminder: MaterialButton
+    private lateinit var buttonSaveReminder: MaterialButton
+    private lateinit var savedReminderColorDot: View
+    private lateinit var textSavedReminderTitle: TextView
+    private lateinit var textSavedReminderTime: TextView
+    private lateinit var textSavedReminderDate: TextView
+    private lateinit var buttonEditReminder: ImageButton
+    private lateinit var buttonDeleteReminder: ImageButton
+    private lateinit var recyclerQuickActions: RecyclerView
+
     private lateinit var nativeAdContainer: FrameLayout
     private lateinit var nativeAdView: NativeAdView
     private lateinit var adLoadingPlaceholder: LinearLayout
 
     private lateinit var quickResponseAdapter: QuickResponseAdapter
-    private var currentNativeAd: NativeAd? = null
+    private lateinit var recentConversationAdapter: AfterCallConversationAdapter
+    private lateinit var quickActionAdapter: AfterCallActionAdapter
 
-    // Debounce
+    private var currentNativeAd: NativeAd? = null
+    private var selectedTab: AfterCallTab = AfterCallTab.MESSAGES
     private var lastClickTime: Long = 0
 
-    // Call info
     private var callerNumber: String? = null
     private var callType: String = "completed"
     private var callEndTime: Long = 0
     private var callStartTime: Long = 0
     private var isIncoming: Boolean = false
+    private val reminderColors = listOf(
+        Color.parseColor("#36B5E8"),
+        Color.parseColor("#AF49C9"),
+        Color.parseColor("#5F6CC4"),
+        Color.parseColor("#F25050"),
+        Color.parseColor("#7E55C8"),
+        Color.parseColor("#EA3D7C"),
+        Color.parseColor("#42A5F5")
+    )
+    private var selectedReminderColor: Int = reminderColors[3]
+    private var savedReminder: ReminderUiState? = null
+
+    private data class ReminderUiState(
+        val title: String,
+        val dayOffset: Int,
+        val hour: Int,
+        val minute: Int,
+        val color: Int
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_call_after)
 
-        // Apply theme
         ThemeManager.applyTheme(this, findViewById(R.id.rootLayout))
         ThemeManager.setupNavigationBar(this)
 
-        // Handle window insets
         val rootLayout = findViewById<View>(R.id.rootLayout)
-        val initialTopPadding = rootLayout.paddingTop
-        val initialBottomPadding = rootLayout.paddingBottom
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(
-                v.paddingLeft,
-                systemBars.top + initialTopPadding,
-                v.paddingRight,
-                systemBars.bottom + initialBottomPadding
-            )
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
@@ -120,50 +182,30 @@ class CallAfterActivity : BaseActivity() {
             AfterCallNotificationHelper.cancelPostCallNotification(this)
         }
 
-        // Get intent extras
         extractIntentExtras()
-
-        // Initialize views
         initViews()
-
-        // Setup UI
         setupUI()
-
-        // Load contact info
         loadContactInfo()
-
-        // Observe ViewModel
         observeViewModel()
-
-        // Load native ad
+        loadRecentConversations()
         loadNativeAd()
     }
 
     private fun extractIntentExtras() {
-
-        // 1️⃣ Try all known sources
         callerNumber =
             intent.getStringExtra(CallAfterLauncher.EXTRA_CALLER_NUMBER)
                 ?: intent.getStringExtra("CALLER_NUMBER")
                 ?: intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER)
                 ?: intent.data?.schemeSpecificPart
 
-        // 2️⃣ Normalize
         callerNumber = callerNumber
             ?.replace(Regex("[^\\d+]"), "")
             ?.trim()
 
-        // 3️⃣ Absolute fallback (CRITICAL)
         if (callerNumber.isNullOrEmpty()) {
             callerNumber = getLastCallNumber()
         }
 
-        // 4️⃣ If still null → STOP
-        if (callerNumber.isNullOrEmpty()) {
-            Log.e(TAG, "❌ Caller number STILL NULL after all fallbacks")
-        }
-
-        // call info
         callType = intent.getStringExtra(CallAfterLauncher.EXTRA_CALL_TYPE)
             ?: intent.getStringExtra("CALL_TYPE")
             ?: "completed"
@@ -180,18 +222,8 @@ class CallAfterActivity : BaseActivity() {
             intent.getBooleanExtra("IS_INCOMING", false)
         )
 
-        val duration =
-            if (callEndTime > callStartTime) callEndTime - callStartTime else 0L
-
-        viewModel.setCallInfo(
-            callerNumber,
-            callType,
-            duration,
-            callEndTime,
-            isIncoming
-        )
-
-        Log.d(TAG, "✅ FINAL callerNumber = $callerNumber")
+        val duration = if (callEndTime > callStartTime) callEndTime - callStartTime else 0L
+        viewModel.setCallInfo(callerNumber, callType, duration, callEndTime, isIncoming)
     }
 
     private fun getLastCallNumber(): String? {
@@ -203,9 +235,7 @@ class CallAfterActivity : BaseActivity() {
                 null,
                 android.provider.CallLog.Calls.DATE + " DESC"
             )?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    cursor.getString(0)
-                } else null
+                if (cursor.moveToFirst()) cursor.getString(0) else null
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error reading CallLog", e)
@@ -213,30 +243,51 @@ class CallAfterActivity : BaseActivity() {
         }
     }
 
-
-
     private fun initViews() {
-        // Header views
         imageAvatar = findViewById(R.id.imageAvatar)
         textAvatarLetter = findViewById(R.id.textAvatarLetter)
         textContactName = findViewById(R.id.textContactName)
         textCallTime = findViewById(R.id.textCallTime)
         textCallStatus = findViewById(R.id.textCallStatus)
-        textCallDuration = findViewById(R.id.textCallDuration)
-
-        // Action buttons
         buttonCall = findViewById(R.id.buttonCall)
-        buttonMessage = findViewById(R.id.buttonMessage)
-        buttonAddContact = findViewById(R.id.buttonAddContact)
 
-        // Quick response
+        tabMessages = findViewById(R.id.tabMessages)
+        tabQuickMessages = findViewById(R.id.tabQuickMessages)
+        tabReminders = findViewById(R.id.tabReminders)
+        tabActions = findViewById(R.id.tabActions)
+        imageTabMessages = findViewById(R.id.imageTabMessages)
+        imageTabQuickMessages = findViewById(R.id.imageTabQuickMessages)
+        imageTabReminders = findViewById(R.id.imageTabReminders)
+        imageTabActions = findViewById(R.id.imageTabActions)
+        indicatorTabMessages = findViewById(R.id.indicatorTabMessages)
+        indicatorTabQuickMessages = findViewById(R.id.indicatorTabQuickMessages)
+        indicatorTabReminders = findViewById(R.id.indicatorTabReminders)
+        indicatorTabActions = findViewById(R.id.indicatorTabActions)
+
+        messagesContent = findViewById(R.id.messagesContent)
+        recyclerRecentMessages = findViewById(R.id.recyclerRecentMessages)
+        textMessagesEmpty = findViewById(R.id.textMessagesEmpty)
         recyclerQuickResponses = findViewById(R.id.recyclerQuickResponses)
+        remindersContent = findViewById(R.id.remindersContent)
+        reminderEmptyState = findViewById(R.id.reminderEmptyState)
+        reminderEditorState = findViewById(R.id.reminderEditorState)
+        reminderSavedState = findViewById(R.id.reminderSavedState)
+        buttonAddReminder = findViewById(R.id.buttonAddReminder)
+        editReminderTitle = findViewById(R.id.editReminderTitle)
+        pickerReminderDay = findViewById(R.id.pickerReminderDay)
+        pickerReminderHour = findViewById(R.id.pickerReminderHour)
+        pickerReminderMinute = findViewById(R.id.pickerReminderMinute)
+        reminderColorRow = findViewById(R.id.reminderColorRow)
+        buttonCancelReminder = findViewById(R.id.buttonCancelReminder)
+        buttonSaveReminder = findViewById(R.id.buttonSaveReminder)
+        savedReminderColorDot = findViewById(R.id.savedReminderColorDot)
+        textSavedReminderTitle = findViewById(R.id.textSavedReminderTitle)
+        textSavedReminderTime = findViewById(R.id.textSavedReminderTime)
+        textSavedReminderDate = findViewById(R.id.textSavedReminderDate)
+        buttonEditReminder = findViewById(R.id.buttonEditReminder)
+        buttonDeleteReminder = findViewById(R.id.buttonDeleteReminder)
+        recyclerQuickActions = findViewById(R.id.recyclerQuickActions)
 
-        // Message input
-        editMessage = findViewById(R.id.editMessage)
-        buttonSend = findViewById(R.id.buttonSend)
-
-        // Native ad
         nativeAdContainer = findViewById(R.id.nativeAdContainer)
         nativeAdView = findViewById(R.id.nativeAdView)
         adLoadingPlaceholder = findViewById(R.id.adLoadingPlaceholder)
@@ -250,153 +301,382 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun setupUI() {
-        // Display call info
         displayCallInfo()
-
-        // Setup quick responses RecyclerView
+        setupTabs()
+        setupRecentMessages()
         setupQuickResponses()
-
-        // Setup action buttons
-        setupActionButtons()
-
-        // Setup message input
-        setupMessageInput()
+        setupReminderUi()
+        setupQuickActions()
+        setupHeaderActions()
+        buttonAddReminder.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            showReminderEditor()
+        }
+        selectTab(AfterCallTab.MESSAGES)
     }
 
     private fun displayCallInfo() {
-        // Display call time
-        val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
-        textCallTime.text = timeFormat.format(Date(callEndTime))
+        textCallTime.text = SimpleDateFormat("EEE, hh:mm a", Locale.getDefault()).format(Date(callEndTime))
 
-        // Display call status
-        val status = when (callType) {
+        val durationText = viewModel.getCallDuration().takeIf { it > 0 }?.let { formatDuration(it) }
+        textCallStatus.text = when (callType) {
             "missed" -> getString(R.string.missed_call)
             "no_answer" -> getString(R.string.no_answer)
-            else -> getString(R.string.completed_call)
-        }
-        textCallStatus.text = status
-
-        // Display call duration if completed call
-        val duration = viewModel.getCallDuration()
-        if (callType == "completed" && duration > 0) {
-            textCallDuration.visibility = View.VISIBLE
-            textCallDuration.text = formatDuration(duration)
-        } else {
-            textCallDuration.visibility = View.GONE
+            else -> {
+                val direction = if (isIncoming) {
+                    getString(R.string.call_type_incoming)
+                } else {
+                    getString(R.string.call_type_outgoing)
+                }
+                if (durationText != null) "$direction $durationText" else direction
+            }
         }
 
-        // Default contact name
-        textContactName.text = getString(R.string.contacts)
-
+        textContactName.text = getString(R.string.unknown_number)
     }
 
     private fun formatDuration(durationMs: Long): String {
-        val seconds = durationMs / 1000
-        val minutes = seconds / 60
-        val secs = seconds % 60
-        return String.format(Locale.getDefault(), "%02d:%02d", minutes, secs)
+        val totalSeconds = durationMs / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+    }
+
+    private fun setupTabs() {
+        tabMessages.setOnClickListener { if (isDebounced()) selectTab(AfterCallTab.MESSAGES) }
+        tabQuickMessages.setOnClickListener { if (isDebounced()) selectTab(AfterCallTab.QUICK_MESSAGES) }
+        tabReminders.setOnClickListener { if (isDebounced()) selectTab(AfterCallTab.REMINDERS) }
+        tabActions.setOnClickListener { if (isDebounced()) selectTab(AfterCallTab.ACTIONS) }
+    }
+
+    private fun selectTab(tab: AfterCallTab) {
+        selectedTab = tab
+        messagesContent.visibility = if (tab == AfterCallTab.MESSAGES) View.VISIBLE else View.GONE
+        recyclerQuickResponses.visibility = if (tab == AfterCallTab.QUICK_MESSAGES) View.VISIBLE else View.GONE
+        remindersContent.visibility = if (tab == AfterCallTab.REMINDERS) View.VISIBLE else View.GONE
+        recyclerQuickActions.visibility = if (tab == AfterCallTab.ACTIONS) View.VISIBLE else View.GONE
+
+        updateTabState(
+            imageTabMessages,
+            indicatorTabMessages,
+            tab == AfterCallTab.MESSAGES
+        )
+        updateTabState(
+            imageTabQuickMessages,
+            indicatorTabQuickMessages,
+            tab == AfterCallTab.QUICK_MESSAGES
+        )
+        updateTabState(
+            imageTabReminders,
+            indicatorTabReminders,
+            tab == AfterCallTab.REMINDERS
+        )
+        updateTabState(
+            imageTabActions,
+            indicatorTabActions,
+            tab == AfterCallTab.ACTIONS
+        )
+    }
+
+    private fun updateTabState(iconView: ImageView, indicator: View, isSelected: Boolean) {
+        iconView.clearColorFilter()
+        indicator.visibility = if (isSelected) View.VISIBLE else View.INVISIBLE
+        iconView.alpha = if (isSelected) 1f else 0.62f
+    }
+
+    private fun setupRecentMessages() {
+        recentConversationAdapter = AfterCallConversationAdapter { conversation ->
+            if (!isDebounced()) return@AfterCallConversationAdapter
+            openConversationDetail(conversation.threadId, conversation.address)
+        }
+
+        recyclerRecentMessages.apply {
+            layoutManager = LinearLayoutManager(this@CallAfterActivity)
+            adapter = recentConversationAdapter
+            itemAnimator = null
+        }
     }
 
     private fun setupQuickResponses() {
-        quickResponseAdapter = QuickResponseAdapter {
-            navigateToMainActivity()
+        quickResponseAdapter = QuickResponseAdapter { response ->
+            if (!isDebounced()) return@QuickResponseAdapter
+            if (response.isCustom) {
+                showCustomMessageDialog()
+            } else {
+                sendQuickMessage(response.text)
+            }
         }
 
         recyclerQuickResponses.apply {
-            layoutManager = LinearLayoutManager(this@CallAfterActivity)
+            layoutManager = object : LinearLayoutManager(this@CallAfterActivity) {
+                override fun canScrollVertically(): Boolean = false
+            }
             adapter = quickResponseAdapter
-            isNestedScrollingEnabled = false
+            itemAnimator = null
         }
     }
 
-    private fun setupActionButtons() {
-        // Call button
+    private fun setupQuickActions() {
+        quickActionAdapter = AfterCallActionAdapter { action ->
+            if (!isDebounced()) return@AfterCallActionAdapter
+            handleQuickAction(action)
+        }
+
+        recyclerQuickActions.apply {
+            layoutManager = object : GridLayoutManager(this@CallAfterActivity, 3) {
+                override fun canScrollVertically(): Boolean = false
+            }
+            adapter = quickActionAdapter
+            itemAnimator = null
+        }
+
+        quickActionAdapter.submitList(
+            listOf(
+                AfterCallActionItem("add_contact", R.drawable.ic_person_add, getString(R.string.after_call_action_add_contact)),
+                AfterCallActionItem("send_sms", R.drawable.ic_chat_bubble, getString(R.string.after_call_action_send_sms)),
+                AfterCallActionItem("whatsapp", R.drawable.ic_send, getString(R.string.after_call_action_whatsapp)),
+                AfterCallActionItem("set_alarm", R.drawable.ic_after_call_alarm, getString(R.string.after_call_action_set_alarm)),
+                AfterCallActionItem("reminder", R.drawable.ic_after_call_bell, getString(R.string.after_call_action_reminder)),
+                AfterCallActionItem("send_email", R.drawable.ic_after_call_mail, getString(R.string.after_call_action_send_email)),
+                AfterCallActionItem("instagram", R.drawable.ic_camera, getString(R.string.after_call_action_instagram)),
+                AfterCallActionItem("youtube", R.drawable.ic_after_call_play, getString(R.string.after_call_action_youtube)),
+                AfterCallActionItem("web", R.drawable.ic_after_call_globe, getString(R.string.after_call_action_web))
+            )
+        )
+    }
+
+    private fun setupHeaderActions() {
         buttonCall.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
             makeCall()
         }
+    }
 
-        // Message button - opens in-app conversation
-        buttonMessage.setOnClickListener {
-            if (!isDebounced()) return@setOnClickListener
-            openConversation()
+    private fun sendQuickMessage(message: String) {
+        if (callerNumber.isNullOrBlank()) {
+            navigateToMainActivity()
+            return
+        }
+        viewModel.updateMessageText(message)
+        viewModel.sendMessage()
+    }
+
+    private fun showCustomMessageDialog() {
+        val input = EditText(this).apply {
+            hint = getString(R.string.after_call_custom_message_hint)
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            minLines = 3
+            setPadding(48, 36, 48, 12)
         }
 
-        // Add contact button
-        buttonAddContact.setOnClickListener {
-            if (!isDebounced()) return@setOnClickListener
-            addToContacts()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.after_call_custom_message_title)
+            .setView(input)
+            .setNegativeButton(R.string.action_cancel, null)
+            .setPositiveButton(R.string.send) { _, _ ->
+                val customMessage = input.text?.toString()?.trim().orEmpty()
+                if (customMessage.isNotEmpty()) {
+                    sendQuickMessage(customMessage)
+                }
+            }
+            .show()
+    }
+
+    private fun handleQuickAction(action: AfterCallActionItem) {
+        when (action.id) {
+            "add_contact" -> addToContacts()
+            "send_sms" -> openConversation()
+            "whatsapp" -> openWhatsAppOrSearch()
+            "set_alarm" -> openAlarmSetter()
+            "reminder" -> {
+                selectTab(AfterCallTab.REMINDERS)
+                showReminderEditor()
+            }
+            "send_email" -> sendEmail()
+            "instagram" -> searchCallerOnWeb("site:instagram.com")
+            "youtube" -> searchCallerOnWeb("site:youtube.com")
+            "web" -> searchCallerOnWeb(null)
         }
     }
 
-    private fun setupMessageInput() {
-        // Text watcher for EditText
-        editMessage.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                val text = s?.toString() ?: ""
-                viewModel.updateMessageText(text)
-                updateSendButtonState(text.isNotEmpty())
-            }
-        })
+    private fun setupReminderUi() {
+        val now = Calendar.getInstance()
+        pickerReminderDay.minValue = 0
+        pickerReminderDay.maxValue = 2
+        pickerReminderDay.displayedValues = arrayOf("Yesterday", "Today", "Tomorrow")
+        pickerReminderDay.value = 1
 
-        // IME action for send
-        editMessage.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEND) {
-                sendMessage()
-                true
-            } else {
-                false
-            }
+        pickerReminderHour.minValue = 0
+        pickerReminderHour.maxValue = 23
+        pickerReminderHour.displayedValues = Array(24) { String.format(Locale.getDefault(), "%02d", it) }
+        pickerReminderHour.value = now.get(Calendar.HOUR_OF_DAY)
+
+        pickerReminderMinute.minValue = 0
+        pickerReminderMinute.maxValue = 59
+        pickerReminderMinute.displayedValues = Array(60) { String.format(Locale.getDefault(), "%02d", it) }
+        pickerReminderMinute.value = now.get(Calendar.MINUTE)
+
+        renderReminderColorChoices()
+        applyReminderButtonColors()
+
+        buttonCancelReminder.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            showReminderDisplayState()
         }
 
-        // Send button click
-        buttonSend.setOnClickListener {
+        buttonSaveReminder.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
-            sendMessage()
+            saveReminderFromEditor()
+        }
+
+        buttonEditReminder.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            showReminderEditor(savedReminder)
+        }
+
+        buttonDeleteReminder.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            savedReminder = null
+            showReminderDisplayState()
+        }
+
+        showReminderDisplayState()
+    }
+
+    private fun applyReminderButtonColors() {
+        val white = ColorStateList.valueOf(Color.WHITE)
+        buttonAddReminder.setTextColor(Color.WHITE)
+        buttonAddReminder.iconTint = white
+        buttonSaveReminder.setTextColor(Color.WHITE)
+        buttonAddReminder.post {
+            buttonAddReminder.setTextColor(Color.WHITE)
+            buttonAddReminder.iconTint = white
+            buttonSaveReminder.setTextColor(Color.WHITE)
         }
     }
 
-    private fun updateSendButtonState(hasText: Boolean) {
-        if (hasText) {
-            buttonSend.setImageResource(R.drawable.ic_send)
+    private fun renderReminderColorChoices() {
+        reminderColorRow.removeAllViews()
+        reminderColors.forEach { color ->
+            val swatch = View(this).apply {
+                background = reminderSwatchDrawable(color, color == selectedReminderColor)
+                setOnClickListener {
+                    selectedReminderColor = color
+                    renderReminderColorChoices()
+                }
+            }
+            val size = (40 * resources.displayMetrics.density).toInt()
+            val params = LinearLayout.LayoutParams(size, size).apply {
+                marginStart = (7 * resources.displayMetrics.density).toInt()
+                marginEnd = (7 * resources.displayMetrics.density).toInt()
+            }
+            reminderColorRow.addView(swatch, params)
+        }
+    }
+
+    private fun reminderSwatchDrawable(color: Int, selected: Boolean): GradientDrawable {
+        return GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(color)
+            if (selected) {
+                setStroke((3 * resources.displayMetrics.density).toInt(), Color.WHITE)
+            }
+        }
+    }
+
+    private fun showReminderEditor(existing: ReminderUiState? = null) {
+        val reminder = existing
+        if (reminder != null) {
+            editReminderTitle.setText(reminder.title)
+            pickerReminderDay.value = (reminder.dayOffset + 1).coerceIn(0, 2)
+            pickerReminderHour.value = reminder.hour
+            pickerReminderMinute.value = reminder.minute
+            selectedReminderColor = reminder.color
         } else {
-            buttonSend.setImageResource(R.drawable.ic_edit_pencil)
+            val target = textContactName.text?.toString()?.takeIf { it.isNotBlank() }
+                ?: getString(R.string.after_call_reminder_default_title)
+            editReminderTitle.setText(getString(R.string.after_call_reminder_label, target))
+        }
+        renderReminderColorChoices()
+        reminderEmptyState.visibility = View.GONE
+        reminderSavedState.visibility = View.GONE
+        reminderEditorState.visibility = View.VISIBLE
+    }
+
+    private fun showReminderDisplayState() {
+        reminderEditorState.visibility = View.GONE
+        if (savedReminder == null) {
+            reminderSavedState.visibility = View.GONE
+            reminderEmptyState.visibility = View.VISIBLE
+        } else {
+            reminderEmptyState.visibility = View.GONE
+            reminderSavedState.visibility = View.VISIBLE
+            renderSavedReminder()
         }
     }
 
-    private fun isDebounced(): Boolean {
-        val currentTime = SystemClock.elapsedRealtime()
-        if (currentTime - lastClickTime < DEBOUNCE_DELAY_MS) {
-            return false
+    private fun saveReminderFromEditor() {
+        val title = editReminderTitle.text?.toString()?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?: getString(R.string.after_call_reminder_default_title)
+        val reminder = ReminderUiState(
+            title = title,
+            dayOffset = pickerReminderDay.value - 1,
+            hour = pickerReminderHour.value,
+            minute = pickerReminderMinute.value,
+            color = selectedReminderColor
+        )
+        savedReminder = reminder
+        requestSystemAlarm(reminder)
+        Toast.makeText(this, R.string.after_call_reminder_saved, Toast.LENGTH_SHORT).show()
+        showReminderDisplayState()
+    }
+
+    private fun renderSavedReminder() {
+        val reminder = savedReminder ?: return
+        savedReminderColorDot.background = reminderDotDrawable(reminder.color)
+        textSavedReminderTitle.text = reminder.title
+        textSavedReminderTime.text = String.format(Locale.getDefault(), "%02d:%02d", reminder.hour, reminder.minute)
+        textSavedReminderDate.text = reminderDayLabel(reminder.dayOffset)
+    }
+
+    private fun reminderDotDrawable(color: Int): GradientDrawable {
+        return GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(color)
         }
-        lastClickTime = currentTime
-        return true
+    }
+
+    private fun reminderDayLabel(dayOffset: Int): String {
+        return when (dayOffset) {
+            -1 -> "Yesterday"
+            1 -> "Tomorrow"
+            else -> "Today"
+        }
+    }
+
+    private fun requestSystemAlarm(reminder: ReminderUiState) {
+        val intent = Intent(AlarmClock.ACTION_SET_ALARM).apply {
+            putExtra(AlarmClock.EXTRA_MESSAGE, reminder.title)
+            putExtra(AlarmClock.EXTRA_HOUR, reminder.hour)
+            putExtra(AlarmClock.EXTRA_MINUTES, reminder.minute)
+            putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+        }
+        if (intent.resolveActivity(packageManager) != null) {
+            runCatching { startActivity(intent) }
+        }
     }
 
     private fun observeViewModel() {
-        // Quick responses
         viewModel.quickResponses.observe(this) { responses ->
             quickResponseAdapter.submitList(responses.toList())
         }
 
-        // Message text
-        viewModel.messageText.observe(this) { text ->
-            if (editMessage.text.toString() != text) {
-                editMessage.setText(text)
-                editMessage.setSelection(text.length)
-            }
-            updateSendButtonState(text.isNotEmpty())
-        }
-
-        // Sending state
         viewModel.isSending.observe(this) { isSending ->
-            buttonSend.isEnabled = !isSending
-            editMessage.isEnabled = !isSending
+            recyclerQuickResponses.alpha = if (isSending) 0.72f else 1f
+            recyclerQuickResponses.isEnabled = !isSending
         }
 
-        // Send result
         viewModel.sendResult.observe(this) { result ->
             when (result) {
                 is CallAfterViewModel.SendResult.Success -> {
@@ -408,37 +688,28 @@ class CallAfterActivity : BaseActivity() {
                     Toast.makeText(this, result.message, Toast.LENGTH_SHORT).show()
                     viewModel.clearSendResult()
                 }
-                null -> { /* Ignored */ }
+                null -> Unit
             }
         }
 
-        // Contact info
         viewModel.contactInfo.observe(this) { info ->
-            updateContactUI(info)
+            textContactName.text = info.name ?: if (info.number.isNotBlank()) info.number else getString(R.string.unknown_number)
+            textAvatarLetter.visibility = View.GONE
+            imageAvatar.visibility = View.VISIBLE
+            imageAvatar.clearColorFilter()
+
+            if (!info.photoUri.isNullOrBlank()) {
+                Picasso.get()
+                    .load(Uri.parse(info.photoUri))
+                    .placeholder(R.drawable.avatar)
+                    .error(R.drawable.avatar)
+                    .fit()
+                    .centerInside()
+                    .into(imageAvatar)
+            } else {
+                imageAvatar.setImageResource(R.drawable.avatar)
+            }
         }
-    }
-
-    private fun updateContactUI(info: CallAfterViewModel.ContactInfo) {
-        // Update name
-        textContactName.text = info.name ?: info.number
-
-        // Load avatar
-        AvatarHelper.loadAvatar(
-            imageView = imageAvatar,
-            textView = textAvatarLetter,
-            photoUri = info.photoUri,
-            contactName = info.name,
-            address = info.number,
-            context = this
-        )
-
-        // Hide add contact button if already a contact
-//        if (info.isKnownContact) {
-//            buttonAddContact.visibility = View.GONE
-//        } else {
-//            buttonAddContact.visibility = View.VISIBLE
-//        }
-        buttonAddContact.visibility = View.VISIBLE
     }
 
     private fun loadContactInfo() {
@@ -461,7 +732,6 @@ class CallAfterActivity : BaseActivity() {
                 var contactName: String? = null
                 var photoUri: String? = null
 
-                // Try to find contact
                 val normalizedNumber = normalizePhoneNumber(number)
                 val last10 = normalizedNumber.takeLast(10)
                 val variations = listOf(
@@ -494,23 +764,21 @@ class CallAfterActivity : BaseActivity() {
 
                             if (!contactName.isNullOrEmpty()) {
                                 contactFound = true
-                                Log.d(TAG, "Contact found: $contactName for number: $number")
                             }
                         }
                     }
                 }
 
-                val info = CallAfterViewModel.ContactInfo(
-                    name = contactName,
-                    number = number,
-                    photoUri = photoUri,
-                    isKnownContact = contactFound
-                )
-
                 runOnUiThread {
-                    viewModel.setContactInfo(info)
+                    viewModel.setContactInfo(
+                        CallAfterViewModel.ContactInfo(
+                            name = contactName,
+                            number = number,
+                            photoUri = photoUri,
+                            isKnownContact = contactFound
+                        )
+                    )
                 }
-
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading contact info", e)
                 runOnUiThread {
@@ -527,19 +795,130 @@ class CallAfterActivity : BaseActivity() {
         }.start()
     }
 
+    private fun loadRecentConversations() {
+        lifecycleScope.launch {
+            val conversations = withContext(Dispatchers.IO) {
+                loadRecentConversationsForAfterCall()
+            }
+
+            recentConversationAdapter.submitList(conversations)
+            textMessagesEmpty.visibility = if (conversations.isEmpty()) View.VISIBLE else View.GONE
+        }
+    }
+
+    private suspend fun loadRecentConversationsForAfterCall(): List<Conversation> {
+        ConversationCache.getCached("All")
+            ?.filter { it.threadId > 0 }
+            ?.take(10)
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { return it }
+
+        val roomConversations = runCatching {
+            MessagesApp.database.conversationDao()
+                .getActiveConversations()
+                .filter { it.threadId > 0 }
+                .take(10)
+        }.getOrElse {
+            Log.e(TAG, "Failed to load recent conversations from Room", it)
+            emptyList()
+        }
+
+        if (roomConversations.isNotEmpty()) {
+            return roomConversations
+        }
+
+        return loadRecentConversationsFromSmsProvider()
+    }
+
+    private fun loadRecentConversationsFromSmsProvider(): List<Conversation> {
+        val conversationsMap = linkedMapOf<Long, Conversation>()
+        val projection = arrayOf(
+            Telephony.Sms.THREAD_ID,
+            Telephony.Sms.ADDRESS,
+            Telephony.Sms.BODY,
+            Telephony.Sms.DATE,
+            Telephony.Sms.READ,
+            Telephony.Sms.TYPE
+        )
+
+        return runCatching {
+            contentResolver.query(
+                Telephony.Sms.CONTENT_URI,
+                projection,
+                null,
+                null,
+                "${Telephony.Sms.DATE} DESC"
+            )?.use { cursor ->
+                while (cursor.moveToNext()) {
+                    val threadId = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
+                    if (threadId <= 0L) continue
+
+                    val address = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)).orEmpty()
+                    val body = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.BODY)).orEmpty()
+                    val date = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.DATE))
+                    val isUnreadInbox =
+                        cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 0 &&
+                            cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE)) == Telephony.Sms.MESSAGE_TYPE_INBOX
+
+                    val existing = conversationsMap[threadId]
+                    if (existing == null) {
+                        conversationsMap[threadId] = Conversation(
+                            threadId = threadId,
+                            address = address,
+                            contactName = lookupContactName(address),
+                            snippet = body,
+                            date = date,
+                            unreadCount = if (isUnreadInbox) 1 else 0
+                        )
+                    } else if (isUnreadInbox) {
+                        conversationsMap[threadId] = existing.copy(unreadCount = existing.unreadCount + 1)
+                    }
+                }
+            }
+
+            conversationsMap.values
+                .sortedByDescending { it.date }
+                .take(10)
+        }.getOrElse {
+            Log.e(TAG, "Failed to load recent conversations from SMS provider", it)
+            emptyList()
+        }
+    }
+
+    private fun lookupContactName(address: String): String? {
+        if (address.isBlank()) return null
+
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(address)
+        )
+        return contentResolver.query(
+            uri,
+            arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME))
+            } else {
+                null
+            }
+        }
+    }
+
     private fun normalizePhoneNumber(number: String): String {
         val cleaned = number.replace(Regex("[^\\d+]"), "")
         return when {
             cleaned.startsWith("+") -> cleaned
-            cleaned.length > 10 -> "+${cleaned}"
+            cleaned.length > 10 -> "+$cleaned"
             else -> cleaned
         }
     }
 
-
     private fun makeCall() {
         try {
-            openDialerForNumber(null)
+            openDialerForNumber(callerNumber)
         } catch (e: Exception) {
             Log.e(TAG, "Error making call", e)
             Toast.makeText(this, R.string.call_failed, Toast.LENGTH_SHORT).show()
@@ -547,12 +926,20 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun openConversation() {
-        navigateToMainActivity()
+        openConversationDetailForCaller(callerNumber)
     }
 
     private fun addToContacts() {
         try {
-            openDialerForNumber(null)
+            val intent = Intent(Intent.ACTION_INSERT_OR_EDIT).apply {
+                type = ContactsContract.Contacts.CONTENT_ITEM_TYPE
+                putExtra(ContactsContract.Intents.Insert.PHONE, callerNumber ?: "")
+                viewModel.contactInfo.value?.name?.takeIf { it.isNotBlank() }?.let {
+                    putExtra(ContactsContract.Intents.Insert.NAME, it)
+                }
+            }
+            startActivity(intent)
+            finish()
         } catch (e: Exception) {
             Log.e(TAG, "Error adding to contacts", e)
             Toast.makeText(this, R.string.add_contact_failed, Toast.LENGTH_SHORT).show()
@@ -569,6 +956,35 @@ class CallAfterActivity : BaseActivity() {
         finish()
     }
 
+    private fun openConversationDetailForCaller(number: String?) {
+        if (number.isNullOrBlank()) {
+            navigateToMainActivity()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val threadId = withContext(Dispatchers.IO) {
+                    Telephony.Threads.getOrCreateThreadId(this@CallAfterActivity, number)
+                }
+                openConversationDetail(threadId, number)
+            } catch (e: Exception) {
+                Log.e(TAG, "Unable to open conversation for caller", e)
+                navigateToMainActivity()
+            }
+        }
+    }
+
+    private fun openConversationDetail(threadId: Long, address: String) {
+        startActivity(
+            Intent(this, ConversationDetailActivity::class.java).apply {
+                putExtra("thread_id", threadId)
+                putExtra("address", address)
+            }
+        )
+        finish()
+    }
+
     private fun navigateToMainActivity() {
         startActivity(
             Intent(this, MainActivity::class.java).apply {
@@ -578,22 +994,83 @@ class CallAfterActivity : BaseActivity() {
         finish()
     }
 
+    private fun openWhatsAppOrSearch() {
+        val number = callerNumber
+        if (number.isNullOrBlank()) {
+            searchCallerOnWeb("WhatsApp")
+            return
+        }
 
-    private fun sendMessage() {
-        val message = editMessage.text.toString().trim()
-        if (message.isEmpty()) {
-            return
+        val url = "https://wa.me/${number.replace("+", "")}"
+        runCatching {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            finish()
+        }.onFailure {
+            searchCallerOnWeb("WhatsApp")
         }
-        if (callerNumber.isNullOrBlank()) {
-            navigateToMainActivity()
-            return
-        }
-        viewModel.sendMessage()
     }
 
-    // ================== NATIVE AD ==================
+    private fun sendEmail() {
+        val subjectTarget = textContactName.text?.toString()?.takeIf { it.isNotBlank() }
+            ?: callerNumber
+            ?: getString(R.string.unknown_number)
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.after_call_reminder_label, subjectTarget))
+        }
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openAlarmSetter() {
+        val labelTarget = textContactName.text?.toString()?.takeIf { it.isNotBlank() }
+            ?: callerNumber
+            ?: getString(R.string.unknown_number)
+        val intent = Intent(AlarmClock.ACTION_SET_ALARM).apply {
+            putExtra(AlarmClock.EXTRA_MESSAGE, getString(R.string.after_call_reminder_label, labelTarget))
+            putExtra(AlarmClock.EXTRA_SKIP_UI, false)
+        }
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun searchCallerOnWeb(prefix: String?) {
+        val baseTerm = textContactName.text?.toString()?.takeIf { it.isNotBlank() }
+            ?.takeUnless { it == getString(R.string.unknown_number) }
+            ?: callerNumber
+            ?: return
+        val query = listOfNotNull(prefix, baseTerm).joinToString(" ")
+        val searchUrl = "https://www.google.com/search?q=${Uri.encode(query)}"
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(searchUrl))
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun isDebounced(): Boolean {
+        val currentTime = SystemClock.elapsedRealtime()
+        if (currentTime - lastClickTime < DEBOUNCE_DELAY_MS) {
+            return false
+        }
+        lastClickTime = currentTime
+        return true
+    }
 
     private fun loadNativeAd() {
+        AdLoadingShimmerHelper.showNativeLoading(
+            nativeAdContainer,
+            nativeAdView,
+            R.layout.layout_native_ad_shimmer_full_bleed
+        )
+
         val preloaded = AfterCallAdPreloader.consumePreloadedAd()
         if (preloaded != null) {
             if (!isDestroyed && !isFinishing) {
@@ -610,9 +1087,9 @@ class CallAfterActivity : BaseActivity() {
             AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
             return
         }
+
         val adLoader = AdLoader.Builder(this, nativeAdUnitId)
             .forNativeAd { nativeAd ->
-                // Destroy old ad if exists
                 currentNativeAd?.destroy()
                 currentNativeAd = nativeAd
 
@@ -627,14 +1104,9 @@ class CallAfterActivity : BaseActivity() {
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                     Log.e(
                         TAG,
-                        "After-call native failed: code=${loadAdError.code} ${loadAdError.message} " +
-                            "unit=$nativeAdUnitId"
+                        "After-call native failed: code=${loadAdError.code} ${loadAdError.message} unit=$nativeAdUnitId"
                     )
                     AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
-                }
-
-                override fun onAdLoaded() {
-                    Log.d(TAG, "Native ad loaded successfully")
                 }
             })
             .withNativeAdOptions(
@@ -648,17 +1120,14 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun populateNativeAdView(nativeAd: NativeAd) {
-        // Media
         val mediaView = nativeAdView.findViewById<MediaView>(R.id.adMedia)
         nativeAdView.mediaView = mediaView
         mediaView.mediaContent = nativeAd.mediaContent
 
-        // Headline
         val headlineView = nativeAdView.findViewById<TextView>(R.id.adHeadline)
         nativeAdView.headlineView = headlineView
         headlineView.text = nativeAd.headline ?: "Sponsored"
 
-        // Icon
         val iconView = nativeAdView.findViewById<ImageView>(R.id.adIcon)
         nativeAdView.iconView = iconView
         if (nativeAd.icon != null) {
@@ -668,12 +1137,10 @@ class CallAfterActivity : BaseActivity() {
             iconView.visibility = View.GONE
         }
 
-        // CTA
         val ctaButton = nativeAdView.findViewById<MaterialButton>(R.id.adCta)
         nativeAdView.callToActionView = ctaButton
         ctaButton.text = nativeAd.callToAction ?: getString(R.string.open)
 
-        // Register the native ad view
         nativeAdView.setNativeAd(nativeAd)
         AdLoadingShimmerHelper.showNativeContent(nativeAdContainer, nativeAdView)
     }

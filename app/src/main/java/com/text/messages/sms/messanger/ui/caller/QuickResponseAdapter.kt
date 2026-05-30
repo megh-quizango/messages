@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.text.messages.sms.messanger.R
 
 class QuickResponseAdapter(
-    private val onResponseClick: (Int) -> Unit
+    private val onResponseClick: (CallAfterViewModel.QuickResponse) -> Unit
 ) : ListAdapter<CallAfterViewModel.QuickResponse, QuickResponseAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -21,14 +21,14 @@ class QuickResponseAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position), position)
+        holder.bind(getItem(position))
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val textResponse: TextView = itemView.findViewById(R.id.textResponse)
         private val radioSelector: ImageView = itemView.findViewById(R.id.radioSelector)
 
-        fun bind(response: CallAfterViewModel.QuickResponse, position: Int) {
+        fun bind(response: CallAfterViewModel.QuickResponse) {
             textResponse.text = response.text
 
             // Update radio selector state
@@ -38,9 +38,17 @@ class QuickResponseAdapter(
                 radioSelector.setImageResource(R.drawable.ic_radio_unselected)
             }
 
+            if (response.isCustom) {
+                textResponse.alpha = 0.52f
+                radioSelector.alpha = 0.52f
+            } else {
+                textResponse.alpha = 1f
+                radioSelector.alpha = 1f
+            }
+
             // Handle click
             itemView.setOnClickListener {
-                onResponseClick(position)
+                onResponseClick(response)
             }
         }
     }
@@ -57,7 +65,9 @@ class QuickResponseAdapter(
             oldItem: CallAfterViewModel.QuickResponse,
             newItem: CallAfterViewModel.QuickResponse
         ): Boolean {
-            return oldItem.text == newItem.text && oldItem.isSelected == newItem.isSelected
+            return oldItem.text == newItem.text &&
+                oldItem.isSelected == newItem.isSelected &&
+                oldItem.isCustom == newItem.isCustom
         }
     }
 }

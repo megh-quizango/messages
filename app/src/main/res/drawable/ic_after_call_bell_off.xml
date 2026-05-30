@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_after_call_bell" />
+    <item>
+        <vector
+            android:width="84dp"
+            android:height="84dp"
+            android:viewportWidth="84"
+            android:viewportHeight="84">
+            <path
+                android:fillColor="#00000000"
+                android:pathData="M56,28m-14,0a14,14 0 1,1 28,0a14,14 0 1,1 -28,0"
+                android:strokeColor="#FF5C6EF8"
+                android:strokeWidth="5" />
+            <path
+                android:fillColor="#FF5C6EF8"
+                android:pathData="M63.78,18.69L45.56,36.91l3.54,3.54L67.32,22.23z" />
+        </vector>
+    </item>
+</layer-list>

@@ -65,6 +65,7 @@ class CallAfterViewModel : ViewModel() {
     data class QuickResponse(
         val id: Int,
         val text: String,
+        val isCustom: Boolean = false,
         var isSelected: Boolean = false
     )
 
@@ -82,7 +83,13 @@ class CallAfterViewModel : ViewModel() {
         val responses = listOf(
             QuickResponse(0, context.getString(com.text.messages.sms.messanger.R.string.quick_response_1)),
             QuickResponse(1, context.getString(com.text.messages.sms.messanger.R.string.quick_response_2)),
-            QuickResponse(2, context.getString(com.text.messages.sms.messanger.R.string.quick_response_3))
+            QuickResponse(2, context.getString(com.text.messages.sms.messanger.R.string.quick_response_3)),
+            QuickResponse(3, context.getString(com.text.messages.sms.messanger.R.string.quick_response_4)),
+            QuickResponse(
+                4,
+                context.getString(com.text.messages.sms.messanger.R.string.quick_response_custom),
+                isCustom = true
+            )
         )
         _quickResponses.value = responses
     }

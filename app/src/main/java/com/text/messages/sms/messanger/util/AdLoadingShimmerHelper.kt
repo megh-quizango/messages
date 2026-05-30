@@ -135,10 +135,23 @@ object AdLoadingShimmerHelper {
 
     private fun restartShimmer(shimmer: ShimmerFrameLayout) {
         shimmer.stopShimmer()
-        shimmer.post {
-            if (shimmer.visibility == View.VISIBLE && shimmer.isAttachedToWindow) {
-                shimmer.startShimmer()
+        if (shimmer.isAttachedToWindow) {
+            shimmer.post {
+                if (shimmer.visibility == View.VISIBLE) {
+                    shimmer.startShimmer()
+                }
             }
+        } else {
+            shimmer.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(v: View) {
+                    shimmer.removeOnAttachStateChangeListener(this)
+                    if (shimmer.visibility == View.VISIBLE) {
+                        shimmer.startShimmer()
+                    }
+                }
+
+                override fun onViewDetachedFromWindow(v: View) = Unit
+            })
         }
     }
 
