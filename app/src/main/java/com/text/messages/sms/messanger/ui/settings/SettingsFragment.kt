@@ -119,6 +119,16 @@ class SettingsFragment : Fragment() {
         }
         _binding = null
     }
+
+    override fun onResume() {
+        super.onResume()
+        _binding?.let {
+            ThemeManager.applyThemeImmediate(requireContext(), it.root)
+            if (::adapter.isInitialized) {
+                adapter.notifyDataSetChanged()
+            }
+        }
+    }
     
     private fun setupBackButton() {
         binding.buttonBack.setOnClickListener {
@@ -150,7 +160,13 @@ class SettingsFragment : Fragment() {
                     }
                 },
                 SettingsOption(SettingsOptionId.CONTACTS_COLORED_ICONS, getString(R.string.settings_contacts_colored_icons), R.drawable.contacts, true, false),
-                SettingsOption(SettingsOptionId.COLOR_SIM_CARD_ICONS, getString(R.string.settings_color_sim_card_icons), R.drawable.sim, false, false),
+                SettingsOption(
+                    SettingsOptionId.COLOR_SIM_CARD_ICONS,
+                    getString(R.string.settings_color_sim_card_icons),
+                    R.drawable.sim,
+                    com.text.messages.sms.messanger.util.AppPreferences.getColorSimCardIcons(requireContext()),
+                    false
+                ),
                 SettingsOption(SettingsOptionId.QUICK_ACCESS_TO_OTP, getString(R.string.settings_quick_access_to_otp), R.drawable.otp, true, false)
             )),
             SettingsItem(getString(R.string.settings_section_go_to), listOf(

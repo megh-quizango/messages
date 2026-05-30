@@ -308,34 +308,10 @@ object ThemeManager {
                 }
             }
             
-            // Handle Switch - only apply theme if custom drawables are not set
+            // Handle Switch
             if (view is SwitchMaterial) {
                 try {
-                    // Only apply theme if custom drawables are not already set
-                    // Custom drawables are set when thumbDrawable and trackDrawable are StateListDrawable
-                    // This indicates the toggle has been styled using applyToggleTheme()
-                    val hasCustomDrawables = view.thumbDrawable is StateListDrawable && 
-                                           view.trackDrawable is StateListDrawable
-                    
-                    if (!hasCustomDrawables) {
-                        // Only apply default theme if custom drawables are not set
-                        val thumbTint = view.thumbTintList
-                        if (thumbTint != null && thumbTint.defaultColor == primaryColorInt) {
-                            view.thumbTintList = android.content.res.ColorStateList.valueOf(themeColorInt)
-                        } else if (thumbTint == null) {
-                            // Apply theme color if no tint is set
-                            view.thumbTintList = android.content.res.ColorStateList.valueOf(themeColorInt)
-                        }
-                        val trackTint = view.trackTintList
-                        if (trackTint != null && trackTint.defaultColor == primaryColorInt) {
-                            view.trackTintList = android.content.res.ColorStateList.valueOf(themeColorInt)
-                        }
-                    } else {
-                        // If custom drawables are set (via applyToggleTheme), preserve them
-                        // Re-apply theme to update colors if theme changed
-                        // IMPORTANT: Don't change visibility - preserve whatever was set
-                        applyToggleTheme(view, context)
-                    }
+                    applyToggleTheme(view, context)
                 } catch (e: Exception) {
                     // Ignore
                 }

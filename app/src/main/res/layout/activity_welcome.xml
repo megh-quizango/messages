@@ -66,8 +66,7 @@
                     android:layout_height="19dp"
                     android:layout_gravity="center"
                     android:contentDescription="@string/calls"
-                    android:src="@drawable/ic_call_outline_blue"
-                    app:tint="@color/primary_blue" />
+                    android:src="@drawable/call" />
             </FrameLayout>
 
             <LinearLayout

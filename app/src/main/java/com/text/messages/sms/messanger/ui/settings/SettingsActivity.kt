@@ -359,6 +359,12 @@ class SettingsActivity : BaseActivity() {
     
     override fun onResume() {
         super.onResume()
+        if (::binding.isInitialized) {
+            ThemeManager.applyThemeImmediate(this, binding.root)
+            if (::adapter.isInitialized) {
+                adapter.notifyDataSetChanged()
+            }
+        }
         // Ensure Settings tab is selected when activity is visible
         binding.bottomNavigationView.post {
             setSelectedNavigationItem(R.id.nav_settings)

@@ -696,7 +696,7 @@ class MainActivity : BaseActivity() {
         val fragmentManager = supportFragmentManager
         val currentFragment = fragmentManager.findFragmentById(R.id.fragmentContainer)
         currentFragment?.view?.let { fragmentView ->
-            ThemeManager.applyTheme(this, fragmentView)
+            ThemeManager.applyThemeImmediate(this, fragmentView)
         }
     }
     
@@ -1913,6 +1913,9 @@ class MainActivity : BaseActivity() {
         
         // Don't replace if already showing this fragment
         if (currentFragment != null && currentFragment.javaClass == fragmentClass) {
+            currentFragment.view?.let { fragmentView ->
+                ThemeManager.applyThemeImmediate(this, fragmentView)
+            }
             return
         }
         
@@ -1955,6 +1958,8 @@ class MainActivity : BaseActivity() {
             // Check if fragment is visible - if so, don't show RecyclerView
             if (isFragmentVisible()) {
                 Log.d(TAG, "MainActivity.onResume(): SKIPPING RecyclerView update - Fragment is visible")
+                ThemeManager.applyThemeImmediate(this, binding.root)
+                updateVisibleFragments()
                 return
             }
             
