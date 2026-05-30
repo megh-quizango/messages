@@ -53,6 +53,36 @@ object AdConfig {
         )
     }
 
+    fun resolveExitNativeBannerAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getExitNativeBannerAdUnitId(),
+            productionResId = R.string.admob_native_banner_exit,
+            testResId = R.string.admob_test_native,
+            label = "exit_native_banner"
+        )
+    }
+
+    fun resolveExitAdaptiveBannerAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getExitFallbackBannerAdUnitId(),
+            productionResId = R.string.admob_banner_exit_fallback,
+            testResId = R.string.admob_test_banner,
+            label = "exit_adaptive_banner"
+        )
+    }
+
+    fun resolveManageAppsAdaptiveBannerAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getManageAppsAdaptiveBannerAdUnitId(),
+            productionResId = R.string.admob_banner_manage_apps_fallback,
+            testResId = R.string.admob_test_banner,
+            label = "manage_apps_adaptive_banner"
+        )
+    }
+
     fun resolveAppOpenAdUnitId(context: Context): String {
         return resolve(
             context = context,
@@ -60,6 +90,56 @@ object AdConfig {
             productionResId = R.string.admob_app_open_messages,
             testResId = R.string.admob_test_banner,
             label = "app_open"
+        )
+    }
+
+    fun resolveAppOpenResumeAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getAppOpenResumeAdUnitId(),
+            productionResId = R.string.admob_app_open_resume_messages,
+            testResId = R.string.admob_test_banner,
+            label = "app_open_resume"
+        )
+    }
+
+    fun resolveThemeInterstitialAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getThemeInterstitialAdUnitId(),
+            productionResId = R.string.admob_interstitial_theme,
+            testResId = R.string.admob_test_interstitial,
+            label = "theme_interstitial"
+        )
+    }
+
+    fun resolveThemeNativeFullscreenAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getThemeNativeFullscreenAdUnitId(),
+            productionResId = R.string.admob_native_fullscreen_theme,
+            testResId = R.string.admob_test_native,
+            label = "theme_native_fullscreen"
+        )
+    }
+
+    fun resolveImExInterstitialAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getImExInterstitialAdUnitId(),
+            productionResId = R.string.admob_interstitial_imex,
+            testResId = R.string.admob_test_interstitial,
+            label = "imex_interstitial"
+        )
+    }
+
+    fun resolveImExNativeFullscreenAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getImExNativeFullscreenAdUnitId(),
+            productionResId = R.string.admob_native_fullscreen_imex,
+            testResId = R.string.admob_test_native,
+            label = "imex_native_fullscreen"
         )
     }
 
@@ -71,6 +151,14 @@ object AdConfig {
                 "native=${resolveNativeAdUnitId(context)} " +
                 "afterCall=${resolveAfterCallNativeAdUnitId(context)} " +
                 "afterCallAdaptiveBanner=${resolveAfterCallAdaptiveBannerAdUnitId(context)} " +
+                "exitNativeBanner=${resolveExitNativeBannerAdUnitId(context)} " +
+                "exitAdaptiveBanner=${resolveExitAdaptiveBannerAdUnitId(context)} " +
+                "manageAppsAdaptiveBanner=${resolveManageAppsAdaptiveBannerAdUnitId(context)} " +
+                "appOpenResume=${resolveAppOpenResumeAdUnitId(context)} " +
+                "themeInterstitial=${resolveThemeInterstitialAdUnitId(context)} " +
+                "themeNativeFullscreen=${resolveThemeNativeFullscreenAdUnitId(context)} " +
+                "imexInterstitial=${resolveImExInterstitialAdUnitId(context)} " +
+                "imexNativeFullscreen=${resolveImExNativeFullscreenAdUnitId(context)} " +
                 "useTestAds=${BuildConfig.USE_TEST_ADS}"
         )
     }

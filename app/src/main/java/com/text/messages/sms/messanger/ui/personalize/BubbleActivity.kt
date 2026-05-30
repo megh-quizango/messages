@@ -15,6 +15,7 @@ import android.content.BroadcastReceiver
 import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.ThemeManager
+import com.text.messages.sms.messanger.util.ThemeTransitionAdManager
 
 class BubbleActivity : BaseActivity() {
 
@@ -58,6 +59,7 @@ class BubbleActivity : BaseActivity() {
         
         // Register theme change receiver
         themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
+        ThemeTransitionAdManager.preload(applicationContext)
     }
     
     override fun onDestroy() {
@@ -130,7 +132,7 @@ class BubbleActivity : BaseActivity() {
             // Broadcast bubble color change
             sendBroadcast(android.content.Intent("com.text.messages.sms.messanger.BUBBLE_COLOR_CHANGED"))
             
-            finish()
+            PersonalizationSaveAdNavigator.showAdThenFinish(this)
         }
     }
 }

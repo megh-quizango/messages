@@ -13,6 +13,10 @@ import com.text.messages.sms.messanger.ui.language.LanguageNativeFullscreenAdAct
 import com.text.messages.sms.messanger.ui.language.LanguageTransitionAdActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionGuideActivity
+import com.text.messages.sms.messanger.ui.personalize.ThemeNativeFullscreenAdActivity
+import com.text.messages.sms.messanger.ui.personalize.ThemeTransitionAdActivity
+import com.text.messages.sms.messanger.ui.settings.ImExNativeFullscreenAdActivity
+import com.text.messages.sms.messanger.ui.settings.ImExTransitionAdActivity
 import com.text.messages.sms.messanger.ui.splash.LandingActivity
 
 class AppOpenManager(
@@ -52,7 +56,7 @@ class AppOpenManager(
     private fun loadAd() {
         if (isLoadingAd || isAdAvailable()) return
 
-        val adUnitId = RemoteConfigHelper.getAppOpenAdUnitId()
+        val adUnitId = AdConfig.resolveAppOpenResumeAdUnitId(application)
         if (adUnitId.isBlank()) {
             return
         }
@@ -190,6 +194,10 @@ class AppOpenManager(
             activity !is OverlayPermissionGuideActivity &&
             activity !is LanguageActivity &&
             activity !is LanguageTransitionAdActivity &&
-            activity !is LanguageNativeFullscreenAdActivity
+            activity !is LanguageNativeFullscreenAdActivity &&
+            activity !is ThemeTransitionAdActivity &&
+            activity !is ThemeNativeFullscreenAdActivity &&
+            activity !is ImExTransitionAdActivity &&
+            activity !is ImExNativeFullscreenAdActivity
     }
 }

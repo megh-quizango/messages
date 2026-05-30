@@ -21,6 +21,7 @@ import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityRingtoneBinding
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.ThemeManager
+import com.text.messages.sms.messanger.util.ThemeTransitionAdManager
 
 class RingtoneActivity : BaseActivity() {
 
@@ -31,6 +32,7 @@ class RingtoneActivity : BaseActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private var currentPreviewRingtone: Ringtone? = null
     private var currentPreviewMediaPlayer: MediaPlayer? = null
+    private var selectedRingtoneName: String = "default"
     
     companion object {
         private const val PREFS_NAME = "ringtone_settings"
@@ -58,10 +60,12 @@ class RingtoneActivity : BaseActivity() {
         
         setupBackButton()
         setupRingtoneSelection()
+        setupSaveButton()
         loadSelectedRingtone()
         
         // Register theme change receiver
         themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
+        ThemeTransitionAdManager.preload(applicationContext)
     }
     
     override fun onPause() {
@@ -119,13 +123,19 @@ class RingtoneActivity : BaseActivity() {
                 icon.visibility = View.VISIBLE
                 selectedCard = card
                 selectedIcon = icon
-                
-                // Save selected ringtone preference
-                saveRingtonePreference(ringtoneName)
+                selectedRingtoneName = ringtoneName
                 
                 // Play preview sound
                 playPreviewSound(ringtoneName)
             }
+        }
+    }
+
+    private fun setupSaveButton() {
+        binding.buttonSave.backgroundTintList = null
+        binding.buttonSave.setOnClickListener {
+            saveRingtonePreference(selectedRingtoneName)
+            PersonalizationSaveAdNavigator.showAdThenFinish(this)
         }
     }
     
@@ -136,7 +146,7 @@ class RingtoneActivity : BaseActivity() {
     }
     
     private fun loadSelectedRingtone() {
-        val selectedRingtone = sharedPreferences.getString(KEY_SELECTED_RINGTONE, "default")
+        val selectedRingtone = sharedPreferences.getString(KEY_SELECTED_RINGTONE, "default") ?: "default"
         
         // Map ringtone names to their corresponding cards and icons
         val ringtoneMap = mapOf(
@@ -158,12 +168,14 @@ class RingtoneActivity : BaseActivity() {
         ringtoneMap[selectedRingtone]?.let { (card, icon) ->
             selectedCard = card
             selectedIcon = icon
+            selectedRingtoneName = selectedRingtone
             icon.visibility = View.VISIBLE
         } ?: run {
             // Default to "default" if saved preference is invalid
             binding.iconSelectedDefault.visibility = View.VISIBLE
             selectedCard = binding.cardDefault
             selectedIcon = binding.iconSelectedDefault
+            selectedRingtoneName = "default"
         }
     }
     

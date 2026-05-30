@@ -133,6 +133,28 @@
             android:exported="false"
             android:theme="@style/Theme.Messages" />
 
+        <activity
+            android:name=".ui.personalize.ThemeTransitionAdActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Messages.Resume" />
+
+        <activity
+            android:name=".ui.personalize.ThemeNativeFullscreenAdActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
+        <activity
+            android:name=".ui.settings.ImExTransitionAdActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Messages.Resume" />
+
+        <activity
+            android:name=".ui.settings.ImExNativeFullscreenAdActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
         <!-- MainActivity -->
         <activity
             android:name=".ui.main.MainActivity"

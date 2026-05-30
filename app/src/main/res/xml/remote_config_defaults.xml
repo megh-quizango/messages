@@ -29,12 +29,36 @@
         <value>ca-app-pub-9014156375881181/5350588778</value>
     </entry>
     <entry>
+        <key>app_open_resume_ad_unit_id</key>
+        <value>ca-app-pub-9014156375881181/2076384055</value>
+    </entry>
+    <entry>
         <key>native_banner_ad_language</key>
         <value>ca-app-pub-9014156375881181/5559968535</value>
     </entry>
     <entry>
         <key>banner_language_fallback</key>
         <value>ca-app-pub-9014156375881181/122941280</value>
+    </entry>
+    <entry>
+        <key>native_banner_exit</key>
+        <value>ca-app-pub-9014156375881181/2856324701</value>
+    </entry>
+    <entry>
+        <key>banner_exit_fallback</key>
+        <value>ca-app-pub-9014156375881181/3469887002</value>
+    </entry>
+    <entry>
+        <key>exit_adaptive_banner_only</key>
+        <value>false</value>
+    </entry>
+    <entry>
+        <key>manage_apps_adaptive_banner_ad_unit_id</key>
+        <value>ca-app-pub-9014156375881181/6938358720</value>
+    </entry>
+    <entry>
+        <key>manage_apps_adaptive_banner_only</key>
+        <value>false</value>
     </entry>
     <entry>
         <key>language_adaptive_banner_only</key>
@@ -47,6 +71,30 @@
     <entry>
         <key>native_fullscreen_language</key>
         <value>ca-app-pub-9014156375881181/7603677948</value>
+    </entry>
+    <entry>
+        <key>interstitial_theme</key>
+        <value>ca-app-pub-9014156375881181/8613872240</value>
+    </entry>
+    <entry>
+        <key>native_fullscreen_theme</key>
+        <value>ca-app-pub-9014156375881181/5805921677</value>
+    </entry>
+    <entry>
+        <key>theme_native_fullscreen_only</key>
+        <value>false</value>
+    </entry>
+    <entry>
+        <key>interstitial_imex</key>
+        <value>ca-app-pub-9014156375881181/5614349987</value>
+    </entry>
+    <entry>
+        <key>native_fullscreen_imex</key>
+        <value>ca-app-pub-9014156375881181/1170496490</value>
+    </entry>
+    <entry>
+        <key>imex_native_fullscreen_only</key>
+        <value>false</value>
     </entry>
     <entry>
         <key>language_native_fullscreen_only</key>

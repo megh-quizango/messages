@@ -15,6 +15,7 @@ import android.content.BroadcastReceiver
 import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.ThemeManager
+import com.text.messages.sms.messanger.util.ThemeTransitionAdManager
 
 class FontSizeActivity : BaseActivity() {
 
@@ -67,6 +68,7 @@ class FontSizeActivity : BaseActivity() {
         
         // Register theme change receiver
         themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
+        ThemeTransitionAdManager.preload(applicationContext)
     }
     
     override fun onDestroy() {
@@ -163,7 +165,7 @@ class FontSizeActivity : BaseActivity() {
             // Broadcast font change
             sendBroadcast(android.content.Intent("com.text.messages.sms.messanger.FONT_CHANGED"))
             
-            finish()
+            PersonalizationSaveAdNavigator.showAdThenFinish(this)
         }
     }
 }

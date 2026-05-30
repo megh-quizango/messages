@@ -1,5 +1,6 @@
 package com.text.messages.sms.messanger.ui.settings
 
+import android.app.Activity
 import android.app.role.RoleManager
 import android.content.Intent
 import android.net.Uri
@@ -40,6 +41,7 @@ import com.text.messages.sms.messanger.ui.archive.ArchiveActivity
 import com.text.messages.sms.messanger.util.MessagesExportImport
 import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
+import com.text.messages.sms.messanger.util.ImExTransitionAdManager
 import android.content.BroadcastReceiver
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +57,7 @@ class SettingsActivity : BaseActivity() {
     private lateinit var adapter: SettingsAdapter
     private var isSettingSelectedItem = false
     private var themeChangeReceiver: BroadcastReceiver? = null
+    private var pendingImExAction: PendingImExAction? = null
     
     // Activity result launchers for file picker
     private val exportFileLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
@@ -66,6 +69,19 @@ class SettingsActivity : BaseActivity() {
     private val importFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
             handleImportResult(it)
+        }
+    }
+
+    private val imExAdLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val action = pendingImExAction
+        pendingImExAction = null
+        if (result.resultCode != Activity.RESULT_OK) {
+            return@registerForActivityResult
+        }
+        when (action) {
+            PendingImExAction.EXPORT -> exportMessages()
+            PendingImExAction.IMPORT -> importMessages()
+            null -> Unit
         }
     }
 
@@ -128,6 +144,7 @@ class SettingsActivity : BaseActivity() {
         setupRecyclerView()
         setupBottomNavigation()
         setupBannerAd()
+        ImExTransitionAdManager.preload(applicationContext)
         
         // Set Settings as selected initially and apply theme
         binding.bottomNavigationView.post {
@@ -276,10 +293,10 @@ class SettingsActivity : BaseActivity() {
             )),
             SettingsItem(getString(R.string.settings_section_backups), listOf(
                 SettingsOption(SettingsOptionId.EXPORT_MESSAGES, getString(R.string.settings_export_messages), getIcon("export"), null, false) {
-                    exportMessages()
+                    launchImExAdThen(PendingImExAction.EXPORT)
                 },
                 SettingsOption(SettingsOptionId.IMPORT_MESSAGES, getString(R.string.settings_import_messages), getIcon("import_message"), null, false) {
-                    importMessages()
+                    launchImExAdThen(PendingImExAction.IMPORT)
                 }
             ))
         )
@@ -290,6 +307,16 @@ class SettingsActivity : BaseActivity() {
         
         binding.recyclerViewSettings.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewSettings.adapter = adapter
+    }
+
+    private fun launchImExAdThen(action: PendingImExAction) {
+        pendingImExAction = action
+        ImExTransitionAdManager.preload(applicationContext)
+        imExAdLauncher.launch(
+            Intent(this, ImExTransitionAdActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            }
+        )
     }
     
     private fun setupBottomNavigation() {
@@ -629,6 +656,11 @@ data class SettingsItem(
     val title: String,
     val options: List<SettingsOption>
 )
+
+private enum class PendingImExAction {
+    EXPORT,
+    IMPORT
+}
 
 enum class SettingsOptionId {
     DEFAULT_SMS_APP,

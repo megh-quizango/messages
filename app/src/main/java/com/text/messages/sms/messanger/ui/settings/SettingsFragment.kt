@@ -1,5 +1,6 @@
 package com.text.messages.sms.messanger.ui.settings
 
+import android.app.Activity
 import android.app.role.RoleManager
 import android.content.Intent
 import android.net.Uri
@@ -41,6 +42,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.ui.archive.ArchiveActivity
+import com.text.messages.sms.messanger.util.ImExTransitionAdManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,6 +57,7 @@ class SettingsFragment : Fragment() {
     
     private lateinit var adapter: SettingsAdapter
     private var themeChangeReceiver: BroadcastReceiver? = null
+    private var pendingImExAction: PendingImExAction? = null
     
     // Activity result launchers for file picker
     private val exportFileLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
@@ -66,6 +69,19 @@ class SettingsFragment : Fragment() {
     private val importFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
             handleImportResult(it)
+        }
+    }
+
+    private val imExAdLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val action = pendingImExAction
+        pendingImExAction = null
+        if (result.resultCode != Activity.RESULT_OK) {
+            return@registerForActivityResult
+        }
+        when (action) {
+            PendingImExAction.EXPORT -> exportMessages()
+            PendingImExAction.IMPORT -> importMessages()
+            null -> Unit
         }
     }
 
@@ -83,6 +99,7 @@ class SettingsFragment : Fragment() {
         
         setupBackButton()
         setupRecyclerView()
+        ImExTransitionAdManager.preload(requireContext().applicationContext)
         
         // Apply theme after views are created
         binding.root.post {
@@ -190,10 +207,10 @@ class SettingsFragment : Fragment() {
             )),
             SettingsItem(getString(R.string.settings_section_backups), listOf(
                 SettingsOption(SettingsOptionId.EXPORT_MESSAGES, getString(R.string.settings_export_messages), R.drawable.export, null, false) {
-                    exportMessages()
+                    launchImExAdThen(PendingImExAction.EXPORT)
                 },
                 SettingsOption(SettingsOptionId.IMPORT_MESSAGES, getString(R.string.settings_import_messages), R.drawable.import_message, null, false) {
-                    importMessages()
+                    launchImExAdThen(PendingImExAction.IMPORT)
                 }
             ))
         )
@@ -204,6 +221,16 @@ class SettingsFragment : Fragment() {
         
         binding.recyclerViewSettings.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewSettings.adapter = adapter
+    }
+
+    private fun launchImExAdThen(action: PendingImExAction) {
+        pendingImExAction = action
+        ImExTransitionAdManager.preload(requireContext().applicationContext)
+        imExAdLauncher.launch(
+            Intent(requireContext(), ImExTransitionAdActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            }
+        )
     }
     
     private fun showSignatureDialog() {
@@ -468,6 +495,11 @@ class SettingsFragment : Fragment() {
                 ).show()
             }
         }
+    }
+
+    private enum class PendingImExAction {
+        EXPORT,
+        IMPORT
     }
 }
 
