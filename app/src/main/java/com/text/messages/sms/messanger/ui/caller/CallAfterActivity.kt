@@ -1,5 +1,7 @@
 package com.text.messages.sms.messanger.ui.caller
 
+import android.app.TimePickerDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -72,6 +74,11 @@ class CallAfterActivity : BaseActivity() {
     companion object {
         private const val TAG = "CallAfterActivity"
         private const val DEBOUNCE_DELAY_MS = 500L
+        private const val PACKAGE_WHATSAPP = "com.whatsapp"
+        private const val PACKAGE_WHATSAPP_BUSINESS = "com.whatsapp.w4b"
+        private const val PACKAGE_GMAIL = "com.google.android.gm"
+        private const val PACKAGE_INSTAGRAM = "com.instagram.android"
+        private const val PACKAGE_YOUTUBE = "com.google.android.youtube"
     }
 
     private enum class AfterCallTab {
@@ -116,6 +123,7 @@ class CallAfterActivity : BaseActivity() {
     private lateinit var pickerReminderDay: NumberPicker
     private lateinit var pickerReminderHour: NumberPicker
     private lateinit var pickerReminderMinute: NumberPicker
+    private lateinit var textReminderTimeValue: TextView
     private lateinit var reminderColorRow: LinearLayout
     private lateinit var buttonCancelReminder: MaterialButton
     private lateinit var buttonSaveReminder: MaterialButton
@@ -256,6 +264,7 @@ class CallAfterActivity : BaseActivity() {
         textCallTime = findViewById(R.id.textCallTime)
         textCallStatus = findViewById(R.id.textCallStatus)
         buttonCall = findViewById(R.id.buttonCall)
+        preserveHeaderDialerIcon()
 
         tabMessages = findViewById(R.id.tabMessages)
         tabQuickMessages = findViewById(R.id.tabQuickMessages)
@@ -283,6 +292,7 @@ class CallAfterActivity : BaseActivity() {
         pickerReminderDay = findViewById(R.id.pickerReminderDay)
         pickerReminderHour = findViewById(R.id.pickerReminderHour)
         pickerReminderMinute = findViewById(R.id.pickerReminderMinute)
+        textReminderTimeValue = findViewById(R.id.textReminderTimeValue)
         reminderColorRow = findViewById(R.id.reminderColorRow)
         buttonCancelReminder = findViewById(R.id.buttonCancelReminder)
         buttonSaveReminder = findViewById(R.id.buttonSaveReminder)
@@ -490,7 +500,7 @@ class CallAfterActivity : BaseActivity() {
 
     private fun handleQuickAction(action: AfterCallActionItem) {
         when (action.id) {
-            "add_contact" -> addToContacts()
+            "add_contact" -> openDialerForNumber(callerNumber)
             "send_sms" -> openConversation()
             "whatsapp" -> openWhatsAppOrSearch()
             "set_alarm" -> openAlarmSetter()
@@ -499,9 +509,15 @@ class CallAfterActivity : BaseActivity() {
                 showReminderEditor()
             }
             "send_email" -> sendEmail()
-            "instagram" -> searchCallerOnWeb("site:instagram.com")
-            "youtube" -> searchCallerOnWeb("site:youtube.com")
-            "web" -> searchCallerOnWeb(null)
+            "instagram" -> openInstalledAppOrFallback(
+                packageName = PACKAGE_INSTAGRAM,
+                fallbackUri = Uri.parse("https://www.instagram.com/")
+            )
+            "youtube" -> openInstalledAppOrFallback(
+                packageName = PACKAGE_YOUTUBE,
+                fallbackUri = Uri.parse("https://www.youtube.com/")
+            )
+            "web" -> openBrowser()
         }
     }
 
@@ -521,6 +537,12 @@ class CallAfterActivity : BaseActivity() {
         pickerReminderMinute.maxValue = 59
         pickerReminderMinute.displayedValues = Array(60) { String.format(Locale.getDefault(), "%02d", it) }
         pickerReminderMinute.value = now.get(Calendar.MINUTE)
+        updateReminderTimeValue()
+
+        findViewById<View>(R.id.buttonSelectReminderTime).setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            showReminderTimePicker()
+        }
 
         renderReminderColorChoices()
         applyReminderButtonColors()
@@ -603,6 +625,7 @@ class CallAfterActivity : BaseActivity() {
                 ?: getString(R.string.after_call_reminder_default_title)
             editReminderTitle.setText(getString(R.string.after_call_reminder_label, target))
         }
+        updateReminderTimeValue()
         renderReminderColorChoices()
         reminderEmptyState.visibility = View.GONE
         reminderSavedState.visibility = View.GONE
@@ -642,8 +665,35 @@ class CallAfterActivity : BaseActivity() {
         val reminder = savedReminder ?: return
         savedReminderColorDot.background = reminderDotDrawable(reminder.color)
         textSavedReminderTitle.text = reminder.title
-        textSavedReminderTime.text = String.format(Locale.getDefault(), "%02d:%02d", reminder.hour, reminder.minute)
+        textSavedReminderTime.text = formatReminderTime(reminder.hour, reminder.minute)
         textSavedReminderDate.text = reminderDayLabel(reminder.dayOffset)
+    }
+
+    private fun showReminderTimePicker() {
+        TimePickerDialog(
+            this,
+            { _, selectedHour, selectedMinute ->
+                pickerReminderHour.value = selectedHour
+                pickerReminderMinute.value = selectedMinute
+                updateReminderTimeValue()
+            },
+            pickerReminderHour.value,
+            pickerReminderMinute.value,
+            android.text.format.DateFormat.is24HourFormat(this)
+        ).show()
+    }
+
+    private fun updateReminderTimeValue() {
+        textReminderTimeValue.text = formatReminderTime(pickerReminderHour.value, pickerReminderMinute.value)
+    }
+
+    private fun formatReminderTime(hour: Int, minute: Int): String {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+        }
+        val pattern = if (android.text.format.DateFormat.is24HourFormat(this)) "HH:mm" else "hh:mm a"
+        return SimpleDateFormat(pattern, Locale.getDefault()).format(calendar.time)
     }
 
     private fun reminderDotDrawable(color: Int): GradientDrawable {
@@ -1003,16 +1053,22 @@ class CallAfterActivity : BaseActivity() {
     private fun openWhatsAppOrSearch() {
         val number = callerNumber
         if (number.isNullOrBlank()) {
-            searchCallerOnWeb("WhatsApp")
+            openInstalledAppOrFallback(PACKAGE_WHATSAPP, Uri.parse("https://www.whatsapp.com/"))
             return
         }
 
         val url = "https://wa.me/${number.replace("+", "")}"
-        runCatching {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-            finish()
-        }.onFailure {
-            searchCallerOnWeb("WhatsApp")
+        val whatsappIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+            setPackage(PACKAGE_WHATSAPP)
+        }
+        val businessIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+            setPackage(PACKAGE_WHATSAPP_BUSINESS)
+        }
+        when {
+            startExternalActivity(whatsappIntent) -> finish()
+            startExternalActivity(businessIntent) -> finish()
+            startExternalActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) -> finish()
+            else -> Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -1020,13 +1076,19 @@ class CallAfterActivity : BaseActivity() {
         val subjectTarget = textContactName.text?.toString()?.takeIf { it.isNotBlank() }
             ?: callerNumber
             ?: getString(R.string.unknown_number)
-        val intent = Intent(Intent.ACTION_SENDTO).apply {
+        val gmailIntent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.after_call_reminder_label, subjectTarget))
+            setPackage(PACKAGE_GMAIL)
+        }
+        val fallbackIntent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:")
             putExtra(Intent.EXTRA_SUBJECT, getString(R.string.after_call_reminder_label, subjectTarget))
         }
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        } else {
+        when {
+            startExternalActivity(gmailIntent) -> finish()
+            startExternalActivity(fallbackIntent) -> finish()
+            else ->
             Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
         }
     }
@@ -1035,14 +1097,53 @@ class CallAfterActivity : BaseActivity() {
         val labelTarget = textContactName.text?.toString()?.takeIf { it.isNotBlank() }
             ?: callerNumber
             ?: getString(R.string.unknown_number)
-        val intent = Intent(AlarmClock.ACTION_SET_ALARM).apply {
+        val showAlarmIntent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
+        val setAlarmIntent = Intent(AlarmClock.ACTION_SET_ALARM).apply {
             putExtra(AlarmClock.EXTRA_MESSAGE, getString(R.string.after_call_reminder_label, labelTarget))
             putExtra(AlarmClock.EXTRA_SKIP_UI, false)
         }
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
+        when {
+            startExternalActivity(showAlarmIntent) -> finish()
+            startExternalActivity(setAlarmIntent) -> finish()
+            else ->
+            Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openBrowser() {
+        val baseTerm = textContactName.text?.toString()?.takeIf { it.isNotBlank() }
+            ?.takeUnless { it == getString(R.string.unknown_number) }
+            ?: callerNumber
+        val uri = if (baseTerm.isNullOrBlank()) {
+            Uri.parse("https://www.google.com/")
+        } else {
+            Uri.parse("https://www.google.com/search?q=${Uri.encode(baseTerm)}")
+        }
+        if (startExternalActivity(Intent(Intent.ACTION_VIEW, uri))) {
+            finish()
         } else {
             Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openInstalledAppOrFallback(packageName: String, fallbackUri: Uri) {
+        val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+        when {
+            launchIntent != null && startExternalActivity(launchIntent) -> finish()
+            startExternalActivity(Intent(Intent.ACTION_VIEW, fallbackUri)) -> finish()
+            else -> Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun startExternalActivity(intent: Intent): Boolean {
+        return try {
+            startActivity(intent)
+            true
+        } catch (e: ActivityNotFoundException) {
+            false
+        } catch (e: Exception) {
+            Log.e(TAG, "Unable to open quick action", e)
+            false
         }
     }
 
@@ -1148,6 +1249,15 @@ class CallAfterActivity : BaseActivity() {
             nativeAdView,
             R.layout.layout_native_ad_shimmer_full_bleed
         )
+    }
+
+    private fun preserveHeaderDialerIcon() {
+        buttonCall.clearColorFilter()
+        buttonCall.imageTintList = null
+        buttonCall.post {
+            buttonCall.clearColorFilter()
+            buttonCall.imageTintList = null
+        }
     }
 
     private fun loadAdaptiveBanner() {

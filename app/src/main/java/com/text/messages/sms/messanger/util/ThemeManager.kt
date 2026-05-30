@@ -194,21 +194,26 @@ object ThemeManager {
             // Handle ImageView tint
             if (view is ImageView) {
                 try {
-                    val tintList = view.imageTintList
-                    if (tintList != null) {
-                        val currentTintColor = tintList.defaultColor
-                        if (currentTintColor == primaryColorInt) {
-                            view.setColorFilter(themeColorInt, PorterDuff.Mode.SRC_IN)
-                            view.imageTintList = android.content.res.ColorStateList.valueOf(themeColorInt)
-                        }
+                    if (view.tag == "exclude_from_theme_tint") {
+                        view.clearColorFilter()
+                        view.imageTintList = null
                     } else {
-                        // Check if background is transparent or matches theme color
-                        val background = view.background
-                        if (background is ColorDrawable) {
-                            val bgColor = background.color
-                            if (bgColor == primaryColorInt || bgColor == android.graphics.Color.TRANSPARENT) {
-                                // Apply theme color tint
+                        val tintList = view.imageTintList
+                        if (tintList != null) {
+                            val currentTintColor = tintList.defaultColor
+                            if (currentTintColor == primaryColorInt) {
+                                view.setColorFilter(themeColorInt, PorterDuff.Mode.SRC_IN)
                                 view.imageTintList = android.content.res.ColorStateList.valueOf(themeColorInt)
+                            }
+                        } else {
+                            // Check if background is transparent or matches theme color
+                            val background = view.background
+                            if (background is ColorDrawable) {
+                                val bgColor = background.color
+                                if (bgColor == primaryColorInt || bgColor == android.graphics.Color.TRANSPARENT) {
+                                    // Apply theme color tint
+                                    view.imageTintList = android.content.res.ColorStateList.valueOf(themeColorInt)
+                                }
                             }
                         }
                     }

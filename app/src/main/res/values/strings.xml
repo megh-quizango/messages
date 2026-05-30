@@ -321,6 +321,8 @@
     <string name="after_call_remind_me_about">Remind me about</string>
     <string name="after_call_reminder_default_title">Call Reminder</string>
     <string name="after_call_reminder_saved">Reminder set</string>
+    <string name="after_call_reminder_date">Date</string>
+    <string name="after_call_reminder_time">Time</string>
     <string name="save">Save</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>

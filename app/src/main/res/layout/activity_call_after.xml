@@ -155,6 +155,7 @@
                         android:padding="0dp"
                         android:scaleType="fitCenter"
                         android:src="@drawable/dialer"
+                        android:tag="exclude_from_theme_tint"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -384,7 +385,7 @@
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:contentDescription="@string/after_call_tab_reminders"
-                    android:src="@drawable/ic_after_call_bell_off" />
+                    android:src="@drawable/no_reminder" />
 
                 <TextView
                     android:id="@+id/textRemindersTitle"
@@ -471,34 +472,84 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="96dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins"
+                        android:text="@string/after_call_reminder_date"
+                        android:textColor="#5D6470"
+                        android:textSize="13sp" />
 
                     <NumberPicker
                         android:id="@+id/pickerReminderDay"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="86dp"
+                        android:layout_marginTop="4dp"
                         android:descendantFocusability="blocksDescendants"
                         android:selectionDividerHeight="1dp" />
+
+                    <LinearLayout
+                        android:id="@+id/buttonSelectReminderTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="10dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="2dp"
+                        android:paddingEnd="2dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_after_call_alarm"
+                            app:tint="#5D6470" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins"
+                            android:text="@string/after_call_reminder_time"
+                            android:textColor="#333333"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/textReminderTimeValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"
+                            android:textColor="@color/primary_blue"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="06:15 PM" />
+                    </LinearLayout>
 
                     <NumberPicker
                         android:id="@+id/pickerReminderHour"
                         android:layout_width="66dp"
-                        android:layout_height="match_parent"
+                        android:layout_height="0dp"
                         android:layout_marginStart="12dp"
                         android:descendantFocusability="blocksDescendants"
-                        android:selectionDividerHeight="1dp" />
+                        android:selectionDividerHeight="1dp"
+                        android:visibility="gone" />
 
                     <NumberPicker
                         android:id="@+id/pickerReminderMinute"
                         android:layout_width="66dp"
-                        android:layout_height="match_parent"
+                        android:layout_height="0dp"
                         android:layout_marginStart="10dp"
                         android:descendantFocusability="blocksDescendants"
-                        android:selectionDividerHeight="1dp" />
+                        android:selectionDividerHeight="1dp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <LinearLayout
