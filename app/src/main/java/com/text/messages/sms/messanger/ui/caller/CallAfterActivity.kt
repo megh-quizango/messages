@@ -15,6 +15,7 @@ import android.provider.Telephony
 import android.text.InputType
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -35,6 +36,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.gms.ads.nativead.NativeAd
@@ -48,10 +51,12 @@ import com.text.messages.sms.messanger.ui.base.BaseActivity
 import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
+import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AfterCallAdPreloader
 import com.text.messages.sms.messanger.util.AfterCallNotificationHelper
 import com.text.messages.sms.messanger.util.CallAfterLauncher
 import com.text.messages.sms.messanger.util.ConversationCache
+import com.text.messages.sms.messanger.util.RemoteConfigHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
@@ -125,6 +130,7 @@ class CallAfterActivity : BaseActivity() {
     private lateinit var nativeAdContainer: FrameLayout
     private lateinit var nativeAdView: NativeAdView
     private lateinit var adLoadingPlaceholder: LinearLayout
+    private var adaptiveBannerView: AdView? = null
 
     private lateinit var quickResponseAdapter: QuickResponseAdapter
     private lateinit var recentConversationAdapter: AfterCallConversationAdapter
@@ -1065,17 +1071,20 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun loadNativeAd() {
-        AdLoadingShimmerHelper.showNativeLoading(
-            nativeAdContainer,
-            nativeAdView,
-            R.layout.layout_native_ad_shimmer_full_bleed
-        )
+        if (RemoteConfigHelper.shouldUseAfterCallAdaptiveBannerOnly()) {
+            AfterCallAdPreloader.clear()
+            loadAdaptiveBanner()
+            return
+        }
+
+        showAfterCallAdLoading()
 
         val preloaded = AfterCallAdPreloader.consumePreloadedAd()
         if (preloaded != null) {
             if (!isDestroyed && !isFinishing) {
                 currentNativeAd?.destroy()
                 currentNativeAd = preloaded
+                adaptiveBannerView?.visibility = View.GONE
                 populateNativeAdView(preloaded)
                 return
             }
@@ -1084,7 +1093,7 @@ class CallAfterActivity : BaseActivity() {
 
         val nativeAdUnitId = com.text.messages.sms.messanger.util.AdConfig.resolveAfterCallNativeAdUnitId(this)
         if (nativeAdUnitId.isBlank()) {
-            AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
+            loadAdaptiveBanner()
             return
         }
 
@@ -1098,7 +1107,9 @@ class CallAfterActivity : BaseActivity() {
                     return@forNativeAd
                 }
 
+                adaptiveBannerView?.visibility = View.GONE
                 populateNativeAdView(nativeAd)
+                AnalyticsHelper.logAdLoad("native", nativeAdUnitId, true)
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
@@ -1106,7 +1117,17 @@ class CallAfterActivity : BaseActivity() {
                         TAG,
                         "After-call native failed: code=${loadAdError.code} ${loadAdError.message} unit=$nativeAdUnitId"
                     )
-                    AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
+                    AnalyticsHelper.logAdLoad("native", nativeAdUnitId, false)
+                    AnalyticsHelper.logAdError("native", nativeAdUnitId, loadAdError.code.toString())
+                    loadAdaptiveBanner()
+                }
+
+                override fun onAdClicked() {
+                    AnalyticsHelper.logAdClick("native", nativeAdUnitId)
+                }
+
+                override fun onAdImpression() {
+                    AnalyticsHelper.logAdImpression("native", nativeAdUnitId)
                 }
             })
             .withNativeAdOptions(
@@ -1117,6 +1138,120 @@ class CallAfterActivity : BaseActivity() {
             .build()
 
         adLoader.loadAd(AdRequest.Builder().build())
+    }
+
+    private fun showAfterCallAdLoading() {
+        nativeAdView.visibility = View.GONE
+        adaptiveBannerView?.visibility = View.GONE
+        AdLoadingShimmerHelper.showNativeLoading(
+            nativeAdContainer,
+            nativeAdView,
+            R.layout.layout_native_ad_shimmer_full_bleed
+        )
+    }
+
+    private fun loadAdaptiveBanner() {
+        val bannerAdUnitId = com.text.messages.sms.messanger.util.AdConfig.resolveAfterCallAdaptiveBannerAdUnitId(this)
+        if (bannerAdUnitId.isBlank()) {
+            nativeAdView.visibility = View.GONE
+            adaptiveBannerView?.visibility = View.GONE
+            AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
+            return
+        }
+
+        showAfterCallAdLoading()
+        nativeAdContainer.post {
+            if (isFinishing || isDestroyed) {
+                return@post
+            }
+
+            currentNativeAd?.destroy()
+            currentNativeAd = null
+            nativeAdView.visibility = View.GONE
+
+            val adWidthPx = nativeAdContainer.width
+                .takeIf { it > 0 }
+                ?: (resources.displayMetrics.widthPixels - nativeAdContainer.paddingLeft - nativeAdContainer.paddingRight)
+            val adSize = getAfterCallAdaptiveAdSize(adWidthPx)
+            val slotHeightPx = measureAfterCallAdSlotHeightPx(adWidthPx)
+            val bannerView = getOrCreateAdaptiveBannerView(bannerAdUnitId)
+            bannerView.setAdSize(adSize)
+            bannerView.layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                slotHeightPx
+            )
+            bannerView.visibility = View.GONE
+            bannerView.adListener = object : AdListener() {
+                override fun onAdLoaded() {
+                    bannerView.adSize?.let { loadedAdSize ->
+                        bannerView.layoutParams = FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            loadedAdSize.getHeightInPixels(this@CallAfterActivity)
+                        )
+                    }
+                    nativeAdView.visibility = View.GONE
+                    AdLoadingShimmerHelper.showNativeContent(nativeAdContainer, bannerView)
+                    AnalyticsHelper.logAdLoad("banner", bannerAdUnitId, true)
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    nativeAdView.visibility = View.GONE
+                    bannerView.visibility = View.GONE
+                    AdLoadingShimmerHelper.hideNative(nativeAdContainer, bannerView)
+                    AnalyticsHelper.logAdLoad("banner", bannerAdUnitId, false)
+                    AnalyticsHelper.logAdError("banner", bannerAdUnitId, loadAdError.code.toString())
+                }
+
+                override fun onAdClicked() {
+                    AnalyticsHelper.logAdClick("banner", bannerAdUnitId)
+                }
+
+                override fun onAdImpression() {
+                    AnalyticsHelper.logAdImpression("banner", bannerAdUnitId)
+                }
+            }
+            bannerView.loadAd(AdRequest.Builder().build())
+        }
+    }
+
+    private fun getOrCreateAdaptiveBannerView(adUnitId: String): AdView {
+        val existing = adaptiveBannerView
+        if (existing != null && existing.adUnitId == adUnitId) {
+            return existing
+        }
+
+        existing?.let {
+            nativeAdContainer.removeView(it)
+            it.destroy()
+        }
+
+        return AdView(this).apply {
+            this.adUnitId = adUnitId
+            visibility = View.GONE
+            nativeAdContainer.addView(
+                this,
+                FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+            adaptiveBannerView = this
+        }
+    }
+
+    private fun getAfterCallAdaptiveAdSize(adWidthPx: Int): AdSize {
+        val adWidthDp = (adWidthPx / resources.displayMetrics.density).toInt().coerceAtLeast(1)
+        val slotHeightDp = (measureAfterCallAdSlotHeightPx(adWidthPx) / resources.displayMetrics.density)
+            .toInt()
+            .coerceAtLeast(50)
+        return AdSize.getInlineAdaptiveBannerAdSize(adWidthDp, slotHeightDp)
+    }
+
+    private fun measureAfterCallAdSlotHeightPx(adWidthPx: Int): Int {
+        val widthSpec = View.MeasureSpec.makeMeasureSpec(adWidthPx, View.MeasureSpec.EXACTLY)
+        val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        nativeAdView.measure(widthSpec, heightSpec)
+        return nativeAdView.measuredHeight.coerceAtLeast((220 * resources.displayMetrics.density).toInt())
     }
 
     private fun populateNativeAdView(nativeAd: NativeAd) {
@@ -1149,5 +1284,7 @@ class CallAfterActivity : BaseActivity() {
         super.onDestroy()
         currentNativeAd?.destroy()
         currentNativeAd = null
+        adaptiveBannerView?.destroy()
+        adaptiveBannerView = null
     }
 }

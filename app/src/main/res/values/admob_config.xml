@@ -14,6 +14,7 @@
 
     <!-- After-call screen only: create a new Native advanced unit in AdMob and replace this ID -->
     <string name="admob_native_after_call" translatable="false">ca-app-pub-9014156375881181/1613048301</string>
+    <string name="admob_banner_after_call_fallback" translatable="false">ca-app-pub-9014156375881181/6970681143</string>
 
     <!-- Google sample IDs for local debug when USE_TEST_ADS=true in gradle.properties -->
     <string name="admob_test_application_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>

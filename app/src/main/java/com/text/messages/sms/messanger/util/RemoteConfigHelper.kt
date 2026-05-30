@@ -20,6 +20,8 @@ object RemoteConfigHelper {
     private const val DEFAULT_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID = ""
     private const val DEFAULT_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID = ""
     private const val DEFAULT_LANGUAGE_ADAPTIVE_BANNER_ONLY = false
+    private const val DEFAULT_AFTER_CALL_ADAPTIVE_BANNER_AD_UNIT_ID = ""
+    private const val DEFAULT_AFTER_CALL_ADAPTIVE_BANNER_ONLY = false
     private const val DEFAULT_LANGUAGE_INTERSTITIAL_AD_UNIT_ID = ""
     private const val DEFAULT_LANGUAGE_NATIVE_FULLSCREEN_AD_UNIT_ID = ""
     private const val DEFAULT_LANGUAGE_NATIVE_FULLSCREEN_ONLY = false
@@ -28,6 +30,8 @@ object RemoteConfigHelper {
     private const val KEY_BANNER_AD_UNIT_ID = "banner_ad_unit_id"
     private const val KEY_NATIVE_AD_UNIT_ID = "native_ad_unit_id"
     private const val KEY_AFTER_CALL_NATIVE_AD_UNIT_ID = "after_call_native_ad_unit_id"
+    private const val KEY_AFTER_CALL_ADAPTIVE_BANNER_AD_UNIT_ID = "after_call_adaptive_banner_ad_unit_id"
+    private const val KEY_AFTER_CALL_ADAPTIVE_BANNER_ONLY = "after_call_adaptive_banner_only"
     private const val KEY_NATIVE_VIDEO_AD_UNIT_ID = "native_video_ad_unit_id"
     private const val KEY_APP_OPEN_AD_UNIT_ID = "app_open_ad_unit_id"
     private const val KEY_ADMOB_APP_ID = "admob_app_id"
@@ -57,6 +61,8 @@ object RemoteConfigHelper {
             KEY_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID to DEFAULT_LANGUAGE_NATIVE_BANNER_AD_UNIT_ID,
             KEY_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID to DEFAULT_LANGUAGE_FALLBACK_BANNER_AD_UNIT_ID,
             KEY_LANGUAGE_ADAPTIVE_BANNER_ONLY to DEFAULT_LANGUAGE_ADAPTIVE_BANNER_ONLY,
+            KEY_AFTER_CALL_ADAPTIVE_BANNER_AD_UNIT_ID to DEFAULT_AFTER_CALL_ADAPTIVE_BANNER_AD_UNIT_ID,
+            KEY_AFTER_CALL_ADAPTIVE_BANNER_ONLY to DEFAULT_AFTER_CALL_ADAPTIVE_BANNER_ONLY,
             KEY_LANGUAGE_INTERSTITIAL_AD_UNIT_ID to DEFAULT_LANGUAGE_INTERSTITIAL_AD_UNIT_ID,
             KEY_LANGUAGE_NATIVE_FULLSCREEN_AD_UNIT_ID to DEFAULT_LANGUAGE_NATIVE_FULLSCREEN_AD_UNIT_ID,
             KEY_LANGUAGE_NATIVE_FULLSCREEN_ONLY to DEFAULT_LANGUAGE_NATIVE_FULLSCREEN_ONLY
@@ -98,6 +104,17 @@ object RemoteConfigHelper {
         val config = remoteConfig ?: return ""
         val adUnitId = config.getString(KEY_AFTER_CALL_NATIVE_AD_UNIT_ID).trim()
         return adUnitId
+    }
+
+    fun getAfterCallAdaptiveBannerAdUnitId(): String {
+        val config = remoteConfig ?: return DEFAULT_AFTER_CALL_ADAPTIVE_BANNER_AD_UNIT_ID
+        val adUnitId = config.getString(KEY_AFTER_CALL_ADAPTIVE_BANNER_AD_UNIT_ID).trim()
+        return if (adUnitId.isBlank()) DEFAULT_AFTER_CALL_ADAPTIVE_BANNER_AD_UNIT_ID else adUnitId
+    }
+
+    fun shouldUseAfterCallAdaptiveBannerOnly(): Boolean {
+        val config = remoteConfig ?: return DEFAULT_AFTER_CALL_ADAPTIVE_BANNER_ONLY
+        return config.getBoolean(KEY_AFTER_CALL_ADAPTIVE_BANNER_ONLY)
     }
 
     fun getAppOpenAdUnitId(): String {

@@ -43,6 +43,16 @@ object AdConfig {
         )
     }
 
+    fun resolveAfterCallAdaptiveBannerAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getAfterCallAdaptiveBannerAdUnitId(),
+            productionResId = R.string.admob_banner_after_call_fallback,
+            testResId = R.string.admob_test_banner,
+            label = "after_call_adaptive_banner"
+        )
+    }
+
     fun resolveAppOpenAdUnitId(context: Context): String {
         return resolve(
             context = context,
@@ -60,6 +70,7 @@ object AdConfig {
             "Ads debug — banner=${resolveBannerAdUnitId(context)} " +
                 "native=${resolveNativeAdUnitId(context)} " +
                 "afterCall=${resolveAfterCallNativeAdUnitId(context)} " +
+                "afterCallAdaptiveBanner=${resolveAfterCallAdaptiveBannerAdUnitId(context)} " +
                 "useTestAds=${BuildConfig.USE_TEST_ADS}"
         )
     }
