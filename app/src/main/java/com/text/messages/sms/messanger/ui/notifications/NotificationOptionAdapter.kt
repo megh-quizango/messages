@@ -4,12 +4,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Switch
 import android.widget.TextView
+import com.google.android.material.switchmaterial.SwitchMaterial
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.text.messages.sms.messanger.R
+import com.text.messages.sms.messanger.util.ThemeManager
 
 class NotificationOptionAdapter(
     private val options: List<NotificationOption>,
@@ -37,7 +38,7 @@ class NotificationOptionAdapter(
         private val imageIcon: ImageView = itemView.findViewById(R.id.imageIcon)
         private val textTitle: TextView = itemView.findViewById(R.id.textTitle)
         private val textDetail: TextView = itemView.findViewById(R.id.textDetail)
-        private val switchToggle: Switch = itemView.findViewById(R.id.switchToggle)
+        private val switchToggle: SwitchMaterial = itemView.findViewById(R.id.switchToggle)
 
         fun bind(option: NotificationOption) {
             textTitle.text = option.title
@@ -72,6 +73,7 @@ class NotificationOptionAdapter(
                 switchToggle.setOnCheckedChangeListener { _, isChecked ->
                     onWakeScreenToggleChanged?.invoke(isChecked)
                 }
+                ThemeManager.applyToggleTheme(switchToggle, itemView.context)
                 // Make the whole item clickable but toggle handles its own clicks
                 itemView.setOnClickListener(null)
             } else {

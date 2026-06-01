@@ -1,8 +1,12 @@
 package com.text.messages.sms.messanger.util
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PixelFormat
 import android.graphics.PorterDuff
+import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
@@ -1118,46 +1122,27 @@ object ThemeManager {
         val density = context.resources.displayMetrics.density
         Log.d("ThemeManager", "Theme color: $themeColor, density: $density")
 
-        // Create custom thumb drawables with theme color
-        val thumbOn = GradientDrawable().apply {
-            shape = GradientDrawable.OVAL
-            setColor(themeColor)
-            setSize((18 * density).toInt(), (18 * density).toInt())
-        }
-
-        val thumbOff = GradientDrawable().apply {
-            shape = GradientDrawable.OVAL
-            setColor(Color.parseColor("#9696A3"))
-            setSize((18 * density).toInt(), (18 * density).toInt())
-        }
+        val thumbSize = (16 * density).toInt()
+        val trackWidth = (40 * density).toInt()
+        val trackHeight = (22 * density).toInt()
+        val strokeWidth = (2 * density).toInt()
 
         // Create thumb state list drawable
         val thumbDrawable = StateListDrawable().apply {
-            addState(intArrayOf(android.R.attr.state_checked), thumbOn)
-            addState(intArrayOf(), thumbOff)
-        }
-
-        // Create custom track drawables - white fill with colored border
-        val trackOn = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 12 * density
-            setColor(Color.WHITE)
-            setStroke((2 * density).toInt(), themeColor)
-            setSize((44 * density).toInt(), (24 * density).toInt())
-        }
-
-        val trackOff = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 12 * density
-            setColor(Color.WHITE)
-            setStroke((2 * density).toInt(), Color.parseColor("#9696A3"))
-            setSize((44 * density).toInt(), (24 * density).toInt())
+            addState(intArrayOf(android.R.attr.state_checked), CircleThumbDrawable(themeColor, thumbSize))
+            addState(intArrayOf(), CircleThumbDrawable(Color.parseColor("#9696A3"), thumbSize))
         }
 
         // Create track state list drawable
         val trackDrawable = StateListDrawable().apply {
-            addState(intArrayOf(android.R.attr.state_checked), trackOn)
-            addState(intArrayOf(), trackOff)
+            addState(
+                intArrayOf(android.R.attr.state_checked),
+                PillTrackDrawable(Color.WHITE, themeColor, trackWidth, trackHeight, strokeWidth)
+            )
+            addState(
+                intArrayOf(),
+                PillTrackDrawable(Color.WHITE, Color.parseColor("#9696A3"), trackWidth, trackHeight, strokeWidth)
+            )
         }
 
         // Apply custom drawables
@@ -1169,14 +1154,95 @@ object ThemeManager {
         switchToggle.trackTintList = null
 
         // Set dimensions to match our custom design
-        switchToggle.switchMinWidth = (44 * density).toInt()
-        switchToggle.minimumHeight = (24 * density).toInt()
+        switchToggle.switchMinWidth = trackWidth
+        switchToggle.minimumHeight = trackHeight
+        switchToggle.minHeight = trackHeight
+        switchToggle.minWidth = trackWidth
 
         // Force the Switch to redraw
         switchToggle.invalidate()
         switchToggle.requestLayout()
 
         Log.d("ThemeManager", "After applyToggleTheme - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, width: ${switchToggle.width}, height: ${switchToggle.height}, minWidth: ${switchToggle.switchMinWidth}, minHeight: ${switchToggle.minHeight}")
+    }
+
+    private class CircleThumbDrawable(
+        private val color: Int,
+        private val size: Int
+    ) : Drawable() {
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = this@CircleThumbDrawable.color
+        }
+
+        override fun draw(canvas: Canvas) {
+            val radius = minOf(size, bounds.width(), bounds.height()) / 2f
+            canvas.drawCircle(bounds.exactCenterX(), bounds.exactCenterY(), radius, paint)
+        }
+
+        override fun setAlpha(alpha: Int) {
+            paint.alpha = alpha
+        }
+
+        override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {
+            paint.colorFilter = colorFilter
+        }
+
+        @Deprecated("Deprecated in Java")
+        override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
+
+        override fun getIntrinsicWidth(): Int = size
+
+        override fun getIntrinsicHeight(): Int = size
+    }
+
+    private class PillTrackDrawable(
+        private val fillColor: Int,
+        private val strokeColor: Int,
+        private val width: Int,
+        private val height: Int,
+        private val strokeWidth: Int
+    ) : Drawable() {
+        private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = fillColor
+        }
+        private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = this@PillTrackDrawable.strokeWidth.toFloat()
+            color = strokeColor
+        }
+        private val rect = RectF()
+
+        override fun draw(canvas: Canvas) {
+            val drawableWidth = minOf(width.toFloat(), bounds.width().toFloat())
+            val drawableHeight = minOf(height.toFloat(), bounds.height().toFloat())
+            val left = bounds.exactCenterX() - drawableWidth / 2f
+            val top = bounds.exactCenterY() - drawableHeight / 2f
+            rect.set(left, top, left + drawableWidth, top + drawableHeight)
+            val radius = drawableHeight / 2f
+            canvas.drawRoundRect(rect, radius, radius, fillPaint)
+            val inset = strokeWidth / 2f
+            rect.inset(inset, inset)
+            canvas.drawRoundRect(rect, radius - inset, radius - inset, strokePaint)
+        }
+
+        override fun setAlpha(alpha: Int) {
+            fillPaint.alpha = alpha
+            strokePaint.alpha = alpha
+        }
+
+        override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {
+            fillPaint.colorFilter = colorFilter
+            strokePaint.colorFilter = colorFilter
+        }
+
+        @Deprecated("Deprecated in Java")
+        override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
+
+        override fun getIntrinsicWidth(): Int = width
+
+        override fun getIntrinsicHeight(): Int = height
     }
     
     /**
