@@ -184,23 +184,28 @@
                 android:clipToPadding="false"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
-                android:gravity="center"
+                android:gravity="center_horizontal"
                 android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/imageTabMessages"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
+                    android:layout_marginTop="13dp"
                     android:contentDescription="@string/after_call_tab_messages"
                     android:padding="2dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/q_list" />
 
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
                 <View
                     android:id="@+id/indicatorTabMessages"
                     android:layout_width="62dp"
                     android:layout_height="3dp"
-                    android:layout_marginTop="5dp"
                     android:background="@drawable/bg_after_call_tab_indicator" />
             </LinearLayout>
 
@@ -214,23 +219,28 @@
                 android:clipToPadding="false"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
-                android:gravity="center"
+                android:gravity="center_horizontal"
                 android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/imageTabQuickMessages"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
+                    android:layout_marginTop="13dp"
                     android:contentDescription="@string/after_call_tab_quick_messages"
                     android:padding="2dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/q_message" />
 
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
                 <View
                     android:id="@+id/indicatorTabQuickMessages"
                     android:layout_width="62dp"
                     android:layout_height="3dp"
-                    android:layout_marginTop="5dp"
                     android:background="@drawable/bg_after_call_tab_indicator"
                     android:visibility="invisible" />
             </LinearLayout>
@@ -245,23 +255,28 @@
                 android:clipToPadding="false"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
-                android:gravity="center"
+                android:gravity="center_horizontal"
                 android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/imageTabReminders"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
+                    android:layout_marginTop="13dp"
                     android:contentDescription="@string/after_call_tab_reminders"
                     android:padding="2dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/reminder" />
 
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
                 <View
                     android:id="@+id/indicatorTabReminders"
                     android:layout_width="62dp"
                     android:layout_height="3dp"
-                    android:layout_marginTop="5dp"
                     android:background="@drawable/bg_after_call_tab_indicator"
                     android:visibility="invisible" />
             </LinearLayout>
@@ -276,23 +291,28 @@
                 android:clipToPadding="false"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
-                android:gravity="center"
+                android:gravity="center_horizontal"
                 android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/imageTabActions"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
+                    android:layout_marginTop="13dp"
                     android:contentDescription="@string/after_call_tab_actions"
                     android:padding="2dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/more" />
 
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
                 <View
                     android:id="@+id/indicatorTabActions"
                     android:layout_width="62dp"
                     android:layout_height="3dp"
-                    android:layout_marginTop="5dp"
                     android:background="@drawable/bg_after_call_tab_indicator"
                     android:visibility="invisible" />
             </LinearLayout>

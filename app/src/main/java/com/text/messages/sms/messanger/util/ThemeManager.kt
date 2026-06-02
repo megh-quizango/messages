@@ -1105,9 +1105,9 @@ object ThemeManager {
     
     /**
      * Apply theme-based styling to a Switch toggle
-     * This creates a pill-shaped toggle with theme-based colors:
-     * - Track: White background with theme border when checked, gray when unchecked
-     * - Thumb: Theme color circle when checked, gray when unchecked
+     * This creates a compact filled-pill toggle with theme-based colors:
+     * - Track: Light theme fill when checked, pale gray when unchecked
+     * - Thumb: Theme color circle when checked, gray circle when unchecked
      * 
      * @param switchToggle The Switch to style
      * @param context The context to get theme colors
@@ -1115,6 +1115,7 @@ object ThemeManager {
     fun applyToggleTheme(switchToggle: SwitchMaterial, context: Context) {
         Log.d("ThemeManager", "applyToggleTheme called - switchToggle: $switchToggle, visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}")
         val themeColor = getThemeColor(context)
+        val trackOnColor = blendColors(Color.WHITE, themeColor, 0.28f)
         val density = context.resources.displayMetrics.density
         Log.d("ThemeManager", "Theme color: $themeColor, density: $density")
 
@@ -1122,13 +1123,13 @@ object ThemeManager {
         val thumbOn = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
             setColor(themeColor)
-            setSize((18 * density).toInt(), (18 * density).toInt())
+            setSize((22 * density).toInt(), (22 * density).toInt())
         }
 
         val thumbOff = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
             setColor(Color.parseColor("#9696A3"))
-            setSize((18 * density).toInt(), (18 * density).toInt())
+            setSize((22 * density).toInt(), (22 * density).toInt())
         }
 
         // Create thumb state list drawable
@@ -1137,21 +1138,20 @@ object ThemeManager {
             addState(intArrayOf(), thumbOff)
         }
 
-        // Create custom track drawables - white fill with colored border
+        // Create custom track drawables - filled pill, no outline
         val trackOn = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadius = 12 * density
-            setColor(Color.WHITE)
-            setStroke((2 * density).toInt(), themeColor)
-            setSize((44 * density).toInt(), (24 * density).toInt())
+            cornerRadius = 11 * density
+            setColor(trackOnColor)
+            setSize((44 * density).toInt(), (22 * density).toInt())
         }
 
         val trackOff = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadius = 12 * density
-            setColor(Color.WHITE)
-            setStroke((2 * density).toInt(), Color.parseColor("#9696A3"))
-            setSize((44 * density).toInt(), (24 * density).toInt())
+            cornerRadius = 11 * density
+            setColor(Color.parseColor("#EFF1F5"))
+            setStroke((1 * density).toInt().coerceAtLeast(1), Color.parseColor("#C9CED8"))
+            setSize((44 * density).toInt(), (22 * density).toInt())
         }
 
         // Create track state list drawable
@@ -1170,13 +1170,26 @@ object ThemeManager {
 
         // Set dimensions to match our custom design
         switchToggle.switchMinWidth = (44 * density).toInt()
-        switchToggle.minimumHeight = (24 * density).toInt()
+        switchToggle.minimumHeight = (22 * density).toInt()
+        switchToggle.minWidth = (44 * density).toInt()
+        switchToggle.minHeight = (22 * density).toInt()
+        switchToggle.splitTrack = false
 
         // Force the Switch to redraw
         switchToggle.invalidate()
         switchToggle.requestLayout()
 
         Log.d("ThemeManager", "After applyToggleTheme - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, width: ${switchToggle.width}, height: ${switchToggle.height}, minWidth: ${switchToggle.switchMinWidth}, minHeight: ${switchToggle.minHeight}")
+    }
+
+    private fun blendColors(baseColor: Int, overlayColor: Int, overlayRatio: Float): Int {
+        val ratio = overlayRatio.coerceIn(0f, 1f)
+        val inverseRatio = 1f - ratio
+        return Color.rgb(
+            (Color.red(baseColor) * inverseRatio + Color.red(overlayColor) * ratio).toInt(),
+            (Color.green(baseColor) * inverseRatio + Color.green(overlayColor) * ratio).toInt(),
+            (Color.blue(baseColor) * inverseRatio + Color.blue(overlayColor) * ratio).toInt()
+        )
     }
     
     /**

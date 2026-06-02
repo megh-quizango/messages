@@ -83,8 +83,11 @@
         <!-- Save Button -->
         <TextView
             android:id="@+id/buttonSave"
-            android:layout_width="wrap_content"
+            android:layout_width="72dp"
             android:layout_height="wrap_content"
+            android:gravity="center"
+            android:maxLines="1"
+            android:singleLine="true"
             android:text="@string/gen_dialog_add_signature_text_5"
             android:textColor="#0C56CF"
             android:textSize="14sp"

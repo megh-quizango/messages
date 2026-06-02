@@ -1,11 +1,13 @@
 package com.text.messages.sms.messanger.ui.blocking.overlay
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.text.messages.sms.messanger.databinding.ItemContactBinding
+import com.text.messages.sms.messanger.util.AvatarHelper
 import com.squareup.picasso.Picasso
 
 class SingleContactSelectionAdapter(
@@ -34,6 +36,11 @@ class SingleContactSelectionAdapter(
         holder.bind(getItem(position))
     }
 
+    override fun onViewRecycled(holder: ContactViewHolder) {
+        super.onViewRecycled(holder)
+        holder.cancelPendingLoads()
+    }
+
     inner class ContactViewHolder(
         private val binding: ItemContactBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -42,13 +49,15 @@ class SingleContactSelectionAdapter(
             binding.textName.text = contact.name
             binding.textPhone.text = contact.phoneNumber
 
-            if (contact.photoUri != null) {
-                Picasso.get()
-                    .load(contact.photoUri)
-                    .into(binding.imageContact)
-            } else {
-                binding.imageContact.setImageResource(com.text.messages.sms.messanger.R.drawable.contacts)
-            }
+            resetAvatarState()
+            AvatarHelper.loadAvatar(
+                binding.imageContact,
+                binding.textAvatarLetter,
+                contact.photoUri,
+                contact.name,
+                contact.phoneNumber,
+                binding.root.context
+            )
 
             binding.root.setOnClickListener {
                 onItemClick(contact)
@@ -59,6 +68,25 @@ class SingleContactSelectionAdapter(
                 binding.root.setBackgroundColor(0x1A0C56CF.toInt())
             } else {
                 binding.root.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            }
+        }
+
+        fun cancelPendingLoads() {
+            Picasso.get().cancelRequest(binding.imageContact)
+        }
+
+        private fun resetAvatarState() {
+            Picasso.get().cancelRequest(binding.imageContact)
+            binding.imageContact.setImageDrawable(null)
+            binding.imageContact.visibility = View.VISIBLE
+
+            binding.textAvatarLetter.text = ""
+            binding.textAvatarLetter.visibility = View.GONE
+            binding.textAvatarLetter.background = null
+            binding.textAvatarLetter.alpha = 1.0f
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                binding.textAvatarLetter.elevation = 0f
+                binding.textAvatarLetter.translationZ = 0f
             }
         }
     }
