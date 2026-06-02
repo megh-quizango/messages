@@ -962,7 +962,16 @@ class MainActivity : BaseActivity() {
             }
         }
         
-        // Also update search bar background if it uses theme colors
+        updateSearchBarTheme()
+    }
+
+    private fun updateSearchBarTheme() {
+        val themeColorLight = ThemeManager.getThemeColorLight(this)
+        val searchBarDrawable = android.graphics.drawable.GradientDrawable().apply {
+            cornerRadius = 50f * resources.displayMetrics.density
+            setColor(themeColorLight)
+        }
+        binding.searchBar.background = searchBarDrawable
         ThemeManager.applyThemeImmediate(this, binding.searchBar)
         binding.searchBar.invalidate()
         binding.searchBar.requestLayout()
@@ -1951,6 +1960,7 @@ class MainActivity : BaseActivity() {
         // Mark activity as resumed - allows recycler view updates
         isActivityResumed = true
         Log.d(TAG, "MainActivity.onResume(): isActivityResumed set to true")
+        updateFilterTabsTheme()
         
         // Show RecyclerView when MainActivity is resumed (it was hidden in onPause)
         // But only if we're showing messages, not fragments
