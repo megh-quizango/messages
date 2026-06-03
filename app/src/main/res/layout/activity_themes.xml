@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
-
-    <!-- ================= BACK BUTTON ================= -->
+    android:background="@color/white"
+    android:tag="exclude_theme_wallpaper">
 
     <ImageButton
         android:id="@+id/buttonBack"
@@ -15,531 +13,458 @@
         android:layout_height="48dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/bg_back_button"
-        android:src="@drawable/ic_arrow_back"
+        android:background="@android:color/transparent"
         android:contentDescription="@string/gen_activity_themes_content_description_1"
+        android:padding="8dp"
         android:scaleType="centerInside"
-        android:padding="12dp"
+        android:src="@drawable/ic_arrow_back"
+        android:tag="exclude_from_theme_tint"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <!-- ================= HEADING ================= -->
+        app:tint="@color/black" />
 
     <TextView
         android:id="@+id/textHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="20dp"
+        android:fontFamily="@font/poppins"
+        android:includeFontPadding="false"
         android:text="@string/gen_activity_themes_text_2"
         android:textColor="@color/black"
-        android:textSize="20sp"
+        android:textSize="28sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="@id/buttonBack"
         app:layout_constraintBottom_toBottomOf="@id/buttonBack"
-        app:layout_constraintStart_toEndOf="@id/buttonBack"/>
-
-    <!-- ================= CLASSICS SECTION ================= -->
+        app:layout_constraintStart_toEndOf="@id/buttonBack"
+        app:layout_constraintTop_toTopOf="@id/buttonBack" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/buttonBack"
-        app:layout_constraintBottom_toTopOf="@id/buttonSave"
+        android:clipToPadding="false"
+        android:fillViewport="false"
+        android:overScrollMode="never"
+        android:paddingBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/buttonBack">
 
         <LinearLayout
+            android:id="@+id/pickerContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingStart="16dp"
+            android:paddingTop="52dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="24dp">
 
-            <ImageView
-                android:id="@+id/imageSelectedThemePreview"
-                android:layout_width="match_parent"
-                android:layout_height="160dp"
-                android:layout_marginBottom="16dp"
-                android:background="@color/theme_preview_surface"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_preview_theme" />
-
-            <!-- Classics Section Title -->
-            <TextView
-                android:id="@+id/textClassicsTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/gen_activity_themes_text_3"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp"/>
-
-            <!-- 3x4 Grid of Color Cards -->
             <LinearLayout
-                android:id="@+id/gridLayoutClassics"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_theme_section_card"
                 android:orientation="vertical"
-                android:weightSum="4">
+                android:paddingStart="14dp"
+                android:paddingTop="18dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="18dp">
 
-                <!-- Row 1 -->
-                <LinearLayout
+                <TextView
+                    android:id="@+id/textClassicsTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins"
+                    android:includeFontPadding="false"
+                    android:text="@string/classic"
+                    android:textColor="@color/black"
+                    android:textSize="22sp" />
+
+                <GridLayout
+                    android:id="@+id/gridLayoutClassics"
                     android:layout_width="match_parent"
-                    android:layout_height="92dp"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:alignmentMode="alignBounds"
+                    android:columnCount="4"
+                    android:useDefaultMargins="false">
 
-                    <!-- Blue -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeBlue"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#2196F3"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeBlue"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#2454B8">
                             <ImageView
                                 android:id="@+id/iconSelectedBlue"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_blue" />
+                    </LinearLayout>
 
-                    <!-- Green -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeGreen"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#4CAF50"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeGreen"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#007F18">
                             <ImageView
                                 android:id="@+id/iconSelectedGreen"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="visible"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                style="@style/ThemeSelectedIcon"
+                                android:visibility="visible" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_green" />
+                    </LinearLayout>
 
-                    <!-- Pink -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemePink"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#E91E63"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemePink"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#BD4F74">
                             <ImageView
                                 android:id="@+id/iconSelectedPink"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_pink" />
+                    </LinearLayout>
 
-                <!-- Row 2 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="92dp"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
-
-                    <!-- Yellow -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeYellow"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#FFEB3B"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeYellow"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#C77900">
                             <ImageView
                                 android:id="@+id/iconSelectedYellow"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_yellow" />
+                    </LinearLayout>
 
-                    <!-- Oral (Coral/Orange-Red) -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeOral"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#FF6B6B"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeOral"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#BB594B">
                             <ImageView
                                 android:id="@+id/iconSelectedOral"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_oral" />
+                    </LinearLayout>
 
-                    <!-- Navy Blue -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeNavyBlue"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#1976D2"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeNavyBlue"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#273266">
                             <ImageView
                                 android:id="@+id/iconSelectedNavyBlue"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_navy_blue" />
+                    </LinearLayout>
 
-                <!-- Row 3 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="92dp"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
-
-                    <!-- Cerulean Blue -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeCeruleanBlue"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#03A9F4"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeCeruleanBlue"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#0B6F99">
                             <ImageView
                                 android:id="@+id/iconSelectedCeruleanBlue"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_cerulean_blue" />
+                    </LinearLayout>
 
-                    <!-- Black & Blue -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeBlackBlue"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#000000"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeBlackBlue"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#000000">
                             <ImageView
                                 android:id="@+id/iconSelectedBlackBlue"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_black_blue" />
+                    </LinearLayout>
 
-                    <!-- Purple -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemePurple"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#9C27B0"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemePurple"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#7B3FB0">
                             <ImageView
                                 android:id="@+id/iconSelectedPurple"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_purple" />
+                    </LinearLayout>
 
-                <!-- Row 4 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="92dp"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
-
-                    <!-- Teal -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeTeal"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#009688"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeTeal"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#00897B">
                             <ImageView
                                 android:id="@+id/iconSelectedTeal"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_teal" />
+                    </LinearLayout>
 
-                    <!-- Orange -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeOrange"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#FF9800"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeOrange"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#F57C00">
                             <ImageView
                                 android:id="@+id/iconSelectedOrange"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_orange" />
+                    </LinearLayout>
 
-                    <!-- Red -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThemeRed"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardBackgroundColor="#F44336"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
+                    <LinearLayout style="@style/ThemeColorCell">
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThemeRed"
+                            style="@style/ThemeColorSwatch"
+                            app:cardBackgroundColor="#D34034">
                             <ImageView
                                 android:id="@+id/iconSelectedRed"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_check_circle"
-                                android:visibility="gone"
-                                android:tint="@color/white"/>
-                        </FrameLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
+                                style="@style/ThemeSelectedIcon" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <TextView style="@style/ThemeOptionLabel" android:text="@string/theme_red" />
+                    </LinearLayout>
+                </GridLayout>
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/textSeasonsTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp"
-                android:text="@string/SeasonsSeries"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <GridLayout
-                android:id="@+id/gridLayoutSeasons"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:alignmentMode="alignMargins"
-                android:columnCount="2">
-
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardSeasonSpring" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardSeasonSummer" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardSeasonAutumn" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardSeasonWinter" />
-            </GridLayout>
-
-            <TextView
-                android:id="@+id/textCountryTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp"
-                android:text="@string/country_series"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:background="@drawable/bg_theme_section_card"
+                android:orientation="vertical"
+                android:paddingStart="14dp"
+                android:paddingTop="18dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="18dp">
 
-            <GridLayout
-                android:id="@+id/gridLayoutCountries"
+                <TextView
+                    android:id="@+id/textSeasonsTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins"
+                    android:includeFontPadding="false"
+                    android:text="@string/SeasonsSeries"
+                    android:textColor="@color/black"
+                    android:textSize="22sp" />
+
+                <GridLayout
+                    android:id="@+id/gridLayoutSeasons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:alignmentMode="alignBounds"
+                    android:columnCount="2"
+                    android:useDefaultMargins="false">
+
+                    <include android:id="@+id/cardSeasonSpring" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardSeasonSummer" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardSeasonAutumn" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardSeasonWinter" layout="@layout/item_theme_image_option" />
+                </GridLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:alignmentMode="alignMargins"
-                android:columnCount="2">
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_theme_section_card"
+                android:orientation="vertical"
+                android:paddingStart="14dp"
+                android:paddingTop="18dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="18dp">
 
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardCountryChina" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardCountryEgypt" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardCountryEngland" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardCountryFrance" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardCountryIndia" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardCountryJapan" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardCountryRussia" />
-                <include layout="@layout/item_theme_image_option"
-                    android:id="@+id/cardCountryUsa" />
-            </GridLayout>
+                <TextView
+                    android:id="@+id/textCountryTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins"
+                    android:includeFontPadding="false"
+                    android:text="@string/country_series"
+                    android:textColor="@color/black"
+                    android:textSize="22sp" />
 
+                <GridLayout
+                    android:id="@+id/gridLayoutCountries"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:alignmentMode="alignBounds"
+                    android:columnCount="2"
+                    android:useDefaultMargins="false">
+
+                    <include android:id="@+id/cardCountryChina" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardCountryEgypt" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardCountryEngland" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardCountryFrance" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardCountryIndia" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardCountryJapan" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardCountryRussia" layout="@layout/item_theme_image_option" />
+                    <include android:id="@+id/cardCountryUsa" layout="@layout/item_theme_image_option" />
+                </GridLayout>
+            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <LinearLayout
+        android:id="@+id/previewContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="30dp"
+        android:paddingTop="48dp"
+        android:paddingEnd="30dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/buttonSave"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonBack">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/previewPhoneCard"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginBottom="18dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/imageSelectedThemePreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+
+                <TextView
+                    android:id="@+id/previewTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="22dp"
+                    android:fontFamily="@font/poppins"
+                    android:text="@string/messages"
+                    android:textColor="#0C56CF"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <View
+                    android:id="@+id/previewSearch"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="74dp"
+                    android:background="@drawable/bg_theme_preview_search"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/previewTitle" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="52dp"
+                    android:fontFamily="@font/poppins"
+                    android:includeFontPadding="false"
+                    android:text="Search Messages....."
+                    android:textColor="#8A8A8A"
+                    android:textSize="15sp"
+                    app:layout_constraintBottom_toBottomOf="@id/previewSearch"
+                    app:layout_constraintEnd_toEndOf="@id/previewSearch"
+                    app:layout_constraintStart_toStartOf="@id/previewSearch"
+                    app:layout_constraintTop_toTopOf="@id/previewSearch" />
+
+                <LinearLayout
+                    android:id="@+id/previewRows"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toTopOf="@id/previewBottomNav"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/previewSearch">
+
+                    <include layout="@layout/item_theme_preview_conversation" />
+                    <include layout="@layout/item_theme_preview_conversation" />
+                    <include layout="@layout/item_theme_preview_conversation" />
+                    <include layout="@layout/item_theme_preview_conversation" />
+                    <include layout="@layout/item_theme_preview_conversation" />
+                    <include layout="@layout/item_theme_preview_conversation" />
+                    <include layout="@layout/item_theme_preview_conversation" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/previewStartChat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="28dp"
+                    android:layout_marginBottom="56dp"
+                    android:background="@drawable/bg_start_chat_button"
+                    android:fontFamily="@font/poppins"
+                    android:gravity="center"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp"
+                    android:text="Start Chat"
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <LinearLayout
+                    android:id="@+id/previewBottomNav"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:background="#CC0C56CF"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:weightSum="4"
+                    app:layout_constraintBottom_toBottomOf="parent">
+
+                    <TextView style="@style/ThemePreviewNavItem" android:text="@string/messages" />
+                    <TextView style="@style/ThemePreviewNavItem" android:text="@string/contacts" />
+                    <TextView style="@style/ThemePreviewNavItem" android:text="@string/personalize" />
+                    <TextView style="@style/ThemePreviewNavItem" android:text="@string/settings" />
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
 
     <Button
         android:id="@+id/buttonSave"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/bg_pill_button"
-        android:padding="16dp"
-        android:text="@string/save"
+        android:fontFamily="@font/poppins"
+        android:text="@string/use"
+        android:textAllCaps="false"
         android:textColor="@color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textSize="22sp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-

@@ -18,6 +18,18 @@
     <string name="ringtone">Ringtone</string>
     <string name="more">More</string>
     <string name="classic">Classics</string>
+    <string name="theme_blue">Blue</string>
+    <string name="theme_green">Green</string>
+    <string name="theme_pink">Pink</string>
+    <string name="theme_yellow">Yellow</string>
+    <string name="theme_oral">Oral</string>
+    <string name="theme_navy_blue">Navy Blue</string>
+    <string name="theme_cerulean_blue">Cerulean Blue</string>
+    <string name="theme_black_blue">Black &amp; Blue</string>
+    <string name="theme_purple">Purple</string>
+    <string name="theme_teal">Teal</string>
+    <string name="theme_orange">Orange</string>
+    <string name="theme_red">Red</string>
     <string name="SeasonsSeries">Seasons Series</string>
     <string name="country_series">Country Series</string>
     <string name="spring">Spring</string>
@@ -33,6 +45,7 @@
     <string name="russia">Russia</string>
     <string name="usa">USA</string>
     <string name="custom_theme">Custom Theme</string>
+    <string name="use">Use</string>
     <string name="contacts">Contacts</string>
     <string name="settings">Settings</string>
     <string name="manage_apps">Manage Apps</string>

@@ -10,6 +10,9 @@ import androidx.activity.enableEdgeToEdge
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -31,18 +34,18 @@ class ThemesActivity : BaseActivity() {
     // Theme colors mapping - will be initialized after binding
     private val themeColors: Map<Int, String> by lazy {
         mapOf(
-            binding.cardThemeBlue.id to "#2196F3",
-            binding.cardThemeGreen.id to "#4CAF50",
-            binding.cardThemePink.id to "#E91E63",
-            binding.cardThemeYellow.id to "#FFEB3B",
-            binding.cardThemeOral.id to "#FF6B6B",
-            binding.cardThemeNavyBlue.id to "#1976D2",
-            binding.cardThemeCeruleanBlue.id to "#03A9F4",
+            binding.cardThemeBlue.id to "#2454B8",
+            binding.cardThemeGreen.id to "#007F18",
+            binding.cardThemePink.id to "#BD4F74",
+            binding.cardThemeYellow.id to "#C77900",
+            binding.cardThemeOral.id to "#BB594B",
+            binding.cardThemeNavyBlue.id to "#273266",
+            binding.cardThemeCeruleanBlue.id to "#0B6F99",
             binding.cardThemeBlackBlue.id to "#000000",
-            binding.cardThemePurple.id to "#9C27B0",
-            binding.cardThemeTeal.id to "#009688",
-            binding.cardThemeOrange.id to "#FF9800",
-            binding.cardThemeRed.id to "#F44336",
+            binding.cardThemePurple.id to "#7B3FB0",
+            binding.cardThemeTeal.id to "#00897B",
+            binding.cardThemeOrange.id to "#F57C00",
+            binding.cardThemeRed.id to "#D34034",
             R.id.cardSeasonSpring to "#43A047",
             R.id.cardSeasonSummer to "#FF9800",
             R.id.cardSeasonAutumn to "#E64A19",
@@ -128,7 +131,11 @@ class ThemesActivity : BaseActivity() {
     
     private fun setupBackButton() {
         binding.buttonBack.setOnClickListener {
-            finish()
+            if (binding.previewContainer.visibility == View.VISIBLE) {
+                showPickerMode()
+            } else {
+                finish()
+            }
         }
     }
     
@@ -156,6 +163,7 @@ class ThemesActivity : BaseActivity() {
                 selectedCardId = card.id
                 selectedIconId = icon.id
                 updateSelectedPreview(card.id)
+                showPreviewMode()
             }
         }
 
@@ -166,6 +174,7 @@ class ThemesActivity : BaseActivity() {
                 selectedCardId = card.id
                 selectedIconId = null
                 updateSelectedPreview(card.id)
+                showPreviewMode()
             }
         }
     }
@@ -249,23 +258,6 @@ class ThemesActivity : BaseActivity() {
         AppPreferences.setThemeColor(this, themeColor)
         AppPreferences.setThemeColorLight(this, AppPreferences.getLighterColor(themeColor))
         AppPreferences.setThemeWallpaper(this, themeWallpapers[cardId])
-
-        val themeColorInt = android.graphics.Color.parseColor(themeColor)
-        try {
-            val newDrawable = android.graphics.drawable.GradientDrawable().apply {
-                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                setColor(themeColorInt)
-                cornerRadius = 8f * resources.displayMetrics.density
-            }
-            binding.buttonBack.background = newDrawable
-            binding.buttonBack.invalidate()
-            binding.buttonBack.requestLayout()
-            (binding.buttonBack.parent as? View)?.invalidate()
-        } catch (e: Exception) {
-            ThemeManager.applyThemeImmediate(this, binding.buttonBack)
-            binding.buttonBack.invalidate()
-            binding.buttonBack.requestLayout()
-        }
 
         ThemeManager.applyThemeImmediate(this, binding.root)
         binding.root.invalidate()
@@ -377,28 +369,61 @@ class ThemesActivity : BaseActivity() {
             selectedIconId = binding.iconSelectedGreen.id
             updateSelectedPreview(binding.cardThemeGreen.id)
         }
+
+        showPickerMode()
     }
 
     private fun updateSelectedPreview(cardId: Int) {
+        val color = themeColors[cardId] ?: AppPreferences.getThemeColor(this)
+        val colorInt = Color.parseColor(color)
+        val lightColor = AppPreferences.getLighterColor(color)
+        val lightColorInt = Color.parseColor(lightColor)
+
+        binding.previewTitle.setTextColor(colorInt)
+        binding.previewSearch.backgroundTintList = ColorStateList.valueOf(lightColorInt)
+        binding.previewBottomNav.setBackgroundColor(colorInt)
+        binding.previewStartChat.backgroundTintList = ColorStateList.valueOf(colorInt)
+        binding.buttonSave.backgroundTintList = ColorStateList.valueOf(colorInt)
+        tintPreviewUnreadDots(colorInt)
+
         val wallpaper = themeWallpapers[cardId]
         if (wallpaper != null) {
             val drawableId = resources.getIdentifier(wallpaper, "drawable", packageName)
             if (drawableId != 0) {
-                binding.imageSelectedThemePreview.background = null
+                binding.previewPhoneCard.setCardBackgroundColor(Color.WHITE)
+                binding.imageSelectedThemePreview.alpha = 0.56f
                 binding.imageSelectedThemePreview.setImageResource(drawableId)
                 binding.imageSelectedThemePreview.scaleType = ImageView.ScaleType.CENTER_CROP
                 return
             }
         }
 
-        val color = themeColors[cardId] ?: AppPreferences.getThemeColor(this)
-        val drawable = android.graphics.drawable.GradientDrawable().apply {
-            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            setColor(android.graphics.Color.parseColor(color))
-            cornerRadius = 6f * resources.displayMetrics.density
-        }
+        binding.previewPhoneCard.setCardBackgroundColor(lightColorInt)
+        binding.imageSelectedThemePreview.alpha = 1f
         binding.imageSelectedThemePreview.setImageDrawable(null)
-        binding.imageSelectedThemePreview.background = drawable
+        binding.imageSelectedThemePreview.setBackgroundColor(lightColorInt)
+    }
+
+    private fun tintPreviewUnreadDots(colorInt: Int) {
+        for (i in 0 until binding.previewRows.childCount) {
+            val row = binding.previewRows.getChildAt(i)
+            row.findViewById<TextView>(R.id.previewUnread)?.background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(colorInt)
+            }
+        }
+    }
+
+    private fun showPreviewMode() {
+        binding.scrollView.visibility = View.GONE
+        binding.previewContainer.visibility = View.VISIBLE
+        binding.buttonSave.visibility = View.VISIBLE
+    }
+
+    private fun showPickerMode() {
+        binding.scrollView.visibility = View.VISIBLE
+        binding.previewContainer.visibility = View.GONE
+        binding.buttonSave.visibility = View.GONE
     }
 }
 

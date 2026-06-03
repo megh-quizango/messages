@@ -436,6 +436,8 @@ object ThemeManager {
     }
 
     private fun applyWallpaperToRootIfNeeded(context: Context, view: View) {
+        if (view.tag == "exclude_theme_wallpaper") return
+
         val idName = try {
             if (view.id != View.NO_ID) view.resources.getResourceEntryName(view.id) else null
         } catch (e: Exception) {

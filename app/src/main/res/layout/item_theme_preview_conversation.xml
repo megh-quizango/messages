@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:minHeight="54dp">
+
+    <View
+        android:id="@+id/previewAvatar"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/bg_after_call_avatar_circle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/previewName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="10dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/poppins"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:text="JM-Jambs"
+        android:textColor="#242424"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/previewSnippet"
+        app:layout_constraintEnd_toStartOf="@id/previewTime"
+        app:layout_constraintStart_toEndOf="@id/previewAvatar"
+        app:layout_constraintTop_toTopOf="@id/previewAvatar" />
+
+    <TextView
+        android:id="@+id/previewSnippet"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/poppins"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:text="Safety starts with understanding how devel....."
+        android:textColor="#727272"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@id/previewUnread"
+        app:layout_constraintStart_toEndOf="@id/previewAvatar"
+        app:layout_constraintTop_toBottomOf="@id/previewName" />
+
+    <TextView
+        android:id="@+id/previewTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/poppins"
+        android:includeFontPadding="false"
+        android:text="1min"
+        android:textColor="#747474"
+        android:textSize="12sp"
+        app:layout_constraintBaseline_toBaselineOf="@id/previewName"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/previewUnread"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:background="@drawable/bg_unread_dot"
+        android:fontFamily="@font/poppins"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="1"
+        android:textColor="@color/white"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="@id/previewSnippet"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/previewSnippet" />
+</androidx.constraintlayout.widget.ConstraintLayout>
