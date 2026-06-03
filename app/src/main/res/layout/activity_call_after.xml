@@ -12,171 +12,245 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
-        android:layout_marginTop="6dp"
         android:layout_marginEnd="6dp"
+        android:layout_marginBottom="5dp"
         android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/nativeAdContainer"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintStart_toStartOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/headerSection"
             android:layout_width="match_parent"
-            android:layout_height="88dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
+            android:background="@drawable/bg_caller_round_top"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:background="@drawable/bg_caller_section">
-
-            <TextView
-                android:id="@+id/textContactName"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginStart="108dp"
-                android:layout_marginEnd="16dp"
-                android:ellipsize="end"
-                android:fontFamily="@font/poppins"
-                android:gravity="center_vertical"
-                android:includeFontPadding="false"
-                android:maxLines="1"
-                android:text="@string/unknown_number"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@id/callInfoCard"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="Private Number" />
+            android:paddingBottom="6dp">
 
             <ImageView
                 android:id="@+id/imageAvatar"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_marginStart="28dp"
-                android:elevation="8dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/avatar"
-                android:translationZ="8dp"
-                app:layout_constraintBottom_toTopOf="@id/callInfoCard"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="11dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/caller_ic_user_new"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/callInfoCard" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/textAvatarLetter"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_marginStart="28dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="16dp"
                 android:background="@android:color/transparent"
-                android:elevation="9dp"
                 android:fontFamily="@font/poppins"
                 android:gravity="center"
                 android:includeFontPadding="false"
                 android:textColor="@color/white"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:translationZ="9dp"
                 android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@id/callInfoCard"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/callInfoCard" />
+                app:layout_constraintTop_toTopOf="@id/imageAvatar" />
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/callInfoCard"
+            <TextView
+                android:id="@+id/textContactName"
                 android:layout_width="0dp"
-                android:layout_height="46dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="0dp"
-                app:cardElevation="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="12dp"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:fontFamily="@font/poppins"
+                android:includeFontPadding="false"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:text="@string/unknown_number"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@id/callMetaIcon"
+                app:layout_constraintEnd_toStartOf="@id/popupThemeIcon"
+                app:layout_constraintStart_toEndOf="@id/imageAvatar"
+                app:layout_constraintTop_toTopOf="@id/imageAvatar"
+                tools:text="Private Number" />
+
+            <ImageView
+                android:id="@+id/callMetaIcon"
+                android:layout_width="11dp"
+                android:layout_height="11dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="2dp"
+                android:src="@drawable/ic_incoming_call"
+                app:layout_constraintStart_toEndOf="@id/imageAvatar"
+                app:layout_constraintTop_toBottomOf="@id/textContactName" />
+
+            <TextView
+                android:id="@+id/textCallTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/poppins"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@id/callMetaIcon"
+                app:layout_constraintStart_toEndOf="@id/callMetaIcon"
+                app:layout_constraintTop_toTopOf="@id/callMetaIcon"
+                tools:text="Mon, 10:15 PM" />
+
+            <TextView
+                android:id="@+id/textCallStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/poppins"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@id/textCallTime"
+                app:layout_constraintEnd_toEndOf="@id/textContactName"
+                app:layout_constraintStart_toEndOf="@id/textCallTime"
+                app:layout_constraintTop_toTopOf="@id/textCallTime"
+                tools:text="Incoming 03:24" />
+
+            <TextView
+                android:id="@+id/textCallDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                tools:text="03:24" />
+
+            <ImageButton
+                android:id="@+id/popupThemeIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="32dp"
+                android:background="@android:color/transparent"
+                android:paddingTop="8dp"
+                android:paddingBottom="2dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/callercad_theme_icon_home"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/popupClose"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="2dp"
+                android:alpha="0.5"
+                android:background="@android:color/transparent"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/caller_cross"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/callerButtonGuideline"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.5" />
+
+            <LinearLayout
+                android:id="@+id/callerAppOpen"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/bg_caller_round_button_ripple"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="7dp"
+                app:layout_constraintEnd_toStartOf="@id/callerButtonGuideline"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/imageAvatar">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/caller_ic_gallery" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:fontFamily="@font/poppins"
+                    android:text="@string/callercad_explore"
+                    android:textColor="@color/white"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/callerSetting"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_caller_round_button_ripple"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="7dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/callerButtonGuideline"
+                app:layout_constraintTop_toBottomOf="@id/imageAvatar">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/caller_ic_settings" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:fontFamily="@font/poppins"
+                    android:text="@string/callercad_settings"
+                    android:textColor="@color/white"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/callerDemoGallery"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="10dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/caller_cad_demo_gallery"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="1.0">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingStart="108dp"
-                    android:paddingEnd="16dp">
-
-                    <LinearLayout
-                        android:id="@+id/callMetaRow"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@id/buttonCall"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-
-                        <TextView
-                            android:id="@+id/textCallTime"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:fontFamily="@font/poppins"
-                            android:maxLines="1"
-                            android:textColor="@color/black"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            tools:text="Mon, 10:15 PM" />
-
-                        <View
-                            android:id="@+id/dotSeparator"
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:layout_marginStart="10dp"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/bg_dot_separator" />
-
-                        <TextView
-                            android:id="@+id/textCallStatus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:fontFamily="@font/poppins"
-                            android:maxLines="1"
-                            android:textColor="#8D95A5"
-                            android:textSize="13sp"
-                            tools:text="Incoming 03:24" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/textCallDuration"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:visibility="gone"
-                        tools:text="03:24" />
-
-                    <ImageButton
-                        android:id="@+id/buttonCall"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:background="@android:color/transparent"
-                        android:contentDescription="@string/call_action"
-                        android:padding="0dp"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/dialer"
-                        android:tag="exclude_from_theme_tint"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
+                app:layout_constraintTop_toBottomOf="@id/callerSetting" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
             android:id="@+id/tabBar"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@color/white"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+            android:background="@drawable/bg_caller_round_bottom"
             android:baselineAligned="false"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:elevation="6dp"
-            android:orientation="horizontal">
+            android:elevation="0dp"
+            android:orientation="horizontal"
+            android:weightSum="5">
 
             <LinearLayout
                 android:id="@+id/tabMessages"
@@ -189,22 +263,43 @@
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingTop="9dp"
+                android:paddingBottom="5dp">
+
+                <ImageButton
+                    android:id="@+id/buttonCall"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/call_action"
+                    android:padding="0dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/caller_ic_call"
+                    android:tag="exclude_from_theme_tint" />
 
                 <ImageView
                     android:id="@+id/imageTabMessages"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:alpha="0"
                     android:contentDescription="@string/after_call_tab_messages"
-                    android:padding="2dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/q_list" />
+                    android:src="@drawable/caller_ic_call" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="@font/poppins"
+                    android:gravity="center"
+                    android:text="@string/caller_cad_call"
+                    android:textColor="#606368"
+                    android:textSize="13sp" />
 
                 <View
                     android:id="@+id/indicatorTabMessages"
-                    android:layout_width="62dp"
-                    android:layout_height="3dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
                     android:background="@drawable/bg_after_call_tab_indicator" />
             </LinearLayout>
 
@@ -219,22 +314,33 @@
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingTop="9dp"
+                android:paddingBottom="5dp">
 
                 <ImageView
                     android:id="@+id/imageTabQuickMessages"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
                     android:contentDescription="@string/after_call_tab_quick_messages"
-                    android:padding="2dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/q_message" />
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/caller_ic_message" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="@font/poppins"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="@string/callercad_quick_replies"
+                    android:textColor="#606368"
+                    android:textSize="13sp" />
 
                 <View
                     android:id="@+id/indicatorTabQuickMessages"
-                    android:layout_width="62dp"
-                    android:layout_height="3dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
                     android:background="@drawable/bg_after_call_tab_indicator"
                     android:visibility="invisible" />
             </LinearLayout>
@@ -250,22 +356,32 @@
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingTop="9dp"
+                android:paddingBottom="5dp">
 
                 <ImageView
                     android:id="@+id/imageTabReminders"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:contentDescription="@string/after_call_tab_reminders"
-                    android:padding="2dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/reminder" />
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:contentDescription="@string/save"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/caller_ic_contact" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="@font/poppins"
+                    android:gravity="center"
+                    android:text="@string/save"
+                    android:textColor="#606368"
+                    android:textSize="13sp" />
 
                 <View
                     android:id="@+id/indicatorTabReminders"
-                    android:layout_width="62dp"
-                    android:layout_height="3dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
                     android:background="@drawable/bg_after_call_tab_indicator"
                     android:visibility="invisible" />
             </LinearLayout>
@@ -281,22 +397,32 @@
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingTop="9dp"
+                android:paddingBottom="5dp">
 
                 <ImageView
                     android:id="@+id/imageTabActions"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
                     android:contentDescription="@string/after_call_tab_actions"
-                    android:padding="2dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/more" />
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/caller_ic_more" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="@font/poppins"
+                    android:gravity="center"
+                    android:text="@string/caller_cad_more"
+                    android:textColor="#606368"
+                    android:textSize="13sp" />
 
                 <View
                     android:id="@+id/indicatorTabActions"
-                    android:layout_width="62dp"
-                    android:layout_height="3dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
                     android:background="@drawable/bg_after_call_tab_indicator"
                     android:visibility="invisible" />
             </LinearLayout>
@@ -312,6 +438,7 @@
         android:layout_marginEnd="6dp"
         android:clipChildren="false"
         android:clipToPadding="false"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/nativeAdContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

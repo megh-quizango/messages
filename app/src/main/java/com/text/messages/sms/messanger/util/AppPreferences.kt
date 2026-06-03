@@ -9,6 +9,7 @@ object AppPreferences {
     // Theme preferences
     private const val KEY_THEME_COLOR = "theme_color"
     private const val KEY_THEME_COLOR_LIGHT = "theme_color_light"
+    private const val KEY_THEME_WALLPAPER = "theme_wallpaper"
     private const val DEFAULT_THEME_COLOR = "#0C56CF"
     private const val DEFAULT_THEME_COLOR_LIGHT = "#E6F0FF"
     
@@ -47,6 +48,20 @@ object AppPreferences {
     fun setThemeColorLight(context: Context, color: String) {
         // Use commit() instead of apply() for immediate persistence
         getPrefs(context).edit().putString(KEY_THEME_COLOR_LIGHT, color).commit()
+    }
+
+    fun getThemeWallpaper(context: Context): String? {
+        return getPrefs(context).getString(KEY_THEME_WALLPAPER, null)
+    }
+
+    fun setThemeWallpaper(context: Context, wallpaperName: String?) {
+        val editor = getPrefs(context).edit()
+        if (wallpaperName.isNullOrBlank()) {
+            editor.remove(KEY_THEME_WALLPAPER)
+        } else {
+            editor.putString(KEY_THEME_WALLPAPER, wallpaperName)
+        }
+        editor.commit()
     }
     
     // Bubble methods

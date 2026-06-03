@@ -131,6 +131,8 @@ object ThemeManager {
             val themeColorLightInt = Color.parseColor(themeColorLight)
             val primaryColorInt = Color.parseColor(PRIMARY_COLOR)
             val lightColorInt = Color.parseColor(LIGHT_COLOR)
+
+            applyWallpaperToRootIfNeeded(context, view)
             
             // Handle MaterialCardView cardBackgroundColor
             if (view is MaterialCardView) {
@@ -374,6 +376,14 @@ object ThemeManager {
             if (view is BottomNavigationView) {
                 try {
                     view.setBackgroundColor(Color.TRANSPARENT)
+                    val states = arrayOf(
+                        intArrayOf(android.R.attr.state_checked),
+                        intArrayOf()
+                    )
+                    val colors = intArrayOf(themeColorInt, Color.parseColor("#D3D3D3"))
+                    val navColors = android.content.res.ColorStateList(states, colors)
+                    view.itemIconTintList = navColors
+                    view.itemTextColor = navColors
                     
                     // Also try to apply to background drawable if it exists
                     val background = view.background
@@ -422,6 +432,40 @@ object ThemeManager {
             for (i in 0 until view.childCount) {
                 applyThemeToView(context, view.getChildAt(i), themeColor, themeColorLight)
             }
+        }
+    }
+
+    private fun applyWallpaperToRootIfNeeded(context: Context, view: View) {
+        val idName = try {
+            if (view.id != View.NO_ID) view.resources.getResourceEntryName(view.id) else null
+        } catch (e: Exception) {
+            null
+        }
+        val shouldApply = idName == "root" ||
+            idName == "rootLayout" ||
+            idName == "personalize_coordinator" ||
+            idName == "contentContainer"
+        if (!shouldApply) return
+
+        val currentTag = view.tag as? String
+        val wallpaperName = AppPreferences.getThemeWallpaper(context)
+        if (wallpaperName == null) {
+            if (currentTag?.startsWith("wallpaper_applied:") == true) {
+                view.setBackgroundColor(Color.WHITE)
+                view.tag = null
+            }
+            return
+        }
+        if (currentTag == "wallpaper_applied:$wallpaperName") return
+
+        val wallpaperId = context.resources.getIdentifier(wallpaperName, "drawable", context.packageName)
+        if (wallpaperId == 0) return
+
+        try {
+            view.background = ContextCompat.getDrawable(context, wallpaperId)
+            view.tag = "wallpaper_applied:$wallpaperName"
+        } catch (e: Exception) {
+            // Keep existing background if the resource cannot be applied.
         }
     }
     
