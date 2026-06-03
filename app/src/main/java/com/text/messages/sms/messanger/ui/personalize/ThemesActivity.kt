@@ -8,6 +8,8 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import android.view.View
+import android.widget.FrameLayout
+import android.widget.ImageView
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -40,7 +42,19 @@ class ThemesActivity : BaseActivity() {
             binding.cardThemePurple.id to "#9C27B0",
             binding.cardThemeTeal.id to "#009688",
             binding.cardThemeOrange.id to "#FF9800",
-            binding.cardThemeRed.id to "#F44336"
+            binding.cardThemeRed.id to "#F44336",
+            R.id.cardSeasonSpring to "#43A047",
+            R.id.cardSeasonSummer to "#FF9800",
+            R.id.cardSeasonAutumn to "#E64A19",
+            R.id.cardSeasonWinter to "#03A9F4",
+            R.id.cardCountryChina to "#F44336",
+            R.id.cardCountryEgypt to "#F9A825",
+            R.id.cardCountryEngland to "#1976D2",
+            R.id.cardCountryFrance to "#3F51B5",
+            R.id.cardCountryIndia to "#FF6F00",
+            R.id.cardCountryJapan to "#D81B60",
+            R.id.cardCountryRussia to "#1565C0",
+            R.id.cardCountryUsa to "#0D47A1"
         )
     }
     
@@ -70,6 +84,7 @@ class ThemesActivity : BaseActivity() {
         }
         
         setupBackButton()
+        setupImageThemeTiles()
         setupThemeSelection()
         setupSaveButton()
         
@@ -117,17 +132,92 @@ class ThemesActivity : BaseActivity() {
         
         themeCards.forEach { (card, icon) ->
             card.setOnClickListener {
-                // Hide previous selection
-                selectedIconId?.let { previousIconId ->
-                    findViewById<View>(previousIconId)?.visibility = View.GONE
-                }
-                
-                // Show current selection
+                clearThemeSelection()
                 icon.visibility = View.VISIBLE
                 selectedCardId = card.id
                 selectedIconId = icon.id
             }
         }
+
+        imageThemeCardIds().forEach { cardId ->
+            findViewById<View>(cardId)?.setOnClickListener { card ->
+                clearThemeSelection()
+                setImageThemeSelected(card, true)
+                selectedCardId = card.id
+                selectedIconId = null
+            }
+        }
+    }
+
+    private fun setupImageThemeTiles() {
+        setImageThemeTile(R.id.cardSeasonSpring, R.drawable.sea_1, R.string.spring)
+        setImageThemeTile(R.id.cardSeasonSummer, R.drawable.sea_2, R.string.summer)
+        setImageThemeTile(R.id.cardSeasonAutumn, R.drawable.sea_3, R.string.autumn)
+        setImageThemeTile(R.id.cardSeasonWinter, R.drawable.sea_4, R.string.winter)
+        setImageThemeTile(R.id.cardCountryChina, R.drawable.item_china, R.string.china)
+        setImageThemeTile(R.id.cardCountryEgypt, R.drawable.item_egypt, R.string.egypt)
+        setImageThemeTile(R.id.cardCountryEngland, R.drawable.item_england, R.string.england)
+        setImageThemeTile(R.id.cardCountryFrance, R.drawable.item_france, R.string.france)
+        setImageThemeTile(R.id.cardCountryIndia, R.drawable.item_india, R.string.india)
+        setImageThemeTile(R.id.cardCountryJapan, R.drawable.item_japan, R.string.japan)
+        setImageThemeTile(R.id.cardCountryRussia, R.drawable.item_russia, R.string.russia)
+        setImageThemeTile(R.id.cardCountryUsa, R.drawable.item_usa, R.string.usa)
+    }
+
+    private fun setImageThemeTile(cardId: Int, drawableId: Int, labelId: Int) {
+        val card = findViewById<View>(cardId) ?: return
+        val frame = card.firstChildFrame() ?: return
+        (frame.getChildAt(0) as? ImageView)?.apply {
+            setImageResource(drawableId)
+            contentDescription = getString(labelId)
+        }
+    }
+
+    private fun imageThemeCardIds(): List<Int> = listOf(
+        R.id.cardSeasonSpring,
+        R.id.cardSeasonSummer,
+        R.id.cardSeasonAutumn,
+        R.id.cardSeasonWinter,
+        R.id.cardCountryChina,
+        R.id.cardCountryEgypt,
+        R.id.cardCountryEngland,
+        R.id.cardCountryFrance,
+        R.id.cardCountryIndia,
+        R.id.cardCountryJapan,
+        R.id.cardCountryRussia,
+        R.id.cardCountryUsa
+    )
+
+    private fun clearThemeSelection() {
+        listOf(
+            binding.iconSelectedBlue,
+            binding.iconSelectedGreen,
+            binding.iconSelectedPink,
+            binding.iconSelectedYellow,
+            binding.iconSelectedOral,
+            binding.iconSelectedNavyBlue,
+            binding.iconSelectedCeruleanBlue,
+            binding.iconSelectedBlackBlue,
+            binding.iconSelectedPurple,
+            binding.iconSelectedTeal,
+            binding.iconSelectedOrange,
+            binding.iconSelectedRed
+        ).forEach { it.visibility = View.GONE }
+
+        imageThemeCardIds().forEach { cardId ->
+            findViewById<View>(cardId)?.let { setImageThemeSelected(it, false) }
+        }
+    }
+
+    private fun setImageThemeSelected(card: View, selected: Boolean) {
+        val frame = card.firstChildFrame() ?: return
+        frame.getChildAt(1)?.visibility = if (selected) View.VISIBLE else View.GONE
+        frame.getChildAt(2)?.visibility = if (selected) View.VISIBLE else View.GONE
+    }
+
+    private fun View.firstChildFrame(): FrameLayout? {
+        val group = this as? android.view.ViewGroup ?: return null
+        return group.getChildAt(0) as? FrameLayout
     }
 
     private fun setupSaveButton() {
@@ -248,29 +338,19 @@ class ThemesActivity : BaseActivity() {
             }
             
             if (iconId != null) {
-                // Hide all icons first
-                listOf(
-                    binding.iconSelectedBlue,
-                    binding.iconSelectedGreen,
-                    binding.iconSelectedPink,
-                    binding.iconSelectedYellow,
-                    binding.iconSelectedOral,
-                    binding.iconSelectedNavyBlue,
-                    binding.iconSelectedCeruleanBlue,
-                    binding.iconSelectedBlackBlue,
-                    binding.iconSelectedPurple,
-                    binding.iconSelectedTeal,
-                    binding.iconSelectedOrange,
-                    binding.iconSelectedRed
-                ).forEach { it.visibility = View.GONE }
-                
-                // Show the selected icon
+                clearThemeSelection()
                 findViewById<View>(iconId)?.visibility = View.VISIBLE
                 selectedCardId = cardId
                 selectedIconId = iconId
+            } else if (imageThemeCardIds().contains(cardId)) {
+                clearThemeSelection()
+                findViewById<View>(cardId)?.let { setImageThemeSelected(it, true) }
+                selectedCardId = cardId
+                selectedIconId = null
             }
         } else {
             // If no saved theme or color doesn't match, default to Green
+            clearThemeSelection()
             binding.iconSelectedGreen.visibility = View.VISIBLE
             selectedCardId = binding.cardThemeGreen.id
             selectedIconId = binding.iconSelectedGreen.id

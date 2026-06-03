@@ -36,4 +36,14 @@
     <!-- Custom Blocking Colors -->
     <color name="primary_blue">#0061FD</color>
     <color name="light_blue">#E6F0FF</color>
+    <color name="primary">#0061FD</color>
+    <color name="color_primary">#0061FD</color>
+    <color name="iconColor">#212121</color>
+    <color name="gray">#9696A3</color>
+    <color name="green">#4CAF50</color>
+    <color name="lightgray">#D3D3D3</color>
+    <color name="black_color">#212121</color>
+    <color name="whiteOnlyColor">#FFFFFFFF</color>
+    <color name="theme_preview_surface">#F7F7F7</color>
+    <color name="theme_selected_scrim">#66000000</color>
 </resources>

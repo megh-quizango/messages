@@ -5,12 +5,15 @@
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="#D9000000">
 
     <LinearLayout
         android:id="@+id/stickyTopContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="6dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,9 +23,10 @@
             android:id="@+id/headerSection"
             android:layout_width="match_parent"
             android:layout_height="88dp"
+            android:layout_marginTop="0dp"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:background="@color/primary_blue">
+            android:background="@drawable/bg_caller_section">
 
             <TextView
                 android:id="@+id/textContactName"
@@ -167,7 +171,7 @@
             android:id="@+id/tabBar"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:background="@color/primary_blue"
+            android:background="@color/white"
             android:baselineAligned="false"
             android:clipChildren="false"
             android:clipToPadding="false"
@@ -304,6 +308,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/white"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
         android:clipChildren="false"
         android:clipToPadding="false"
         app:layout_constraintBottom_toTopOf="@id/nativeAdContainer"
@@ -737,7 +743,9 @@
         android:id="@+id/nativeAdContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="0dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="4dp"
         android:background="@drawable/bg_ad_container_full_bleed"
         android:clipChildren="false"
         android:clipToPadding="false"

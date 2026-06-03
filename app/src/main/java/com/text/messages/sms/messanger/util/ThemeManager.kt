@@ -373,9 +373,7 @@ object ThemeManager {
             // Handle BottomNavigationView
             if (view is BottomNavigationView) {
                 try {
-                    // For BottomNavigationView, always apply theme color directly
-                    // since it's typically set via XML with hardcoded color
-                    view.setBackgroundColor(themeColorInt)
+                    view.setBackgroundColor(Color.TRANSPARENT)
                     
                     // Also try to apply to background drawable if it exists
                     val background = view.background

@@ -71,16 +71,14 @@
             <LinearLayout
                 android:id="@+id/gridLayoutClassics"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:weightSum="4">
 
                 <!-- Row 1 -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="92dp"
                     android:orientation="horizontal"
                     android:weightSum="3">
 
@@ -172,8 +170,7 @@
                 <!-- Row 2 -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="92dp"
                     android:orientation="horizontal"
                     android:weightSum="3">
 
@@ -265,8 +262,7 @@
                 <!-- Row 3 -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="92dp"
                     android:orientation="horizontal"
                     android:weightSum="3">
 
@@ -358,8 +354,7 @@
                 <!-- Row 4 -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="92dp"
                     android:orientation="horizontal"
                     android:weightSum="3">
 
@@ -449,6 +444,70 @@
                 </LinearLayout>
 
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/textSeasonsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/SeasonsSeries"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <GridLayout
+                android:id="@+id/gridLayoutSeasons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alignmentMode="alignMargins"
+                android:columnCount="2">
+
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardSeasonSpring" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardSeasonSummer" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardSeasonAutumn" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardSeasonWinter" />
+            </GridLayout>
+
+            <TextView
+                android:id="@+id/textCountryTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/country_series"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <GridLayout
+                android:id="@+id/gridLayoutCountries"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alignmentMode="alignMargins"
+                android:columnCount="2">
+
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardCountryChina" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardCountryEgypt" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardCountryEngland" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardCountryFrance" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardCountryIndia" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardCountryJapan" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardCountryRussia" />
+                <include layout="@layout/item_theme_image_option"
+                    android:id="@+id/cardCountryUsa" />
+            </GridLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
