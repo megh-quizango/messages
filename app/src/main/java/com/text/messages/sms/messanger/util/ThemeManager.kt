@@ -1122,7 +1122,7 @@ object ThemeManager {
         val density = context.resources.displayMetrics.density
         Log.d("ThemeManager", "Theme color: $themeColor, density: $density")
 
-        val thumbSize = (16 * density).toInt()
+        val thumbSize = (18 * density).toInt()
         val trackWidth = (40 * density).toInt()
         val trackHeight = (22 * density).toInt()
         val strokeWidth = (2 * density).toInt()
