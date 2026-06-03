@@ -3,13 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
+    android:minHeight="58dp"
+    android:paddingStart="12dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="0dp"
     android:background="?android:attr/selectableItemBackground">
 
     <FrameLayout
         android:id="@+id/avatarContainer"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -28,7 +32,7 @@
             android:gravity="center"
             android:text="@string/gen_item_conversation_text_1"
             android:textColor="@color/gray_dark"
-            android:textSize="10sp"
+            android:textSize="13sp"
             android:textStyle="normal"
             android:visibility="gone"
             android:elevation="0dp"
@@ -44,7 +48,7 @@
         android:id="@+id/textContactName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="12dp"
         android:layout_marginEnd="8dp"
         android:text="@string/gen_item_conversation_text_2"
         android:textColor="@color/black"
@@ -74,7 +78,7 @@
         android:layout_height="wrap_content"
         android:text="@string/gen_item_conversation_text_4"
         android:textColor="@color/gray_dark"
-        android:textSize="12sp"
+        android:textSize="13sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textContactName" />
 
@@ -88,7 +92,7 @@
         android:ellipsize="end"
         android:text="@string/gen_item_conversation_text_5"
         android:textColor="@color/gray_dark"
-        android:textSize="14sp"
+        android:textSize="13sp"
         app:layout_constraintEnd_toStartOf="@+id/buttonCopyOtpList"
         app:layout_constraintStart_toStartOf="@+id/textContactName"
         app:layout_constraintTop_toBottomOf="@+id/textContactName" />
@@ -142,6 +146,17 @@
         app:iconPadding="4dp"
         app:cornerRadius="50dp"
         android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/textContactName"
+        app:layout_constraintTop_toBottomOf="@+id/textSnippet" />
+
+    <View
+        android:id="@+id/viewConversationDivider"
+        android:layout_width="0dp"
+        android:layout_height="0.5dp"
+        android:layout_marginTop="10dp"
+        android:background="#D0D0D0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/textContactName"
         app:layout_constraintTop_toBottomOf="@+id/textSnippet" />
 

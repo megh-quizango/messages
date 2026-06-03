@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
@@ -9,11 +10,11 @@
     <!-- ================= HEADER (Normal Mode) ================= -->
     <ImageButton
         android:id="@+id/buttonBack"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_back_button"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="6dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_arrow_back"
         android:contentDescription="@string/gen_activity_conversation_detail_content_description_1"
         android:scaleType="centerInside"
@@ -29,7 +30,7 @@
         android:layout_marginEnd="8dp"
         android:text="@string/gen_activity_conversation_detail_text_2"
         android:textColor="@color/black"
-        android:textSize="20sp"
+        android:textSize="17sp"
         android:textStyle="bold"
         android:ellipsize="end"
         android:maxLines="1"
@@ -40,9 +41,9 @@
 
     <ImageButton
         android:id="@+id/imageCall"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="8dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="4dp"
         android:src="@drawable/ic_call"
         android:background="@android:color/transparent"
         android:contentDescription="@string/gen_activity_conversation_detail_content_description_3"
@@ -55,9 +56,9 @@
 
     <ImageButton
         android:id="@+id/imageInfo"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="6dp"
         android:src="@drawable/ic_info"
         android:background="@android:color/transparent"
         android:contentDescription="@string/gen_activity_conversation_detail_content_description_4"
@@ -71,11 +72,11 @@
     <!-- ================= SELECTION MODE HEADER ================= -->
     <ImageButton
         android:id="@+id/buttonCloseSelection"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_back_button"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="6dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_close"
         android:contentDescription="@string/gen_activity_conversation_detail_content_description_5"
         android:scaleType="centerInside"
@@ -92,7 +93,7 @@
         android:layout_marginEnd="8dp"
         android:text="@string/gen_activity_conversation_detail_text_6"
         android:textColor="@color/black"
-        android:textSize="20sp"
+        android:textSize="17sp"
         android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="@id/buttonCloseSelection"
@@ -102,9 +103,9 @@
 
     <ImageButton
         android:id="@+id/imageStar"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="6dp"
         android:src="@drawable/ic_star"
         android:background="@android:color/transparent"
         android:contentDescription="@string/gen_activity_conversation_detail_content_description_7"
@@ -121,8 +122,10 @@
         android:id="@+id/recyclerViewMessages"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="8dp"
-        android:paddingBottom="8dp"
+        android:paddingStart="0dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="12dp"
         android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/buttonBack"
         app:layout_constraintBottom_toTopOf="@id/bannerAdContainer"
@@ -157,7 +160,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="@color/white"
-        android:elevation="4dp"
+        android:elevation="0dp"
         android:minHeight="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -227,17 +230,17 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="8dp"
+            android:paddingStart="6dp"
             android:paddingEnd="8dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp">
+            android:paddingTop="6dp"
+            android:paddingBottom="12dp">
 
             <!-- Attachment Icon -->
             <ImageButton
                 android:id="@+id/imageAttachment"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="4dp"
                 android:src="@drawable/ic_attachment"
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/gen_activity_conversation_detail_content_description_10"
@@ -267,13 +270,13 @@
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
                 android:backgroundTint="@null"
-                android:minHeight="0dp"/>
+                android:minHeight="44dp"/>
 
             <!-- Send Button -->
             <ImageButton
                 android:id="@+id/buttonSend"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 android:layout_marginStart="8dp"
                 android:src="@drawable/ic_send"
                 android:background="@android:color/transparent"
