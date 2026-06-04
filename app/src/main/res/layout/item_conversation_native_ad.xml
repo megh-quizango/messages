@@ -4,13 +4,13 @@
     android:id="@+id/nativeAdView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="76dp"
+    android:minHeight="132dp"
     android:background="?android:attr/selectableItemBackground">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="76dp"
+        android:minHeight="132dp"
         android:paddingStart="12dp"
         android:paddingTop="8dp"
         android:paddingEnd="16dp"
@@ -95,6 +95,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/nativeIconContainer" />
 
+        <com.google.android.gms.ads.nativead.MediaView
+            android:id="@+id/nativeAdMedia"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_rounded_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/nativeAdHeadline"
+            app:layout_constraintTop_toBottomOf="@+id/nativeAdBody" />
+
         <View
             android:id="@+id/viewNativeAdDivider"
             android:layout_width="0dp"
@@ -104,7 +114,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/nativeAdHeadline"
-            app:layout_constraintTop_toBottomOf="@+id/nativeAdBody" />
+            app:layout_constraintTop_toBottomOf="@+id/nativeAdMedia" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.gms.ads.nativead.NativeAdView>
