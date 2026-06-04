@@ -61,7 +61,7 @@
             android:fontFamily="@font/poppins"
             android:gravity="center"
             android:lineSpacingExtra="1dp"
-            android:maxLines="1"
+            android:maxLines="2"
             android:textColor="#1A1A29"
             android:textSize="15sp"
             android:textStyle="bold"
