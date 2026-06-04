@@ -20,6 +20,7 @@ import com.text.messages.sms.messanger.util.PrivateConversationStorage
 import com.text.messages.sms.messanger.util.BlockedConversationStorage
 import com.text.messages.sms.messanger.util.ConversationCache
 import com.text.messages.sms.messanger.util.ConversationStorageParser
+import com.text.messages.sms.messanger.util.DefaultSmsHelper
 import com.text.messages.sms.messanger.util.OtpHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -55,6 +56,12 @@ class MainViewModel : ViewModel() {
     ) {
         // Cancel previous loading job
         currentLoadJob?.cancel()
+
+        if (!DefaultSmsHelper.isDefaultSmsApp(MessagesApp.instance)) {
+            Log.w(TAG, "Skipping conversation load because app is not the default SMS app")
+            _isLoading.postValue(false)
+            return
+        }
         
         // Try cache first if enabled (even if forcing refresh).
         // If forceRefresh=true, we still post cache immediately for instant UI, then load from device.
@@ -100,7 +107,7 @@ class MainViewModel : ViewModel() {
                 }
                 
                 // Only update if job wasn't cancelled
-                if (isActive) {
+                if (isActive && DefaultSmsHelper.isDefaultSmsApp(MessagesApp.instance)) {
                     _conversations.postValue(conversations)
                     // Cache the result (only if no time filter, as time filters are dynamic)
                     if (timeFilter == null) {
@@ -132,7 +139,7 @@ class MainViewModel : ViewModel() {
                     if (!isActive) return@withContext emptyList<Conversation>()
                     loadConversationsFromDevice(category, timeFilter, startDate, endDate)
                 }
-                if (isActive && timeFilter == null) {
+                if (isActive && timeFilter == null && DefaultSmsHelper.isDefaultSmsApp(MessagesApp.instance)) {
                     ConversationCache.cache(category, conversations)
                 }
             } catch (e: Exception) {
@@ -153,6 +160,12 @@ class MainViewModel : ViewModel() {
     ) {
         // Cancel previous filter loading job
         currentFilterLoadJob?.cancel()
+
+        if (!DefaultSmsHelper.isDefaultSmsApp(MessagesApp.instance)) {
+            Log.w(TAG, "Skipping custom filter load because app is not the default SMS app")
+            _isLoading.postValue(false)
+            return
+        }
         
         // Try cache first if enabled (even if forcing refresh).
         // Don't use cache when time filter is active - cache doesn't store time-filtered results.
@@ -189,7 +202,7 @@ class MainViewModel : ViewModel() {
                     loadConversationsForCustomFilterFromDevice(context, filterId, timeFilter, startDate, endDate)
                 }
                 
-                if (isActive) {
+                if (isActive && DefaultSmsHelper.isDefaultSmsApp(MessagesApp.instance)) {
                     _conversations.postValue(conversations)
                     if (timeFilter == null) {
                         ConversationCache.cacheForFilter(filterId, conversations)
@@ -221,7 +234,7 @@ class MainViewModel : ViewModel() {
                     if (!isActive) return@withContext emptyList<Conversation>()
                     loadConversationsForCustomFilterFromDevice(context, filterId, timeFilter, startDate, endDate)
                 }
-                if (isActive && timeFilter == null) {
+                if (isActive && timeFilter == null && DefaultSmsHelper.isDefaultSmsApp(MessagesApp.instance)) {
                     ConversationCache.cacheForFilter(filterId, conversations)
                 }
             } catch (e: Exception) {
@@ -258,12 +271,16 @@ class MainViewModel : ViewModel() {
     fun preloadConversations(category: String = "All") {
         viewModelScope.launch {
             try {
+                if (!DefaultSmsHelper.isDefaultSmsApp(MessagesApp.instance)) {
+                    Log.w(TAG, "Skipping conversation preload because app is not the default SMS app")
+                    return@launch
+                }
                 Log.d(TAG, "Pre-loading conversations for category: $category")
                 val conversations = withContext(Dispatchers.IO) {
                     if (!isActive) return@withContext emptyList<Conversation>()
                     loadConversationsFromDevice(category, null, null, null)
                 }
-                if (isActive) {
+                if (isActive && DefaultSmsHelper.isDefaultSmsApp(MessagesApp.instance)) {
                     ConversationCache.cache(category, conversations)
                     Log.d(TAG, "Pre-loaded ${conversations.size} conversations for category: $category")
                 }
@@ -687,6 +704,10 @@ class MainViewModel : ViewModel() {
         endDate: Long? = null
     ): List<Conversation> {
         Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Starting for filterId: $filterId, timeFilter: $timeFilter")
+        if (!DefaultSmsHelper.isDefaultSmsApp(context)) {
+            Log.w(TAG, "loadConversationsForCustomFilterFromDevice: aborting because app is not the default SMS app")
+            return emptyList()
+        }
         val filter = CustomFilterStorage.getFilter(context, filterId)
         if (filter == null || filter.threadIds.isEmpty()) {
             Log.d(TAG, "loadConversationsForCustomFilterFromDevice: Filter not found or empty")
@@ -811,6 +832,10 @@ class MainViewModel : ViewModel() {
     ): List<Conversation> {
         Log.d(TAG, "loadConversationsFromDevice: Starting for category: $category")
         val context = MessagesApp.instance
+        if (!DefaultSmsHelper.isDefaultSmsApp(context)) {
+            Log.w(TAG, "loadConversationsFromDevice: aborting because app is not the default SMS app")
+            return emptyList()
+        }
         val conversationsMap = mutableMapOf<Long, Conversation>()
         
         // Load deleted conversation IDs from recycle bin
@@ -1444,6 +1469,10 @@ class MainViewModel : ViewModel() {
     fun preCacheAllCategories(context: Context) {
         viewModelScope.launch {
             try {
+                if (!DefaultSmsHelper.isDefaultSmsApp(context)) {
+                    Log.w(TAG, "Skipping category pre-cache because app is not the default SMS app")
+                    return@launch
+                }
                 val categories = listOf("Personal", "OTPs", "Offers", "Transactions")
                 Log.d(TAG, "Starting pre-caching for ${categories.size} categories")
                 
@@ -1457,7 +1486,7 @@ class MainViewModel : ViewModel() {
                                 if (!isActive) return@withContext emptyList<Conversation>()
                                 loadConversationsFromDevice(category, null, null, null)
                             }
-                            if (isActive && conversations.isNotEmpty()) {
+                            if (isActive && conversations.isNotEmpty() && DefaultSmsHelper.isDefaultSmsApp(context)) {
                                 ConversationCache.cache(category, conversations)
                                 Log.d(TAG, "Pre-cached ${conversations.size} conversations for category: $category")
                             }
@@ -1482,6 +1511,10 @@ class MainViewModel : ViewModel() {
     fun preCacheAllCustomFilters(context: Context) {
         viewModelScope.launch {
             try {
+                if (!DefaultSmsHelper.isDefaultSmsApp(context)) {
+                    Log.w(TAG, "Skipping custom filter pre-cache because app is not the default SMS app")
+                    return@launch
+                }
                 val filters = CustomFilterStorage.loadFilters(context)
                 Log.d(TAG, "Starting pre-caching for ${filters.size} custom filters")
                 
@@ -1495,7 +1528,7 @@ class MainViewModel : ViewModel() {
                                 if (!isActive) return@withContext emptyList<Conversation>()
                                 loadConversationsForCustomFilterFromDevice(context, filter.id)
                             }
-                            if (isActive) {
+                            if (isActive && DefaultSmsHelper.isDefaultSmsApp(context)) {
                                 ConversationCache.cacheForFilter(filter.id, conversations)
                                 Log.d(TAG, "Pre-cached ${conversations.size} conversations for filter: ${filter.name} (${filter.id})")
                             }

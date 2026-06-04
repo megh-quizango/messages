@@ -26,6 +26,7 @@ import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
 import com.text.messages.sms.messanger.util.ButtonShimmerAnimator
+import com.text.messages.sms.messanger.util.DefaultSmsHelper
 import com.text.messages.sms.messanger.util.ThemeManager
 
 class DefaultSmsActivity : BaseActivity() {
@@ -42,13 +43,7 @@ class DefaultSmsActivity : BaseActivity() {
         hasLaunchedIntent = false
         
         // Check if app is now default SMS using proper method
-        val isDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val roleManager = getSystemService(RoleManager::class.java)
-            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-        } else {
-            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
-            defaultSmsPackage != null && packageName == defaultSmsPackage
-        }
+        val isDefault = DefaultSmsHelper.isDefaultSmsApp(this)
         
         if (isDefault) {
             getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
@@ -102,15 +97,7 @@ class DefaultSmsActivity : BaseActivity() {
         // IMPORTANT: Check if app is already default SMS BEFORE showing the screen
         // This must be the FIRST check to prevent the activity from appearing
         // Use RoleManager for Android 10+ (more reliable), fallback to Telephony for older versions
-        val isAlreadyDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Android 10+ - Use RoleManager
-            val roleManager = getSystemService(RoleManager::class.java)
-            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-        } else {
-            // Android 9 and below - Use Telephony
-            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
-            defaultSmsPackage != null && packageName == defaultSmsPackage
-        }
+        val isAlreadyDefault = DefaultSmsHelper.isDefaultSmsApp(this)
         
         Log.d("DefaultSmsActivity", "onCreate - isAlreadyDefault: $isAlreadyDefault")
         Log.d("DefaultSmsActivity", "onCreate - isFromSettings: $isFromSettings")
@@ -157,13 +144,7 @@ class DefaultSmsActivity : BaseActivity() {
         
         // If app is already default and we need to request permissions, do it after UI is set up
         if (::binding.isInitialized) {
-            val isDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val roleManager = getSystemService(RoleManager::class.java)
-                roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-            } else {
-                val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
-                defaultSmsPackage != null && packageName == defaultSmsPackage
-            }
+            val isDefault = DefaultSmsHelper.isDefaultSmsApp(this)
             
             if (isDefault && !hasAllRequiredPermissions()) {
                 // Small delay to ensure UI is ready, then request permissions
@@ -176,6 +157,9 @@ class DefaultSmsActivity : BaseActivity() {
     
     override fun onResume() {
         super.onResume()
+        if (!::binding.isInitialized) {
+            return
+        }
         binding.viewSetDefaultShimmer.post {
             buttonShimmerAnimator = ButtonShimmerAnimator.start(
                 binding.viewSetDefaultShimmer,
@@ -188,13 +172,7 @@ class DefaultSmsActivity : BaseActivity() {
             hasLaunchedIntent = false // Reset flag
             
             // Check if app is now default SMS using RoleManager for Android 10+
-            val isDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val roleManager = getSystemService(RoleManager::class.java)
-                roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-            } else {
-                val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
-                defaultSmsPackage != null && packageName == defaultSmsPackage
-            }
+            val isDefault = DefaultSmsHelper.isDefaultSmsApp(this)
             
             if (isDefault) {
                 // Mark default SMS as set
@@ -216,13 +194,7 @@ class DefaultSmsActivity : BaseActivity() {
         }
         
         // Always check in onResume if app became default (e.g., from system settings)
-        val isDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val roleManager = getSystemService(RoleManager::class.java)
-            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-        } else {
-            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
-            defaultSmsPackage != null && packageName == defaultSmsPackage
-        }
+        val isDefault = DefaultSmsHelper.isDefaultSmsApp(this)
         
         if (isDefault) {
             sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
@@ -238,7 +210,9 @@ class DefaultSmsActivity : BaseActivity() {
     }
 
     override fun onPause() {
-        ButtonShimmerAnimator.stop(binding.viewSetDefaultShimmer, buttonShimmerAnimator)
+        if (::binding.isInitialized) {
+            ButtonShimmerAnimator.stop(binding.viewSetDefaultShimmer, buttonShimmerAnimator)
+        }
         buttonShimmerAnimator = null
         super.onPause()
     }
@@ -246,13 +220,7 @@ class DefaultSmsActivity : BaseActivity() {
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
         // Check if app is default SMS before allowing back press
-        val isDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val roleManager = getSystemService(RoleManager::class.java)
-            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-        } else {
-            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
-            defaultSmsPackage != null && packageName == defaultSmsPackage
-        }
+        val isDefault = DefaultSmsHelper.isDefaultSmsApp(this)
         
         // Only allow back press if app is set as default SMS
         if (isDefault) {
@@ -263,13 +231,7 @@ class DefaultSmsActivity : BaseActivity() {
     
     private fun setupButton() {
         // Double-check if already default SMS app (in case state changed)
-        val isAlreadyDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val roleManager = getSystemService(RoleManager::class.java)
-            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-        } else {
-            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
-            defaultSmsPackage != null && packageName == defaultSmsPackage
-        }
+        val isAlreadyDefault = DefaultSmsHelper.isDefaultSmsApp(this)
         
         if (isAlreadyDefault) {
             // App became default - check permissions
@@ -312,13 +274,7 @@ class DefaultSmsActivity : BaseActivity() {
     
     private fun requestDefaultSms() {
         // Check again before launching intent using RoleManager for Android 10+
-        val isAlreadyDefault = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val roleManager = getSystemService(RoleManager::class.java)
-            roleManager.isRoleAvailable(RoleManager.ROLE_SMS) && roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-        } else {
-            val defaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(this)
-            defaultSmsPackage != null && packageName == defaultSmsPackage
-        }
+        val isAlreadyDefault = DefaultSmsHelper.isDefaultSmsApp(this)
         
         if (isAlreadyDefault) {
             // App is already default - check permissions

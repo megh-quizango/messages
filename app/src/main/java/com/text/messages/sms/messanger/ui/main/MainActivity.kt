@@ -40,6 +40,7 @@ import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityMainBinding
 import com.text.messages.sms.messanger.ui.compose.ComposeActivity
 import com.text.messages.sms.messanger.ui.contacts.ContactsActivity
+import com.text.messages.sms.messanger.ui.defaultsms.DefaultSmsActivity
 import com.text.messages.sms.messanger.ui.personalize.PersonalizeActivity
 import com.text.messages.sms.messanger.ui.settings.SettingsActivity
 import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
@@ -64,6 +65,7 @@ import com.text.messages.sms.messanger.observer.SmsContentObserver
 import com.text.messages.sms.messanger.util.ThemeManager
 import com.text.messages.sms.messanger.util.ConversationCache
 import com.text.messages.sms.messanger.util.ConversationStorageParser
+import com.text.messages.sms.messanger.util.DefaultSmsHelper
 import com.text.messages.sms.messanger.MessagesApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -110,6 +112,9 @@ class MainActivity : BaseActivity() {
     private var customTimeFilterStartDate: Long? = null
     private var customTimeFilterEndDate: Long? = null
     private var isSearchExpanded: Boolean = false
+    private var wasDefaultSmsApp: Boolean = false
+    private var isRedirectingToDefaultSmsScreen: Boolean = false
+    private var shouldForceDefaultSmsReload: Boolean = false
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -226,10 +231,12 @@ class MainActivity : BaseActivity() {
         
         // Load manually marked-as-read conversations from SharedPreferences
         loadManuallyMarkedAsReadConversations()
-        
+
         // Request SMS permission and load conversations
         // Use cache first for instant loading
-        checkSmsPermissionAndLoad()
+        if (!handleDefaultSmsState()) {
+            checkSmsPermissionAndLoad()
+        }
         
         // Set Messages as selected initially and apply theme after views are laid out
         binding.bottomNavigationView.post {
@@ -360,6 +367,51 @@ class MainActivity : BaseActivity() {
             Log.w(TAG, "Could not register MMS ContentObserver", e)
         }
         Log.d(TAG, "SMS and MMS ContentObserver registered for all URIs")
+    }
+
+    private fun handleDefaultSmsState(): Boolean {
+        val isDefaultSmsApp = DefaultSmsHelper.isDefaultSmsApp(this)
+        if (!isDefaultSmsApp) {
+            wasDefaultSmsApp = false
+            shouldForceDefaultSmsReload = true
+            getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
+                .edit()
+                .putBoolean("IS_DEFAULT_SMS_SET", false)
+                .apply()
+
+            if (::viewModel.isInitialized) {
+                viewModel.cancelLoading()
+            }
+            ConversationCache.clear()
+            hasPreCachedCategories = false
+            hasPreCachedFilters = false
+            (application as MessagesApp).isMainReady = false
+
+            if (!isRedirectingToDefaultSmsScreen) {
+                isRedirectingToDefaultSmsScreen = true
+                startActivity(
+                    Intent(this, DefaultSmsActivity::class.java)
+                        .putExtra("from_settings", true)
+                        .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                )
+            }
+            return true
+        }
+
+        isRedirectingToDefaultSmsScreen = false
+        getSharedPreferences("MessagesPrefs", MODE_PRIVATE)
+            .edit()
+            .putBoolean("IS_DEFAULT_SMS_SET", true)
+            .apply()
+
+        if (!wasDefaultSmsApp) {
+            ConversationCache.clear()
+            hasPreCachedCategories = false
+            hasPreCachedFilters = false
+            shouldForceDefaultSmsReload = true
+        }
+        wasDefaultSmsApp = true
+        return false
     }
     
     private fun registerThemeChangeReceiver() {
@@ -772,6 +824,10 @@ class MainActivity : BaseActivity() {
     }
     
     private fun checkSmsPermissionAndLoad() {
+        if (handleDefaultSmsState()) {
+            return
+        }
+
         when {
             ContextCompat.checkSelfPermission(
                 this,
@@ -2077,6 +2133,14 @@ class MainActivity : BaseActivity() {
         super.onResume()
         Log.d(TAG, "=== MainActivity.onResume() ===")
         Log.d(TAG, "MainActivity.onResume(): Current RecyclerView visibility: ${if (::binding.isInitialized) binding.recyclerViewConversations.visibility else "binding not initialized"}")
+
+        if (::binding.isInitialized && handleDefaultSmsState()) {
+            isActivityResumed = false
+            binding.recyclerViewConversations.visibility = View.GONE
+            binding.layoutEmptyState.visibility = View.GONE
+            hideShimmer()
+            return
+        }
         
         // Mark activity as resumed - allows recycler view updates
         isActivityResumed = true
@@ -2102,7 +2166,12 @@ class MainActivity : BaseActivity() {
             
             Log.d(TAG, "MainActivity.onResume(): currentList.size=${currentList.size}, hasRealConversations=$hasRealConversations, isEmpty=$isEmpty, isLoading=$isLoading")
             
-            if (!isLoading) {
+            if (shouldForceDefaultSmsReload) {
+                showShimmer()
+                binding.recyclerViewConversations.visibility = View.GONE
+                binding.layoutEmptyState.visibility = View.GONE
+                Log.d(TAG, "MainActivity.onResume(): Default SMS restored, showing shimmer until forced reload completes")
+            } else if (!isLoading) {
                 // Not loading - show RecyclerView or empty state
                 if (isEmpty) {
                     binding.layoutEmptyState.visibility = View.VISIBLE
@@ -2127,6 +2196,8 @@ class MainActivity : BaseActivity() {
         
         // Refresh the list to ensure it's up to date if there were changes while in background
         // Check if cache was invalidated (e.g., after restoring a conversation) and force refresh if needed
+        val forceDefaultSmsReload = shouldForceDefaultSmsReload
+        shouldForceDefaultSmsReload = false
         val filterId = selectedTab?.tag as? String
         val category = if (filterId != null && customFilterTabs.containsKey(filterId)) {
             null
@@ -2142,8 +2213,8 @@ class MainActivity : BaseActivity() {
         }
         
         if (category != null) {
-            val cached = com.text.messages.sms.messanger.util.ConversationCache.getCached(category)
-            if (cached == null || currentTimeFilter != null) {
+            val cached = if (forceDefaultSmsReload) null else com.text.messages.sms.messanger.util.ConversationCache.getCached(category)
+            if (forceDefaultSmsReload || cached == null || currentTimeFilter != null) {
                 Log.d(TAG, "MainActivity.onResume(): Cache invalidated for '$category' or time filter active, forcing full refresh")
                 viewModel.loadConversations(
                     category,
@@ -2166,8 +2237,8 @@ class MainActivity : BaseActivity() {
                 )
             }
         } else if (filterId != null) {
-            val cached = com.text.messages.sms.messanger.util.ConversationCache.getCachedForFilter(filterId)
-            if (cached == null || currentTimeFilter != null) {
+            val cached = if (forceDefaultSmsReload) null else com.text.messages.sms.messanger.util.ConversationCache.getCachedForFilter(filterId)
+            if (forceDefaultSmsReload || cached == null || currentTimeFilter != null) {
                 Log.d(TAG, "MainActivity.onResume(): Cache invalidated for filter '$filterId' or time filter active, forcing full refresh")
                 viewModel.loadConversationsForCustomFilter(
                     this,
@@ -2252,6 +2323,12 @@ class MainActivity : BaseActivity() {
             Log.d(TAG, "observeConversations: Received ${newConversations.size} conversations, currentCustomFilterId=$currentCustomFilterId")
             Log.d(TAG, "observeConversations: isActivityResumed=$isActivityResumed, adapter initialized=${::adapter.isInitialized}")
             Log.d(TAG, "observeConversations: RecyclerView visibility=${if (::binding.isInitialized) binding.recyclerViewConversations.visibility else "binding not initialized"}")
+
+            if (!DefaultSmsHelper.isDefaultSmsApp(this)) {
+                Log.w(TAG, "observeConversations: Ignoring update because app is not the default SMS app")
+                viewModel.clearLoadingState()
+                return@observe
+            }
             
             // Store all conversations for search filtering (always update in background)
             allConversations = newConversations
