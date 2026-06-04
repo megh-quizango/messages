@@ -28,6 +28,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -52,10 +53,12 @@ import com.text.messages.sms.messanger.data.model.Conversation
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
+import com.text.messages.sms.messanger.ui.personalize.ThemesActivity
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AfterCallAdPreloader
 import com.text.messages.sms.messanger.util.AfterCallNotificationHelper
+import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.CallAfterLauncher
 import com.text.messages.sms.messanger.util.ConversationCache
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
@@ -90,6 +93,13 @@ class CallAfterActivity : BaseActivity() {
 
     private val viewModel: CallAfterViewModel by viewModels()
 
+    private lateinit var rootLayout: ConstraintLayout
+    private lateinit var stickyTopContainer: LinearLayout
+    private lateinit var headerSection: View
+    private lateinit var callerAppOpen: View
+    private lateinit var callerSetting: View
+    private lateinit var textCallerViewMore: View
+    private lateinit var callerDemoGallery: View
     private lateinit var imageAvatar: ImageView
     private lateinit var textAvatarLetter: TextView
     private lateinit var textContactName: TextView
@@ -206,6 +216,13 @@ class CallAfterActivity : BaseActivity() {
         loadNativeAd()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::headerSection.isInitialized) {
+            applyCallerCardTheme()
+        }
+    }
+
     private fun extractIntentExtras() {
         callerNumber =
             intent.getStringExtra(CallAfterLauncher.EXTRA_CALLER_NUMBER)
@@ -259,6 +276,13 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun initViews() {
+        rootLayout = findViewById(R.id.rootLayout)
+        stickyTopContainer = findViewById(R.id.stickyTopContainer)
+        headerSection = findViewById(R.id.headerSection)
+        callerAppOpen = findViewById(R.id.callerAppOpen)
+        callerSetting = findViewById(R.id.callerSetting)
+        textCallerViewMore = findViewById(R.id.textCallerViewMore)
+        callerDemoGallery = findViewById(R.id.callerDemoGallery)
         imageAvatar = findViewById(R.id.imageAvatar)
         textAvatarLetter = findViewById(R.id.textAvatarLetter)
         textContactName = findViewById(R.id.textContactName)
@@ -320,6 +344,7 @@ class CallAfterActivity : BaseActivity() {
 
     private fun setupUI() {
         displayCallInfo()
+        applyCallerCardTheme()
         setupTabs()
         setupRecentMessages()
         setupQuickResponses()
@@ -359,6 +384,58 @@ class CallAfterActivity : BaseActivity() {
         val seconds = totalSeconds % 60
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
+
+    private fun applyCallerCardTheme() {
+        val themeColor = parseThemeColor(AppPreferences.getThemeColor(this), Color.parseColor("#347F80"))
+        val darkerColor = darkenColor(themeColor, 0.42f)
+        headerSection.background = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(themeColor, darkerColor)
+        ).apply {
+            val radius = 6f * resources.displayMetrics.density
+            cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
+        }
+        listOf(callerAppOpen, callerSetting).forEach { view ->
+            view.background = GradientDrawable().apply {
+                setColor(themeColor)
+                cornerRadius = 6f * resources.displayMetrics.density
+            }
+        }
+        textCallerViewMore.background = GradientDrawable().apply {
+            setColor(themeColor)
+            cornerRadius = 22f * resources.displayMetrics.density
+        }
+        if (viewModel.contactInfo.value?.photoUri.isNullOrBlank()) {
+            applyDefaultCallerAvatar(themeColor)
+        }
+    }
+
+    private fun applyDefaultCallerAvatar(themeColor: Int = parseThemeColor(AppPreferences.getThemeColor(this), Color.parseColor("#347F80"))) {
+        imageAvatar.visibility = View.VISIBLE
+        imageAvatar.background = ContextCompat.getDrawable(this, R.drawable.bg_caller_avatar_circle)
+        imageAvatar.setImageResource(R.drawable.ic_caller_avatar_person)
+        imageAvatar.imageTintList = ColorStateList.valueOf(themeColor)
+        imageAvatar.scaleType = ImageView.ScaleType.CENTER
+        imageAvatar.setPadding(9.dpToPx(), 9.dpToPx(), 9.dpToPx(), 9.dpToPx())
+    }
+
+    private fun parseThemeColor(value: String?, fallback: Int): Int {
+        return try {
+            Color.parseColor(value)
+        } catch (e: Exception) {
+            fallback
+        }
+    }
+
+    private fun darkenColor(color: Int, factor: Float): Int {
+        return Color.rgb(
+            (Color.red(color) * factor).toInt().coerceIn(0, 255),
+            (Color.green(color) * factor).toInt().coerceIn(0, 255),
+            (Color.blue(color) * factor).toInt().coerceIn(0, 255)
+        )
+    }
+
+    private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
 
     private fun setupTabs() {
         tabMessages.setOnClickListener {
@@ -477,6 +554,42 @@ class CallAfterActivity : BaseActivity() {
             if (!isDebounced()) return@setOnClickListener
             makeCall()
         }
+        findViewById<View>(R.id.popupClose).setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            finish()
+        }
+        findViewById<View>(R.id.popupThemeIcon).setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            openThemeSelection()
+        }
+        callerAppOpen.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            openCurrentApp()
+        }
+        callerSetting.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            openCallerSettings()
+        }
+        textCallerViewMore.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            openCurrentApp()
+        }
+        callerDemoGallery.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            openCurrentApp()
+        }
+    }
+
+    private fun openThemeSelection() {
+        startActivity(Intent(this, ThemesActivity::class.java))
+    }
+
+    private fun openCallerSettings() {
+        startActivity(Intent(this, CallerSettingsActivity::class.java))
+    }
+
+    private fun openCurrentApp() {
+        navigateToMainActivity()
     }
 
     private fun sendQuickMessage(message: String) {
@@ -763,9 +876,13 @@ class CallAfterActivity : BaseActivity() {
             textContactName.text = info.name ?: if (info.number.isNotBlank()) info.number else getString(R.string.unknown_number)
             textAvatarLetter.visibility = View.GONE
             imageAvatar.visibility = View.VISIBLE
-            imageAvatar.clearColorFilter()
 
             if (!info.photoUri.isNullOrBlank()) {
+                imageAvatar.background = null
+                imageAvatar.imageTintList = null
+                imageAvatar.clearColorFilter()
+                imageAvatar.scaleType = ImageView.ScaleType.CENTER_CROP
+                imageAvatar.setPadding(0, 0, 0, 0)
                 Picasso.get()
                     .load(Uri.parse(info.photoUri))
                     .placeholder(R.drawable.avatar)
@@ -774,7 +891,7 @@ class CallAfterActivity : BaseActivity() {
                     .centerInside()
                     .into(imageAvatar)
             } else {
-                imageAvatar.setImageResource(R.drawable.avatar)
+                applyDefaultCallerAvatar()
             }
         }
     }
@@ -1253,6 +1370,7 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun showAfterCallAdLoading() {
+        setAfterCallAdSlotVisible(true)
         nativeAdView.visibility = View.GONE
         adaptiveBannerView?.visibility = View.GONE
         AdLoadingShimmerHelper.showNativeLoading(
@@ -1277,6 +1395,7 @@ class CallAfterActivity : BaseActivity() {
             nativeAdView.visibility = View.GONE
             adaptiveBannerView?.visibility = View.GONE
             AdLoadingShimmerHelper.hideNative(nativeAdContainer, nativeAdView)
+            setAfterCallAdSlotVisible(false)
             return
         }
 
@@ -1311,6 +1430,7 @@ class CallAfterActivity : BaseActivity() {
                         )
                     }
                     nativeAdView.visibility = View.GONE
+                    setAfterCallAdSlotVisible(true)
                     AdLoadingShimmerHelper.showNativeContent(nativeAdContainer, bannerView)
                     AnalyticsHelper.logAdLoad("banner", bannerAdUnitId, true)
                 }
@@ -1319,6 +1439,7 @@ class CallAfterActivity : BaseActivity() {
                     nativeAdView.visibility = View.GONE
                     bannerView.visibility = View.GONE
                     AdLoadingShimmerHelper.hideNative(nativeAdContainer, bannerView)
+                    setAfterCallAdSlotVisible(false)
                     AnalyticsHelper.logAdLoad("banner", bannerAdUnitId, false)
                     AnalyticsHelper.logAdError("banner", bannerAdUnitId, loadAdError.code.toString())
                 }
@@ -1376,6 +1497,7 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun populateNativeAdView(nativeAd: NativeAd) {
+        setAfterCallAdSlotVisible(true)
         val mediaView = nativeAdView.findViewById<MediaView>(R.id.adMedia)
         nativeAdView.mediaView = mediaView
         mediaView.mediaContent = nativeAd.mediaContent
@@ -1399,6 +1521,33 @@ class CallAfterActivity : BaseActivity() {
 
         nativeAdView.setNativeAd(nativeAd)
         AdLoadingShimmerHelper.showNativeContent(nativeAdContainer, nativeAdView)
+    }
+
+    private fun setAfterCallAdSlotVisible(visible: Boolean) {
+        val stickyParams = stickyTopContainer.layoutParams as? ConstraintLayout.LayoutParams ?: return
+        val contentParams = contentContainer.layoutParams as? ConstraintLayout.LayoutParams
+
+        if (visible) {
+            nativeAdContainer.visibility = View.VISIBLE
+            stickyParams.topToTop = ConstraintLayout.LayoutParams.UNSET
+            stickyParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+            stickyParams.bottomToTop = R.id.nativeAdContainer
+            stickyParams.verticalBias = 0.5f
+            contentParams?.bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+            contentParams?.bottomToTop = R.id.nativeAdContainer
+        } else {
+            nativeAdContainer.visibility = View.GONE
+            stickyParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            stickyParams.bottomToTop = ConstraintLayout.LayoutParams.UNSET
+            stickyParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            stickyParams.verticalBias = 0.62f
+            contentParams?.bottomToTop = ConstraintLayout.LayoutParams.UNSET
+            contentParams?.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+        }
+
+        stickyTopContainer.layoutParams = stickyParams
+        contentParams?.let { contentContainer.layoutParams = it }
+        rootLayout.requestLayout()
     }
 
     override fun onDestroy() {

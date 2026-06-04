@@ -1,17 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout 
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/loutMain"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="end"
-    android:orientation="vertical"
-    android:focusable="false"
-    android:focusableInTouchMode="false"
-    android:background="@android:color/transparent">
+    android:background="@android:color/transparent"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
 
-    <!-- Overlay content can be customized here -->
-    <!-- This is a minimal overlay window that can be expanded with UI components -->
-    
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/callerCadOverlayBg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_caller_overlay_card"
+        android:paddingStart="10dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="10dp">
+
+        <ImageView
+            android:id="@+id/overlayAvatar"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@drawable/bg_caller_avatar_circle"
+            android:padding="9dp"
+            android:scaleType="center"
+            android:src="@drawable/ic_caller_avatar_person"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/overlayName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="28dp"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
+            android:text="@string/unknown_number"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/overlayAvatar"
+            app:layout_constraintEnd_toStartOf="@id/overlayClose"
+            app:layout_constraintStart_toEndOf="@id/overlayAvatar"
+            app:layout_constraintTop_toTopOf="@id/overlayAvatar" />
+
+        <ImageButton
+            android:id="@+id/overlayClose"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:alpha="0.45"
+            android:background="@android:color/transparent"
+            android:padding="7dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/caller_cross"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/overlayDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/overlayAvatar" />
+
+        <LinearLayout
+            android:id="@+id/overlayAppLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="@id/overlayDuration"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/overlayDuration">
+
+            <ImageView
+                android:id="@+id/overlayAppIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@string/callercad_app_name"
+                android:src="@mipmap/ic_launcher" />
+
+            <TextView
+                android:id="@+id/overlayAppName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="@font/poppins"
+                android:includeFontPadding="false"
+                android:text="@string/callercad_app_name"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
-

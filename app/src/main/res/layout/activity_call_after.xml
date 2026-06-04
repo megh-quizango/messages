@@ -267,7 +267,7 @@
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/callercad_app_name"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/caller_messages_app_icon"
+                    android:src="@mipmap/ic_launcher"
                     android:tag="exclude_from_theme_tint"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"

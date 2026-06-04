@@ -3,7 +3,6 @@ package com.text.messages.sms.messanger.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -49,6 +48,9 @@ class CallReceiver : BroadcastReceiver() {
                 val number = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER)
                 CallStateTracker.onOutgoingCall(number)
                 AfterCallAdPreloader.preloadIfNeeded(context)
+                if (shouldShowInCallOverlay(context)) {
+                    showInCallOverlay(context)
+                }
             }
 
             TelephonyManager.ACTION_PHONE_STATE_CHANGED -> {
@@ -76,7 +78,7 @@ class CallReceiver : BroadcastReceiver() {
             TelephonyManager.EXTRA_STATE_OFFHOOK -> {
                 CallStateTracker.onOffhook(incomingNumber)
                 AfterCallAdPreloader.preloadIfNeeded(context)
-                if (CallStateTracker.isIncoming && shouldShowInCallOverlay(context)) {
+                if (shouldShowInCallOverlay(context)) {
                     showInCallOverlay(context)
                 }
             }
@@ -117,16 +119,6 @@ class CallReceiver : BroadcastReceiver() {
     }
 
     private fun shouldShowInCallOverlay(context: Context): Boolean {
-        if (!Settings.canDrawOverlays(context)) return false
-        return isAggressiveOemDevice()
-    }
-
-    private fun isAggressiveOemDevice(): Boolean {
-        val brand = Build.BRAND.lowercase()
-        val manufacturer = Build.MANUFACTURER.lowercase()
-        val oems = listOf(
-            "xiaomi", "redmi", "poco", "oppo", "vivo", "oneplus", "realme", "huawei", "honor"
-        )
-        return oems.any { brand.contains(it) || manufacturer.contains(it) }
+        return Settings.canDrawOverlays(context)
     }
 }
