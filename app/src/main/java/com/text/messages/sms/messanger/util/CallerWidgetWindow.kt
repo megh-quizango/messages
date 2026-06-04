@@ -95,8 +95,10 @@ class CallerWidgetWindow(private val context: Context) {
 
     private fun updateContent() {
         val bound = binding ?: return
-        val themeColor = parseColor(AppPreferences.getThemeColor(context), Color.parseColor("#347F80"))
-        val darkerThemeColor = darkenColor(themeColor, 0.42f)
+        val callerTheme = AppPreferences.getCallerTheme(context)
+        val themeColor = parseColor(callerTheme.topColor, Color.parseColor("#479DA2"))
+        val darkerThemeColor = parseColor(callerTheme.bottomColor, Color.parseColor("#034D57"))
+        val buttonColor = parseColor(callerTheme.buttonColor, Color.parseColor("#469CA1"))
         bound.callerCadOverlayBg.background = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(themeColor, darkerThemeColor)
@@ -104,7 +106,7 @@ class CallerWidgetWindow(private val context: Context) {
             cornerRadius = dp(6).toFloat()
             setStroke(dp(1), Color.parseColor("#D4D4D4"))
         }
-        bound.overlayAvatar.imageTintList = ColorStateList.valueOf(themeColor)
+        bound.overlayAvatar.imageTintList = ColorStateList.valueOf(buttonColor)
         bound.overlayName.text = resolveCallerDisplayName()
         bound.overlayClose.setOnClickListener { hide() }
         bound.overlayAppLink.setOnClickListener { openApp() }
@@ -168,14 +170,6 @@ class CallerWidgetWindow(private val context: Context) {
         } catch (e: Exception) {
             fallback
         }
-    }
-
-    private fun darkenColor(color: Int, factor: Float): Int {
-        return Color.rgb(
-            (Color.red(color) * factor).toInt().coerceIn(0, 255),
-            (Color.green(color) * factor).toInt().coerceIn(0, 255),
-            (Color.blue(color) * factor).toInt().coerceIn(0, 255)
-        )
     }
 
     private fun dp(value: Int): Int {
