@@ -53,6 +53,7 @@ import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AdConfig
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
+import com.text.messages.sms.messanger.util.MainConversationInlineNativeAdManager
 import android.provider.Telephony
 import android.content.ContentValues
 import android.net.Uri
@@ -762,6 +763,7 @@ class MainActivity : BaseActivity() {
         // Cancel loading indicator handler
         loadingIndicatorHandler?.removeCallbacksAndMessages(null)
         loadingIndicatorRunnable = null
+        MainConversationInlineNativeAdManager.destroy()
         exitNativeAd?.destroy()
         exitNativeAd = null
         exitAdaptiveBannerView?.destroy()
@@ -1073,6 +1075,7 @@ class MainActivity : BaseActivity() {
         
         binding.recyclerViewConversations.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewConversations.adapter = adapter
+        loadMainConversationInlineNativeAds()
 
         // Setup scroll listener to shrink/extend FAB
         binding.recyclerViewConversations.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
@@ -1106,6 +1109,15 @@ class MainActivity : BaseActivity() {
         }
         val itemTouchHelper = ItemTouchHelper(swipeHelper)
         itemTouchHelper.attachToRecyclerView(binding.recyclerViewConversations)
+    }
+
+    private fun loadMainConversationInlineNativeAds() {
+        MainConversationInlineNativeAdManager.load(this) {
+            if (::adapter.isInitialized) {
+                adapter.setInlineNativeAds(MainConversationInlineNativeAdManager.getAds())
+            }
+        }
+        adapter.setInlineNativeAds(MainConversationInlineNativeAdManager.getAds())
     }
     
     private fun setupSearch() {

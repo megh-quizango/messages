@@ -14,6 +14,7 @@ object RemoteConfigHelper {
     // Leave ad unit defaults blank so ad loaders only use fetched/cached Remote Config values.
     private const val DEFAULT_BANNER_AD_UNIT_ID = ""
     private const val DEFAULT_NATIVE_AD_UNIT_ID = ""
+    private const val DEFAULT_MAIN_CONVERSATION_INLINE_NATIVE_AD_UNIT_ID = "ca-app-pub-9014156375881181/9197978560"
     private const val DEFAULT_NATIVE_VIDEO_AD_UNIT_ID = ""
     private const val DEFAULT_APP_OPEN_AD_UNIT_ID = ""
     private const val DEFAULT_APP_OPEN_RESUME_AD_UNIT_ID = ""
@@ -41,6 +42,7 @@ object RemoteConfigHelper {
     // Remote Config keys
     private const val KEY_BANNER_AD_UNIT_ID = "banner_ad_unit_id"
     private const val KEY_NATIVE_AD_UNIT_ID = "native_ad_unit_id"
+    private const val KEY_MAIN_CONVERSATION_INLINE_NATIVE_AD_UNIT_ID = "main_conversation_inline_native_ad_unit_id"
     private const val KEY_AFTER_CALL_NATIVE_AD_UNIT_ID = "after_call_native_ad_unit_id"
     private const val KEY_AFTER_CALL_ADAPTIVE_BANNER_AD_UNIT_ID = "after_call_adaptive_banner_ad_unit_id"
     private const val KEY_AFTER_CALL_ADAPTIVE_BANNER_ONLY = "after_call_adaptive_banner_only"
@@ -79,6 +81,7 @@ object RemoteConfigHelper {
         val defaultValues = mapOf(
             KEY_BANNER_AD_UNIT_ID to DEFAULT_BANNER_AD_UNIT_ID,
             KEY_NATIVE_AD_UNIT_ID to DEFAULT_NATIVE_AD_UNIT_ID,
+            KEY_MAIN_CONVERSATION_INLINE_NATIVE_AD_UNIT_ID to DEFAULT_MAIN_CONVERSATION_INLINE_NATIVE_AD_UNIT_ID,
             KEY_NATIVE_VIDEO_AD_UNIT_ID to DEFAULT_NATIVE_VIDEO_AD_UNIT_ID,
             KEY_APP_OPEN_AD_UNIT_ID to DEFAULT_APP_OPEN_AD_UNIT_ID,
             KEY_APP_OPEN_RESUME_AD_UNIT_ID to DEFAULT_APP_OPEN_RESUME_AD_UNIT_ID,
@@ -133,6 +136,13 @@ object RemoteConfigHelper {
         val config = remoteConfig ?: return DEFAULT_NATIVE_AD_UNIT_ID
         val adUnitId = config.getString(KEY_NATIVE_AD_UNIT_ID).trim()
         return if (adUnitId.isBlank()) DEFAULT_NATIVE_AD_UNIT_ID else adUnitId
+    }
+
+    /** Inline native rows in the main conversation list (Firebase key: main_conversation_inline_native_ad_unit_id). */
+    fun getMainConversationInlineNativeAdUnitId(): String {
+        val config = remoteConfig ?: return DEFAULT_MAIN_CONVERSATION_INLINE_NATIVE_AD_UNIT_ID
+        val adUnitId = config.getString(KEY_MAIN_CONVERSATION_INLINE_NATIVE_AD_UNIT_ID).trim()
+        return if (adUnitId.isBlank()) DEFAULT_MAIN_CONVERSATION_INLINE_NATIVE_AD_UNIT_ID else adUnitId
     }
 
     /** Dedicated native unit for the after-call screen (Firebase key: after_call_native_ad_unit_id). */

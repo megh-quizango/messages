@@ -1,5 +1,9 @@
 package com.text.messages.sms.messanger.ui.main
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -7,20 +11,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdView
 import com.google.android.material.button.MaterialButton
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.data.model.Conversation
+import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.AvatarHelper
 import com.text.messages.sms.messanger.util.OtpHelper
-import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.SimHelper
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.graphics.Color
-import android.widget.Toast
+import com.text.messages.sms.messanger.util.ThemeManager
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +38,7 @@ import java.util.Locale
 class ConversationAdapter(
     private val onConversationClick: (Conversation) -> Unit,
     private val onConversationLongClick: ((Conversation) -> Unit)? = null
-) : ListAdapter<Conversation, ConversationAdapter.ConversationViewHolder>(ConversationDiffCallback()) {
+) : ListAdapter<Conversation, RecyclerView.ViewHolder>(ConversationDiffCallback()) {
 
     constructor(onConversationClick: (Conversation) -> Unit) : this(
         onConversationClick = onConversationClick,
@@ -43,10 +47,14 @@ class ConversationAdapter(
     
     companion object {
         private const val TAG = "ConversationAdapter"
+        private const val VIEW_TYPE_CONVERSATION = 0
+        private const val VIEW_TYPE_NATIVE_AD = 1
+        private val INLINE_NATIVE_REAL_POSITIONS = intArrayOf(2, 6)
         private val SELECTED_BG_COLOR: Int = Color.parseColor("#E6F0FF")
     }
 
     private var selectedThreadId: Long? = null
+    private var inlineNativeAds: List<NativeAd?> = emptyList()
 
     fun setSelectedThreadId(threadId: Long?) {
         val previous = selectedThreadId
@@ -57,48 +65,171 @@ class ConversationAdapter(
         // Try to update only the affected rows
         previous?.let { prevId ->
             val prevPos = currentList.indexOfFirst { it.threadId == prevId }
-            if (prevPos >= 0) notifyItemChanged(prevPos)
+            if (prevPos >= 0) notifyItemChanged(adapterPositionForConversationPosition(prevPos))
         }
         threadId?.let { newId ->
             val newPos = currentList.indexOfFirst { it.threadId == newId }
-            if (newPos >= 0) notifyItemChanged(newPos)
+            if (newPos >= 0) notifyItemChanged(adapterPositionForConversationPosition(newPos))
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_conversation, parent, false)
-        return ConversationViewHolder(view)
+    fun setInlineNativeAds(ads: List<NativeAd?>) {
+        inlineNativeAds = ads
+        notifyDataSetChanged()
     }
 
-    override fun onBindViewHolder(holder: ConversationViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    fun refreshInlineNativeAds() {
+        notifyDataSetChanged()
+    }
+
+    override fun getItemCount(): Int {
+        return super.getItemCount() + activeInlineNativeSlots().size
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (nativeSlotIndexForAdapterPosition(position) >= 0) {
+            VIEW_TYPE_NATIVE_AD
+        } else {
+            VIEW_TYPE_CONVERSATION
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == VIEW_TYPE_NATIVE_AD) {
+            NativeAdViewHolder(inflater.inflate(R.layout.item_conversation_native_ad, parent, false))
+        } else {
+            ConversationViewHolder(inflater.inflate(R.layout.item_conversation, parent, false))
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (holder) {
+            is NativeAdViewHolder -> {
+                val slotIndex = nativeSlotIndexForAdapterPosition(position)
+                inlineNativeAds.getOrNull(slotIndex)?.let(holder::bind)
+            }
+            is ConversationViewHolder -> holder.bind(getItem(conversationPositionForAdapterPosition(position)))
+        }
     }
     
-    override fun onViewRecycled(holder: ConversationViewHolder) {
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
         super.onViewRecycled(holder)
         // Cancel any pending image loads when view is recycled
-        holder.cancelPendingLoads()
+        (holder as? ConversationViewHolder)?.cancelPendingLoads()
     }
     
-    override fun onBindViewHolder(holder: ConversationViewHolder, position: Int, payloads: MutableList<Any>) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (holder is NativeAdViewHolder) {
+            onBindViewHolder(holder, position)
+            return
+        }
+
         if (payloads.isEmpty()) {
             // No payload, bind normally
             super.onBindViewHolder(holder, position, payloads)
         } else {
             // Partial update - only update the views that changed
-            val conversation = getItem(position)
+            val conversation = getItem(conversationPositionForAdapterPosition(position))
             val payload = payloads[0] as? Set<*>
-            if (payload != null) {
+            if (payload != null && holder is ConversationViewHolder) {
                 holder.bindPartial(conversation, payload)
-            } else {
+            } else if (holder is ConversationViewHolder) {
                 holder.bind(conversation)
             }
         }
     }
     
     fun getConversationAt(position: Int): Conversation {
-        return getItem(position)
+        return getItem(conversationPositionForAdapterPosition(position))
+    }
+
+    fun isInlineNativeAdPosition(position: Int): Boolean {
+        return nativeSlotIndexForAdapterPosition(position) >= 0
+    }
+
+    override fun onCurrentListChanged(previousList: MutableList<Conversation>, currentList: MutableList<Conversation>) {
+        super.onCurrentListChanged(previousList, currentList)
+        if (activeInlineNativeSlots().isNotEmpty()) {
+            notifyDataSetChanged()
+        }
+    }
+
+    private fun activeInlineNativeSlots(): List<Pair<Int, Int>> {
+        val conversationCount = super.getItemCount()
+        return INLINE_NATIVE_REAL_POSITIONS.asIterable().mapIndexedNotNull { slotIndex, conversationPositionAfter ->
+            val nativeAd = inlineNativeAds.getOrNull(slotIndex)
+            if (nativeAd != null && conversationCount >= conversationPositionAfter) {
+                slotIndex to conversationPositionAfter
+            } else {
+                null
+            }
+        }
+    }
+
+    private fun nativeSlotIndexForAdapterPosition(adapterPosition: Int): Int {
+        var insertedBefore = 0
+        activeInlineNativeSlots().forEach { (slotIndex, conversationPositionAfter) ->
+            val nativeAdapterPosition = conversationPositionAfter + insertedBefore
+            if (adapterPosition == nativeAdapterPosition) return slotIndex
+            if (adapterPosition > nativeAdapterPosition) insertedBefore++
+        }
+        return -1
+    }
+
+    private fun conversationPositionForAdapterPosition(adapterPosition: Int): Int {
+        var insertedBefore = 0
+        activeInlineNativeSlots().forEach { (_, conversationPositionAfter) ->
+            val nativeAdapterPosition = conversationPositionAfter + insertedBefore
+            if (adapterPosition > nativeAdapterPosition) insertedBefore++
+        }
+        return adapterPosition - insertedBefore
+    }
+
+    private fun adapterPositionForConversationPosition(conversationPosition: Int): Int {
+        var insertedBefore = 0
+        activeInlineNativeSlots().forEach { (_, conversationPositionAfter) ->
+            if (conversationPosition >= conversationPositionAfter) insertedBefore++
+        }
+        return conversationPosition + insertedBefore
+    }
+
+    private class NativeAdViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val nativeAdView: NativeAdView = itemView.findViewById(R.id.nativeAdView)
+        private val nativeAdLabel: TextView = itemView.findViewById(R.id.nativeAdLabel)
+        private val nativeAdIcon: ImageView = itemView.findViewById(R.id.nativeAdIcon)
+        private val nativeAdHeadline: TextView = itemView.findViewById(R.id.nativeAdHeadline)
+        private val nativeAdBody: TextView = itemView.findViewById(R.id.nativeAdBody)
+        private val nativeAdCallToAction: MaterialButton = itemView.findViewById(R.id.nativeAdCallToAction)
+
+        fun bind(nativeAd: NativeAd) {
+            val context = itemView.context
+            val themeColor = ThemeManager.getThemeColor(context)
+
+            nativeAdLabel.backgroundTintList = ColorStateList.valueOf(themeColor)
+            nativeAdCallToAction.backgroundTintList = ColorStateList.valueOf(themeColor)
+
+            nativeAdView.headlineView = nativeAdHeadline
+            nativeAdView.bodyView = nativeAdBody
+            nativeAdView.iconView = nativeAdIcon
+            nativeAdView.callToActionView = nativeAdCallToAction
+
+            nativeAdHeadline.text = nativeAd.headline
+
+            val body = nativeAd.body
+            nativeAdBody.visibility = if (body.isNullOrBlank()) View.GONE else View.VISIBLE
+            nativeAdBody.text = body
+
+            val callToAction = nativeAd.callToAction
+            nativeAdCallToAction.visibility = if (callToAction.isNullOrBlank()) View.GONE else View.VISIBLE
+            nativeAdCallToAction.text = callToAction ?: context.getString(R.string.gen_native_ad_layout_text_5)
+
+            val icon = nativeAd.icon
+            nativeAdIcon.visibility = if (icon?.drawable == null) View.GONE else View.VISIBLE
+            nativeAdIcon.setImageDrawable(icon?.drawable)
+
+            nativeAdView.setNativeAd(nativeAd)
+        }
     }
 
     inner class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

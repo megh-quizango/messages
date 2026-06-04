@@ -33,6 +33,16 @@ object AdConfig {
         )
     }
 
+    fun resolveMainConversationInlineNativeAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getMainConversationInlineNativeAdUnitId(),
+            productionResId = R.string.admob_native_main_conversation_inline,
+            testResId = R.string.admob_test_native,
+            label = "main_conversation_inline_native"
+        )
+    }
+
     fun resolveAfterCallNativeAdUnitId(context: Context): String {
         return resolve(
             context = context,
@@ -149,6 +159,7 @@ object AdConfig {
             TAG,
             "Ads debug — banner=${resolveBannerAdUnitId(context)} " +
                 "native=${resolveNativeAdUnitId(context)} " +
+                "mainInlineNative=${resolveMainConversationInlineNativeAdUnitId(context)} " +
                 "afterCall=${resolveAfterCallNativeAdUnitId(context)} " +
                 "afterCallAdaptiveBanner=${resolveAfterCallAdaptiveBannerAdUnitId(context)} " +
                 "exitNativeBanner=${resolveExitNativeBannerAdUnitId(context)} " +

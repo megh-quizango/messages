@@ -28,6 +28,12 @@ class SwipeHelper(
     }
     
     override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+        @Suppress("DEPRECATION")
+        val adapterPosition = viewHolder.adapterPosition
+        if (adapterPosition == RecyclerView.NO_POSITION || adapter.isInlineNativeAdPosition(adapterPosition)) {
+            return 0
+        }
+
         val rightSwipeAction = SwipeGesturesActivity.SwipeAction.values()[
             prefs.getInt(SwipeGesturesActivity.KEY_RIGHT_SWIPE, SwipeGesturesActivity.SwipeAction.MARK_AS_READ.ordinal)
         ]
@@ -58,6 +64,7 @@ class SwipeHelper(
         @Suppress("DEPRECATION")
         val position = viewHolder.adapterPosition
         if (position == RecyclerView.NO_POSITION) return
+        if (adapter.isInlineNativeAdPosition(position)) return
         
         val conversation = adapter.getConversationAt(position)
         
@@ -116,6 +123,11 @@ class SwipeHelper(
         isCurrentlyActive: Boolean
     ) {
         val itemView = viewHolder.itemView
+        @Suppress("DEPRECATION")
+        val adapterPosition = viewHolder.adapterPosition
+        if (adapterPosition == RecyclerView.NO_POSITION || adapter.isInlineNativeAdPosition(adapterPosition)) {
+            return
+        }
         val itemHeight = itemView.bottom - itemView.top
         
         val action = when {

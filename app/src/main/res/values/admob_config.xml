@@ -18,6 +18,7 @@
     <string name="admob_banner_exit_fallback" translatable="false">ca-app-pub-9014156375881181/3469887002</string>
     <string name="admob_banner_manage_apps_fallback" translatable="false">ca-app-pub-9014156375881181/6938358720</string>
     <string name="admob_native_messages" translatable="false">ca-app-pub-9014156375881181/7678349157</string>
+    <string name="admob_native_main_conversation_inline" translatable="false">ca-app-pub-9014156375881181/9197978560</string>
     <string name="admob_native_video_messages" translatable="false">ca-app-pub-9014156375881181/5821837423</string>
 
     <!-- After-call screen only: create a new Native advanced unit in AdMob and replace this ID -->
