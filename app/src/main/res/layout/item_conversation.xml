@@ -53,7 +53,7 @@
         android:text="@string/gen_item_conversation_text_2"
         android:textColor="@color/black"
         android:textSize="16sp"
-        android:textStyle="bold"
+        android:textStyle="normal"
         android:maxLines="1"
         android:ellipsize="end"
         app:layout_constraintEnd_toStartOf="@+id/textTime"
