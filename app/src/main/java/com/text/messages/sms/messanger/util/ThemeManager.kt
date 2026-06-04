@@ -131,11 +131,12 @@ object ThemeManager {
             val themeColorLightInt = Color.parseColor(themeColorLight)
             val primaryColorInt = Color.parseColor(PRIMARY_COLOR)
             val lightColorInt = Color.parseColor(LIGHT_COLOR)
+            val excludeThemeBackground = view.tag == "exclude_from_theme_background"
 
             applyWallpaperToRootIfNeeded(context, view)
             
             // Handle MaterialCardView cardBackgroundColor
-            if (view is MaterialCardView) {
+            if (view is MaterialCardView && !excludeThemeBackground) {
                 val currentColor = view.cardBackgroundColor?.defaultColor
                 if (currentColor == primaryColorInt) {
                     view.setCardBackgroundColor(themeColorInt)
@@ -147,12 +148,12 @@ object ThemeManager {
             // Handle background drawable
             // Always check background drawable, even if backgroundTintList is set
             val background = view.background
-            if (background != null && view.backgroundTintList == null) {
+            if (!excludeThemeBackground && background != null && view.backgroundTintList == null) {
                 val newBackground = applyThemeToDrawable(background.mutate(), themeColor, themeColorLight, primaryColorInt, lightColorInt)
                 if (newBackground != null && newBackground !== background) {
                     view.background = newBackground
                 }
-            } else if (background != null) {
+            } else if (!excludeThemeBackground && background != null) {
                 // Even if backgroundTintList is set, still try to apply theme to drawable
                 // This handles cases where both are set
                 applyThemeToDrawable(background.mutate(), themeColor, themeColorLight, primaryColorInt, lightColorInt)
@@ -161,7 +162,7 @@ object ThemeManager {
             // Handle backgroundTint
             try {
                 val backgroundTint = view.backgroundTintList
-                if (backgroundTint != null) {
+                if (!excludeThemeBackground && backgroundTint != null) {
                     val currentTintColor = backgroundTint.defaultColor
                     if (currentTintColor == primaryColorInt) {
                         view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColorInt)
@@ -234,7 +235,7 @@ object ThemeManager {
                     // ImageButton background drawable needs special handling
                     // Recreate drawable instead of mutating for immediate effect
                     val background = view.background
-                    if (background != null) {
+                    if (!excludeThemeBackground && background != null) {
                         // Check if it's a shape drawable that needs color update
                         val bgColor = when (background) {
                             is ColorDrawable -> background.color
@@ -261,7 +262,7 @@ object ThemeManager {
                     }
                     // Also check backgroundTintList
                     val backgroundTint = view.backgroundTintList
-                    if (backgroundTint != null) {
+                    if (!excludeThemeBackground && backgroundTint != null) {
                         val currentTintColor = backgroundTint.defaultColor
                         if (currentTintColor == primaryColorInt) {
                             view.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColorInt)

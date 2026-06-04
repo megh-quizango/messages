@@ -110,6 +110,7 @@ class CallAfterActivity : BaseActivity() {
     private lateinit var indicatorTabReminders: View
     private lateinit var indicatorTabActions: View
 
+    private lateinit var contentContainer: FrameLayout
     private lateinit var messagesContent: FrameLayout
     private lateinit var recyclerRecentMessages: RecyclerView
     private lateinit var textMessagesEmpty: TextView
@@ -279,6 +280,7 @@ class CallAfterActivity : BaseActivity() {
         indicatorTabReminders = findViewById(R.id.indicatorTabReminders)
         indicatorTabActions = findViewById(R.id.indicatorTabActions)
 
+        contentContainer = findViewById(R.id.contentContainer)
         messagesContent = findViewById(R.id.messagesContent)
         recyclerRecentMessages = findViewById(R.id.recyclerRecentMessages)
         textMessagesEmpty = findViewById(R.id.textMessagesEmpty)
@@ -359,14 +361,23 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun setupTabs() {
-        tabMessages.setOnClickListener { if (isDebounced()) selectTab(AfterCallTab.MESSAGES) }
-        tabQuickMessages.setOnClickListener { if (isDebounced()) selectTab(AfterCallTab.QUICK_MESSAGES) }
-        tabReminders.setOnClickListener { if (isDebounced()) selectTab(AfterCallTab.REMINDERS) }
-        tabActions.setOnClickListener { if (isDebounced()) selectTab(AfterCallTab.ACTIONS) }
+        tabMessages.setOnClickListener {
+            if (isDebounced()) makeCall()
+        }
+        tabQuickMessages.setOnClickListener {
+            if (isDebounced()) selectTab(AfterCallTab.QUICK_MESSAGES)
+        }
+        tabReminders.setOnClickListener {
+            if (isDebounced()) addToContacts()
+        }
+        tabActions.setOnClickListener {
+            if (isDebounced()) selectTab(AfterCallTab.ACTIONS)
+        }
     }
 
     private fun selectTab(tab: AfterCallTab) {
         selectedTab = tab
+        contentContainer.visibility = if (tab == AfterCallTab.MESSAGES) View.GONE else View.VISIBLE
         messagesContent.visibility = if (tab == AfterCallTab.MESSAGES) View.VISIBLE else View.GONE
         recyclerQuickResponses.visibility = if (tab == AfterCallTab.QUICK_MESSAGES) View.VISIBLE else View.GONE
         remindersContent.visibility = if (tab == AfterCallTab.REMINDERS) View.VISIBLE else View.GONE
@@ -500,7 +511,7 @@ class CallAfterActivity : BaseActivity() {
 
     private fun handleQuickAction(action: AfterCallActionItem) {
         when (action.id) {
-            "add_contact" -> openDialerForNumber(callerNumber)
+            "add_contact" -> addToContacts()
             "send_sms" -> openConversation()
             "whatsapp" -> openWhatsAppOrSearch()
             "set_alarm" -> openAlarmSetter()
