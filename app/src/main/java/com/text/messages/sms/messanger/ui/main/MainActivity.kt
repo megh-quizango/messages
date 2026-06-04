@@ -2977,6 +2977,7 @@ class MainActivity : BaseActivity() {
         exitNativeAdView!!.bodyView = adBinding.nativeAdBody
         exitNativeAdView!!.callToActionView = adBinding.nativeAdCallToAction
         exitNativeAdView!!.iconView = adBinding.nativeAdIcon
+        exitNativeAdView!!.mediaView = adBinding.nativeAdMedia
     }
     
     private fun loadExitNativeAd(bottomSheetView: android.view.View) {
@@ -3170,13 +3171,14 @@ class MainActivity : BaseActivity() {
             adBinding.nativeAdIcon.visibility = android.view.View.GONE
         }
         
-        // Handle main image
-        if (ad.images.isNotEmpty() && ad.images[0].drawable != null) {
-            adBinding.nativeAdMedia.setImageDrawable(ad.images[0].drawable)
-            adBinding.nativeAdMedia.visibility = android.view.View.VISIBLE
+        // Handle main image/video through MediaView so AdMob validator sees the asset correctly.
+        val mediaContent = ad.mediaContent
+        adBinding.nativeAdMedia.visibility = if (mediaContent == null) {
+            android.view.View.GONE
         } else {
-            adBinding.nativeAdMedia.visibility = android.view.View.GONE
+            android.view.View.VISIBLE
         }
+        adBinding.nativeAdMedia.mediaContent = mediaContent
         
         // Register the view
         adView.setNativeAd(ad)

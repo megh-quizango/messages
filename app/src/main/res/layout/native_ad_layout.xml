@@ -88,13 +88,12 @@
                 android:background="@color/gray_light"
                 android:layout_marginEnd="8dp" />
 
-            <!-- Main Ad Image (Large) -->
-            <ImageView
+            <!-- Main Ad Media (Large) -->
+            <com.google.android.gms.ads.nativead.MediaView
                 android:id="@+id/nativeAdMedia"
                 android:layout_width="0dp"
                 android:layout_height="150dp"
                 android:layout_weight="1"
-                android:scaleType="centerCrop"
                 android:background="@color/gray_light" />
 
         </LinearLayout>

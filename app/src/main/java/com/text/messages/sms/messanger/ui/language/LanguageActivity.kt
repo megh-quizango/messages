@@ -148,6 +148,7 @@ class LanguageActivity : BaseActivity() {
         nativeAdView!!.bodyView = adBinding.nativeAdBody
         nativeAdView!!.callToActionView = adBinding.nativeAdCallToAction
         nativeAdView!!.iconView = adBinding.nativeAdIcon
+        nativeAdView!!.mediaView = adBinding.nativeAdMedia
     }
 
     private fun loadLanguageAd() {
@@ -227,13 +228,13 @@ class LanguageActivity : BaseActivity() {
             adBinding.nativeAdIcon.visibility = android.view.View.GONE
         }
         
-        // Handle main image
-        if (ad.images.isNotEmpty() && ad.images[0].drawable != null) {
-            adBinding.nativeAdMedia.setImageDrawable(ad.images[0].drawable)
-            adBinding.nativeAdMedia.visibility = android.view.View.VISIBLE
+        val mediaContent = ad.mediaContent
+        adBinding.nativeAdMedia.visibility = if (mediaContent == null) {
+            android.view.View.GONE
         } else {
-            adBinding.nativeAdMedia.visibility = android.view.View.GONE
+            android.view.View.VISIBLE
         }
+        adBinding.nativeAdMedia.mediaContent = mediaContent
         
         // Register the view
         adView.setNativeAd(ad)

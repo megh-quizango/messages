@@ -202,6 +202,7 @@ class ManageAppsDetailActivity : BaseActivity() {
         nativeAdView!!.bodyView = adBinding.nativeAdBody
         nativeAdView!!.callToActionView = adBinding.nativeAdCallToAction
         nativeAdView!!.iconView = adBinding.nativeAdIcon
+        nativeAdView!!.mediaView = adBinding.nativeAdMedia
     }
     
     private fun loadNativeAd() {
@@ -385,12 +386,9 @@ class ManageAppsDetailActivity : BaseActivity() {
             adBinding.nativeAdIcon.visibility = View.GONE
         }
         
-        if (ad.images.isNotEmpty() && ad.images[0].drawable != null) {
-            adBinding.nativeAdMedia.setImageDrawable(ad.images[0].drawable)
-            adBinding.nativeAdMedia.visibility = View.VISIBLE
-        } else {
-            adBinding.nativeAdMedia.visibility = View.GONE
-        }
+        val mediaContent = ad.mediaContent
+        adBinding.nativeAdMedia.visibility = if (mediaContent == null) View.GONE else View.VISIBLE
+        adBinding.nativeAdMedia.mediaContent = mediaContent
         
         adView.setNativeAd(ad)
         AdLoadingShimmerHelper.showNativeContent(binding.nativeAdContainer, adView)
