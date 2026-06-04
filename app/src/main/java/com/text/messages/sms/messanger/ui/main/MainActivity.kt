@@ -967,6 +967,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun updateSearchBarTheme() {
+        val themeColor = ThemeManager.getThemeColor(this)
         val themeColorLight = ThemeManager.getThemeColorLight(this)
         val searchBarDrawable = android.graphics.drawable.GradientDrawable().apply {
             cornerRadius = 50f * resources.displayMetrics.density
@@ -974,9 +975,11 @@ class MainActivity : BaseActivity() {
         }
         binding.searchBar.background = null
         binding.searchInputContainer.background = searchBarDrawable
+        binding.textMainHeading.setTextColor(themeColor)
         binding.searchInputContainer.invalidate()
         binding.searchInputContainer.requestLayout()
         ThemeManager.applyThemeImmediate(this, binding.searchBar)
+        binding.textMainHeading.setTextColor(themeColor)
     }
     
     private fun selectTab(tab: TextView) {
@@ -1113,7 +1116,7 @@ class MainActivity : BaseActivity() {
         binding.editTextSearch.isClickable = true
 
         binding.imageViewSearch.setOnClickListener {
-            expandSearch()
+            toggleSearch()
         }
 
         binding.searchInputContainer.setOnClickListener {
@@ -1136,6 +1139,24 @@ class MainActivity : BaseActivity() {
         
         // Clear focus when clicking outside the search field
         setupClickOutsideToClearFocus()
+    }
+
+    private fun toggleSearch() {
+        if (isSearchExpanded && binding.searchInputContainer.visibility == View.VISIBLE) {
+            closeSearchFromToggle()
+        } else {
+            expandSearch()
+        }
+    }
+
+    private fun closeSearchFromToggle() {
+        if (binding.editTextSearch.text.isNotEmpty()) {
+            binding.editTextSearch.setText("")
+        }
+        currentSearchQuery = ""
+        binding.editTextSearch.clearFocus()
+        hideKeyboard()
+        collapseSearch()
     }
 
     private fun expandSearch(animated: Boolean = true) {
