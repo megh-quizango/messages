@@ -227,7 +227,7 @@
     <string name="overlay_step_badge_one">1/2</string>
     <string name="overlay_step_badge_two">2/2</string>
     <string name="overlay_essential">Essential</string>
-    <string name="overlay_slide_one_title">Find and Tap &quot;#Messages&quot; on\nthe app lists</string>
+    <string name="overlay_slide_one_title">Find and Tap &quot;#Messages&quot; on the app lists</string>
     <string name="overlay_slide_two_title">Then, allow display permission</string>
     <string name="overlay_slide_two_subtitle">(Permission name may differ by device)</string>
     <string name="overlay_permission_row">Allow display over other apps</string>
