@@ -10,6 +10,7 @@
     <string name="admob_interstitial_language" translatable="false">ca-app-pub-9014156375881181/4128987276</string>
     <string name="admob_interstitial_theme" translatable="false">ca-app-pub-9014156375881181/8613872240</string>
     <string name="admob_interstitial_imex" translatable="false">ca-app-pub-9014156375881181/5614349987</string>
+    <string name="admob_interstitial_main_back" translatable="false">ca-app-pub-9014156375881181/6266213372</string>
     <string name="admob_native_banner_language" translatable="false">ca-app-pub-9014156375881181/5559968535</string>
     <string name="admob_native_fullscreen_language" translatable="false">ca-app-pub-9014156375881181/7603677948</string>
     <string name="admob_native_fullscreen_theme" translatable="false">ca-app-pub-9014156375881181/5805921677</string>
