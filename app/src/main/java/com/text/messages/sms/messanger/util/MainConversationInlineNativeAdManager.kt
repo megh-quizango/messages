@@ -7,6 +7,7 @@ import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdOptions
 
 object MainConversationInlineNativeAdManager {
     private const val TAG = "MainConversationInlineNativeAd"
@@ -82,6 +83,12 @@ object MainConversationInlineNativeAdManager {
                     AnalyticsHelper.logAdImpression(adType, adUnitId)
                 }
             })
+            .withNativeAdOptions(
+                NativeAdOptions.Builder()
+                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
+                    .setMediaAspectRatio(NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_LANDSCAPE)
+                    .build()
+            )
             .build()
 
         adLoader.loadAd(AdRequest.Builder().build())
