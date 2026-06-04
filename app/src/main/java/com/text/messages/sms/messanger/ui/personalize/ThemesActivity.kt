@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import android.view.View
-import android.widget.ImageView
 import android.widget.TextView
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -45,44 +44,13 @@ class ThemesActivity : BaseActivity() {
             binding.cardThemePurple.id to "#7B3FB0",
             binding.cardThemeTeal.id to "#00897B",
             binding.cardThemeOrange.id to "#F57C00",
-            binding.cardThemeRed.id to "#D34034",
-            R.id.cardSeasonSpring to "#43A047",
-            R.id.cardSeasonSummer to "#FF9800",
-            R.id.cardSeasonAutumn to "#E64A19",
-            R.id.cardSeasonWinter to "#03A9F4",
-            R.id.cardCountryChina to "#F44336",
-            R.id.cardCountryEgypt to "#F9A825",
-            R.id.cardCountryEngland to "#1976D2",
-            R.id.cardCountryFrance to "#3F51B5",
-            R.id.cardCountryIndia to "#FF6F00",
-            R.id.cardCountryJapan to "#D81B60",
-            R.id.cardCountryRussia to "#1565C0",
-            R.id.cardCountryUsa to "#0D47A1"
+            binding.cardThemeRed.id to "#D34034"
         )
     }
     
     // Reverse mapping: color -> card ID
     private val colorToCardId: Map<String, Int> by lazy {
-        themeColors.entries
-            .filterNot { (cardId, _) -> imageThemeCardIds().contains(cardId) }
-            .associate { (cardId, color) -> color to cardId }
-    }
-
-    private val themeWallpapers: Map<Int, String> by lazy {
-        mapOf(
-            R.id.cardSeasonSpring to "sea_1",
-            R.id.cardSeasonSummer to "sea_2",
-            R.id.cardSeasonAutumn to "sea_3",
-            R.id.cardSeasonWinter to "sea_4",
-            R.id.cardCountryChina to "item_china",
-            R.id.cardCountryEgypt to "item_egypt",
-            R.id.cardCountryEngland to "item_england",
-            R.id.cardCountryFrance to "item_france",
-            R.id.cardCountryIndia to "item_india",
-            R.id.cardCountryJapan to "item_japan",
-            R.id.cardCountryRussia to "item_russia",
-            R.id.cardCountryUsa to "item_usa"
-        )
+        themeColors.entries.associate { (cardId, color) -> color to cardId }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,7 +74,6 @@ class ThemesActivity : BaseActivity() {
         }
         
         setupBackButton()
-        setupImageThemeTiles()
         setupThemeSelection()
         setupSaveButton()
         
@@ -167,56 +134,7 @@ class ThemesActivity : BaseActivity() {
             }
         }
 
-        imageThemeCardIds().forEach { cardId ->
-            findViewById<View>(cardId)?.setOnClickListener { card ->
-                clearThemeSelection()
-                setImageThemeSelected(card, true)
-                selectedCardId = card.id
-                selectedIconId = null
-                updateSelectedPreview(card.id)
-                showPreviewMode()
-            }
-        }
     }
-
-    private fun setupImageThemeTiles() {
-        setImageThemeTile(R.id.cardSeasonSpring, R.drawable.sea_1, R.string.spring)
-        setImageThemeTile(R.id.cardSeasonSummer, R.drawable.sea_2, R.string.summer)
-        setImageThemeTile(R.id.cardSeasonAutumn, R.drawable.sea_3, R.string.autumn)
-        setImageThemeTile(R.id.cardSeasonWinter, R.drawable.sea_4, R.string.winter)
-        setImageThemeTile(R.id.cardCountryChina, R.drawable.item_china, R.string.china)
-        setImageThemeTile(R.id.cardCountryEgypt, R.drawable.item_egypt, R.string.egypt)
-        setImageThemeTile(R.id.cardCountryEngland, R.drawable.item_england, R.string.england)
-        setImageThemeTile(R.id.cardCountryFrance, R.drawable.item_france, R.string.france)
-        setImageThemeTile(R.id.cardCountryIndia, R.drawable.item_india, R.string.india)
-        setImageThemeTile(R.id.cardCountryJapan, R.drawable.item_japan, R.string.japan)
-        setImageThemeTile(R.id.cardCountryRussia, R.drawable.item_russia, R.string.russia)
-        setImageThemeTile(R.id.cardCountryUsa, R.drawable.item_usa, R.string.usa)
-    }
-
-    private fun setImageThemeTile(cardId: Int, drawableId: Int, labelId: Int) {
-        val card = findViewById<View>(cardId) ?: return
-        card.findViewById<ImageView>(R.id.themeImage)?.apply {
-            setImageResource(drawableId)
-            contentDescription = getString(labelId)
-        }
-        card.findViewById<TextView>(R.id.themeLabel)?.setText(labelId)
-    }
-
-    private fun imageThemeCardIds(): List<Int> = listOf(
-        R.id.cardSeasonSpring,
-        R.id.cardSeasonSummer,
-        R.id.cardSeasonAutumn,
-        R.id.cardSeasonWinter,
-        R.id.cardCountryChina,
-        R.id.cardCountryEgypt,
-        R.id.cardCountryEngland,
-        R.id.cardCountryFrance,
-        R.id.cardCountryIndia,
-        R.id.cardCountryJapan,
-        R.id.cardCountryRussia,
-        R.id.cardCountryUsa
-    )
 
     private fun clearThemeSelection() {
         listOf(
@@ -234,14 +152,6 @@ class ThemesActivity : BaseActivity() {
             binding.iconSelectedRed
         ).forEach { it.visibility = View.GONE }
 
-        imageThemeCardIds().forEach { cardId ->
-            findViewById<View>(cardId)?.let { setImageThemeSelected(it, false) }
-        }
-    }
-
-    private fun setImageThemeSelected(card: View, selected: Boolean) {
-        card.findViewById<View>(R.id.themeSelectedScrim)?.visibility = if (selected) View.VISIBLE else View.GONE
-        card.findViewById<View>(R.id.themeSelectedIcon)?.visibility = if (selected) View.VISIBLE else View.GONE
     }
 
     private fun setupSaveButton() {
@@ -257,7 +167,7 @@ class ThemesActivity : BaseActivity() {
         val themeColor = themeColors[cardId] ?: AppPreferences.getThemeColor(this)
         AppPreferences.setThemeColor(this, themeColor)
         AppPreferences.setThemeColorLight(this, AppPreferences.getLighterColor(themeColor))
-        AppPreferences.setThemeWallpaper(this, themeWallpapers[cardId])
+        AppPreferences.setThemeWallpaper(this, null)
 
         ThemeManager.applyThemeImmediate(this, binding.root)
         binding.root.invalidate()
@@ -323,12 +233,9 @@ class ThemesActivity : BaseActivity() {
     private fun restoreSelectedTheme() {
         // Get the currently saved theme color
         val savedThemeColor = AppPreferences.getThemeColor(this)
-        val savedWallpaper = AppPreferences.getThemeWallpaper(this)
         
         // Find the card ID that corresponds to this color
-        val cardId = savedWallpaper
-            ?.let { wallpaper -> themeWallpapers.entries.firstOrNull { it.value == wallpaper }?.key }
-            ?: colorToCardId[savedThemeColor]
+        val cardId = colorToCardId[savedThemeColor]
         
         if (cardId != null) {
             // Find the corresponding icon
@@ -353,12 +260,6 @@ class ThemesActivity : BaseActivity() {
                 findViewById<View>(iconId)?.visibility = View.VISIBLE
                 selectedCardId = cardId
                 selectedIconId = iconId
-                updateSelectedPreview(cardId)
-            } else if (imageThemeCardIds().contains(cardId)) {
-                clearThemeSelection()
-                findViewById<View>(cardId)?.let { setImageThemeSelected(it, true) }
-                selectedCardId = cardId
-                selectedIconId = null
                 updateSelectedPreview(cardId)
             }
         } else {
@@ -385,18 +286,6 @@ class ThemesActivity : BaseActivity() {
         binding.previewStartChat.backgroundTintList = ColorStateList.valueOf(colorInt)
         binding.buttonSave.backgroundTintList = ColorStateList.valueOf(colorInt)
         tintPreviewUnreadDots(colorInt)
-
-        val wallpaper = themeWallpapers[cardId]
-        if (wallpaper != null) {
-            val drawableId = resources.getIdentifier(wallpaper, "drawable", packageName)
-            if (drawableId != 0) {
-                binding.previewPhoneCard.setCardBackgroundColor(Color.WHITE)
-                binding.imageSelectedThemePreview.alpha = 0.56f
-                binding.imageSelectedThemePreview.setImageResource(drawableId)
-                binding.imageSelectedThemePreview.scaleType = ImageView.ScaleType.CENTER_CROP
-                return
-            }
-        }
 
         binding.previewPhoneCard.setCardBackgroundColor(lightColorInt)
         binding.imageSelectedThemePreview.alpha = 1f
