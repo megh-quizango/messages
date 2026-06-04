@@ -108,6 +108,7 @@ class MainActivity : BaseActivity() {
     private var currentTimeFilter: String? = null // "Default", "Today", "Month", "Year", "Custom"
     private var customTimeFilterStartDate: Long? = null
     private var customTimeFilterEndDate: Long? = null
+    private var isSearchExpanded: Boolean = false
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -971,10 +972,11 @@ class MainActivity : BaseActivity() {
             cornerRadius = 50f * resources.displayMetrics.density
             setColor(themeColorLight)
         }
-        binding.searchBar.background = searchBarDrawable
+        binding.searchBar.background = null
+        binding.searchInputContainer.background = searchBarDrawable
+        binding.searchInputContainer.invalidate()
+        binding.searchInputContainer.requestLayout()
         ThemeManager.applyThemeImmediate(this, binding.searchBar)
-        binding.searchBar.invalidate()
-        binding.searchBar.requestLayout()
     }
     
     private fun selectTab(tab: TextView) {
@@ -1109,12 +1111,18 @@ class MainActivity : BaseActivity() {
         binding.editTextSearch.isFocusable = true
         binding.editTextSearch.isFocusableInTouchMode = true
         binding.editTextSearch.isClickable = true
+
+        binding.imageViewSearch.setOnClickListener {
+            expandSearch()
+        }
+
+        binding.searchInputContainer.setOnClickListener {
+            expandSearch(animated = false)
+        }
         
         // Ensure EditText can receive focus when clicked
         binding.editTextSearch.setOnClickListener {
-            binding.editTextSearch.requestFocus()
-            val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-            imm.showSoftInput(binding.editTextSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+            expandSearch(animated = false)
         }
         
         binding.editTextSearch.addTextChangedListener(object : TextWatcher {
@@ -1128,6 +1136,81 @@ class MainActivity : BaseActivity() {
         
         // Clear focus when clicking outside the search field
         setupClickOutsideToClearFocus()
+    }
+
+    private fun expandSearch(animated: Boolean = true) {
+        if (isSearchExpanded && binding.searchInputContainer.visibility == View.VISIBLE) {
+            focusSearchField()
+            return
+        }
+
+        isSearchExpanded = true
+        binding.textMainHeading.animate().cancel()
+        binding.searchInputContainer.animate().cancel()
+        binding.searchInputContainer.visibility = View.VISIBLE
+
+        if (!animated) {
+            binding.textMainHeading.alpha = 0f
+            binding.textMainHeading.translationX = -16f
+            binding.searchInputContainer.alpha = 1f
+            binding.searchInputContainer.translationX = 0f
+            focusSearchField()
+            return
+        }
+
+        binding.searchInputContainer.alpha = 0f
+        binding.searchInputContainer.translationX = 24f
+        binding.textMainHeading.animate()
+            .alpha(0f)
+            .translationX(-16f)
+            .setDuration(160L)
+            .start()
+        binding.searchInputContainer.animate()
+            .alpha(1f)
+            .translationX(0f)
+            .setDuration(220L)
+            .withEndAction { focusSearchField() }
+            .start()
+    }
+
+    private fun collapseSearch(animated: Boolean = true) {
+        if (!isSearchExpanded || currentSearchQuery.isNotEmpty()) return
+
+        isSearchExpanded = false
+        binding.textMainHeading.animate().cancel()
+        binding.searchInputContainer.animate().cancel()
+
+        if (!animated) {
+            binding.textMainHeading.alpha = 1f
+            binding.textMainHeading.translationX = 0f
+            binding.searchInputContainer.alpha = 0f
+            binding.searchInputContainer.translationX = 0f
+            binding.searchInputContainer.visibility = View.GONE
+            return
+        }
+
+        binding.searchInputContainer.animate()
+            .alpha(0f)
+            .translationX(24f)
+            .setDuration(160L)
+            .withEndAction {
+                if (!isSearchExpanded && currentSearchQuery.isEmpty()) {
+                    binding.searchInputContainer.visibility = View.GONE
+                    binding.searchInputContainer.translationX = 0f
+                }
+            }
+            .start()
+        binding.textMainHeading.animate()
+            .alpha(1f)
+            .translationX(0f)
+            .setDuration(200L)
+            .start()
+    }
+
+    private fun focusSearchField() {
+        binding.editTextSearch.requestFocus()
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(binding.editTextSearch, InputMethodManager.SHOW_IMPLICIT)
     }
     
     private fun setupMenu() {
@@ -1397,6 +1480,7 @@ class MainActivity : BaseActivity() {
             binding.editTextSearch.clearFocus()
             hideKeyboard()
         }
+        collapseSearch()
     }
     
     private fun hideKeyboard() {
@@ -1878,6 +1962,9 @@ class MainActivity : BaseActivity() {
         binding.fragmentContainer.visibility = View.GONE
         binding.searchBar.visibility = View.VISIBLE
         binding.categoryTabs.visibility = View.VISIBLE
+        if (currentSearchQuery.isEmpty() && !binding.editTextSearch.hasFocus()) {
+            collapseSearch(animated = false)
+        }
         
         // Only show FAB and recycler view if not loading
         val isLoading = viewModel.isLoading.value == true
@@ -1905,6 +1992,7 @@ class MainActivity : BaseActivity() {
         
         // Cancel any ongoing loading when navigating away from messages screen
         viewModel.cancelLoading()
+        clearSearchFocus()
         
         // Hide messages content, show fragment container
         binding.searchBar.visibility = View.GONE
@@ -2473,6 +2561,8 @@ class MainActivity : BaseActivity() {
         binding.editTextSearch.isFocusable = false
         binding.editTextSearch.isFocusableInTouchMode = false
         binding.editTextSearch.isClickable = false
+        binding.imageViewSearch.isEnabled = false
+        binding.imageViewSearch.alpha = 0.45f
     }
     
     /**
@@ -2483,6 +2573,8 @@ class MainActivity : BaseActivity() {
         binding.editTextSearch.isFocusable = true
         binding.editTextSearch.isFocusableInTouchMode = true
         binding.editTextSearch.isClickable = true
+        binding.imageViewSearch.isEnabled = true
+        binding.imageViewSearch.alpha = 1.0f
     }
     
     /**

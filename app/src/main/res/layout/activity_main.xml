@@ -7,64 +7,114 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <!-- ================= SEARCH BAR ================= -->
+    <!-- ================= MAIN HEADER / SEARCH ================= -->
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/searchBar"
         android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="6dp"
-        android:layout_marginEnd="6dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@color/white"
-        android:paddingStart="14dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="0dp"
-        android:paddingBottom="0dp"
+        android:layout_height="68dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="8dp"
+        android:background="@android:color/transparent"
         android:clickable="false"
         android:focusable="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_menu_search"
-            android:tint="#9696A3"/>
-
-        <EditText
-            android:id="@+id/editTextSearch"
+        <TextView
+            android:id="@+id/textMainHeading"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:hint="@string/gen_activity_main_hint_1"
-            android:textColorHint="#9696A3"
-            android:textColor="@color/black"
-            android:textSize="15sp"
+            android:ellipsize="end"
             android:fontFamily="@font/poppins"
-            android:inputType="text"
-            android:imeOptions="actionSearch"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:text="@string/messages"
+            android:textColor="@color/primary_blue"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/imageViewSearch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/searchInputContainer"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="8dp"
+            android:alpha="0"
+            android:background="@drawable/bg_search_pill"
             android:clickable="true"
-            android:longClickable="true"/>
+            android:focusable="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/imageViewSearch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_main_search"
+                android:tint="#777985" />
+
+            <EditText
+                android:id="@+id/editTextSearch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:fontFamily="@font/poppins"
+                android:hint="@string/gen_activity_main_hint_1"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:longClickable="true"
+                android:singleLine="true"
+                android:textColor="@color/black"
+                android:textColorHint="#777985"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imageViewSearch"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:contentDescription="@string/search_messages"
+            android:padding="10dp"
+            android:src="@drawable/ic_main_search"
+            android:tint="@color/black"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/imageViewMenu"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/imageViewMenu"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="12dp"
-            android:src="@android:drawable/ic_menu_more"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:tint="@color/black"
             android:contentDescription="@string/gen_activity_main_content_description_2"
             android:clickable="true"
-            android:focusable="true"/>
+            android:focusable="true"
+            android:padding="10dp"
+            android:src="@drawable/ic_main_more_vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- ================= CATEGORY TABS (RESTORED) ================= -->
 
