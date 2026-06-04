@@ -153,6 +153,16 @@ object AdConfig {
         )
     }
 
+    fun resolveMainBackFallbackInterstitialAdUnitId(context: Context): String {
+        return resolve(
+            context = context,
+            remoteValue = RemoteConfigHelper.getMainBackFallbackInterstitialAdUnitId(),
+            productionResId = R.string.admob_interstitial_main_back_fallback,
+            testResId = R.string.admob_test_interstitial,
+            label = "main_back_fallback_interstitial"
+        )
+    }
+
     fun resolveImExNativeFullscreenAdUnitId(context: Context): String {
         return resolve(
             context = context,
@@ -180,6 +190,7 @@ object AdConfig {
                 "themeNativeFullscreen=${resolveThemeNativeFullscreenAdUnitId(context)} " +
                 "imexInterstitial=${resolveImExInterstitialAdUnitId(context)} " +
                 "mainBackInterstitial=${resolveMainBackInterstitialAdUnitId(context)} " +
+                "mainBackFallbackInterstitial=${resolveMainBackFallbackInterstitialAdUnitId(context)} " +
                 "imexNativeFullscreen=${resolveImExNativeFullscreenAdUnitId(context)} " +
                 "useTestAds=${BuildConfig.USE_TEST_ADS}"
         )

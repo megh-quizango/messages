@@ -14,61 +14,120 @@ object MainBackPressInterstitialAdManager {
 
     private const val TAG = "MainBackPressInterstitial"
     private const val AD_TYPE = "main_back_interstitial"
+    private const val FALLBACK_AD_TYPE = "main_back_fallback_interstitial"
 
-    private var interstitialAd: InterstitialAd? = null
-    private var isLoading = false
-    private var currentAdUnitId: String? = null
+    private var primaryInterstitialAd: InterstitialAd? = null
+    private var fallbackInterstitialAd: InterstitialAd? = null
+    private var isLoadingPrimary = false
+    private var isLoadingFallback = false
+    private var currentPrimaryAdUnitId: String? = null
+    private var currentFallbackAdUnitId: String? = null
 
     fun preload(context: Context) {
         val appContext = context.applicationContext
-        val adUnitId = AdConfig.resolveMainBackInterstitialAdUnitId(appContext).trim()
-        if (adUnitId.isBlank()) {
+        val primaryAdUnitId = AdConfig.resolveMainBackInterstitialAdUnitId(appContext).trim()
+        val fallbackAdUnitId = AdConfig.resolveMainBackFallbackInterstitialAdUnitId(appContext).trim()
+        if (primaryAdUnitId.isBlank() && fallbackAdUnitId.isBlank()) {
             destroy()
             return
         }
 
-        if (currentAdUnitId != null && currentAdUnitId != adUnitId) {
+        val didPrimaryChange = currentPrimaryAdUnitId != null && currentPrimaryAdUnitId != primaryAdUnitId
+        val didFallbackChange = currentFallbackAdUnitId != null && currentFallbackAdUnitId != fallbackAdUnitId
+        if (didPrimaryChange || didFallbackChange) {
             destroy()
         }
-        currentAdUnitId = adUnitId
 
-        if (isLoading || interstitialAd != null) return
+        currentPrimaryAdUnitId = primaryAdUnitId
+        currentFallbackAdUnitId = fallbackAdUnitId
 
-        isLoading = true
+        if (primaryAdUnitId.isNotBlank()) {
+            loadPrimary(appContext, primaryAdUnitId, fallbackAdUnitId)
+        } else if (fallbackAdUnitId.isNotBlank()) {
+            loadFallback(appContext, fallbackAdUnitId)
+        }
+    }
+
+    private fun loadPrimary(context: Context, adUnitId: String, fallbackAdUnitId: String) {
+        if (isLoadingPrimary || primaryInterstitialAd != null) return
+
+        isLoadingPrimary = true
         InterstitialAd.load(
-            appContext,
+            context,
             adUnitId,
             AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) {
-                    interstitialAd = ad
-                    isLoading = false
+                    primaryInterstitialAd = ad
+                    isLoadingPrimary = false
                     AnalyticsHelper.logAdLoad(AD_TYPE, adUnitId, true)
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    interstitialAd = null
-                    isLoading = false
+                    primaryInterstitialAd = null
+                    isLoadingPrimary = false
                     AnalyticsHelper.logAdLoad(AD_TYPE, adUnitId, false)
                     AnalyticsHelper.logAdError(AD_TYPE, adUnitId, loadAdError.code.toString())
                     Log.w(TAG, "Main back interstitial failed to load: ${loadAdError.message}")
+                    if (fallbackAdUnitId.isNotBlank()) {
+                        loadFallback(context, fallbackAdUnitId)
+                    }
+                }
+            }
+        )
+    }
+
+    private fun loadFallback(context: Context, adUnitId: String) {
+        if (isLoadingFallback || fallbackInterstitialAd != null) return
+
+        isLoadingFallback = true
+        InterstitialAd.load(
+            context,
+            adUnitId,
+            AdRequest.Builder().build(),
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(ad: InterstitialAd) {
+                    fallbackInterstitialAd = ad
+                    isLoadingFallback = false
+                    AnalyticsHelper.logAdLoad(FALLBACK_AD_TYPE, adUnitId, true)
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    fallbackInterstitialAd = null
+                    isLoadingFallback = false
+                    AnalyticsHelper.logAdLoad(FALLBACK_AD_TYPE, adUnitId, false)
+                    AnalyticsHelper.logAdError(FALLBACK_AD_TYPE, adUnitId, loadAdError.code.toString())
+                    Log.w(TAG, "Main back fallback interstitial failed to load: ${loadAdError.message}")
                 }
             }
         )
     }
 
     fun showIfAvailable(activity: Activity, onFinish: () -> Unit): Boolean {
-        val ad = interstitialAd ?: return false
-        val adUnitId = currentAdUnitId ?: AdConfig.resolveMainBackInterstitialAdUnitId(activity)
-        interstitialAd = null
+        val ad: InterstitialAd
+        val adUnitId: String
+        val adType: String
+        if (primaryInterstitialAd != null) {
+            ad = primaryInterstitialAd ?: return false
+            adUnitId = currentPrimaryAdUnitId ?: AdConfig.resolveMainBackInterstitialAdUnitId(activity)
+            adType = AD_TYPE
+            primaryInterstitialAd = null
+        } else if (fallbackInterstitialAd != null) {
+            ad = fallbackInterstitialAd ?: return false
+            adUnitId = currentFallbackAdUnitId ?: AdConfig.resolveMainBackFallbackInterstitialAdUnitId(activity)
+            adType = FALLBACK_AD_TYPE
+            fallbackInterstitialAd = null
+        } else {
+            return false
+        }
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdShowedFullScreenContent() {
-                AnalyticsHelper.logAdImpression(AD_TYPE, adUnitId)
+                AnalyticsHelper.logAdImpression(adType, adUnitId)
             }
 
             override fun onAdClicked() {
-                AnalyticsHelper.logAdClick(AD_TYPE, adUnitId)
+                AnalyticsHelper.logAdClick(adType, adUnitId)
             }
 
             override fun onAdDismissedFullScreenContent() {
@@ -77,7 +136,7 @@ object MainBackPressInterstitialAdManager {
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                AnalyticsHelper.logAdError(AD_TYPE, adUnitId, adError.code.toString())
+                AnalyticsHelper.logAdError(adType, adUnitId, adError.code.toString())
                 onFinish()
                 preload(activity.applicationContext)
             }
@@ -88,8 +147,11 @@ object MainBackPressInterstitialAdManager {
     }
 
     fun destroy() {
-        interstitialAd = null
-        isLoading = false
-        currentAdUnitId = null
+        primaryInterstitialAd = null
+        fallbackInterstitialAd = null
+        isLoadingPrimary = false
+        isLoadingFallback = false
+        currentPrimaryAdUnitId = null
+        currentFallbackAdUnitId = null
     }
 }

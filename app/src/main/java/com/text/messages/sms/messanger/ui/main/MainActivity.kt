@@ -54,7 +54,6 @@ import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AdConfig
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
 import com.text.messages.sms.messanger.util.MainConversationInlineNativeAdManager
-import com.text.messages.sms.messanger.util.MainBackPressInterstitialAdManager
 import android.provider.Telephony
 import android.content.ContentValues
 import android.net.Uri
@@ -97,7 +96,6 @@ class MainActivity : BaseActivity() {
     private var exitNativeAd: NativeAd? = null
     private var exitNativeAdView: NativeAdView? = null
     private var exitAdaptiveBannerView: AdView? = null
-    private var isShowingMainBackInterstitial = false
     private var customFilterTabs = mutableMapOf<String, TextView>()
     private var currentCustomFilterId: String? = null
     private var mmsRefreshReceiver: BroadcastReceiver? = null
@@ -219,7 +217,6 @@ class MainActivity : BaseActivity() {
         setupBottomNavigation()
         setupBannerAd()
         setupBackPressHandler()
-        MainBackPressInterstitialAdManager.preload(this)
         observeConversations()
         loadCustomFilterTabs()
         
@@ -767,7 +764,6 @@ class MainActivity : BaseActivity() {
         loadingIndicatorHandler?.removeCallbacksAndMessages(null)
         loadingIndicatorRunnable = null
         MainConversationInlineNativeAdManager.destroy()
-        MainBackPressInterstitialAdManager.destroy()
         exitNativeAd?.destroy()
         exitNativeAd = null
         exitAdaptiveBannerView?.destroy()
@@ -2199,7 +2195,6 @@ class MainActivity : BaseActivity() {
         // This ensures ads only show on stable MainActivity, not on splash/permission screens
         (application as com.text.messages.sms.messanger.MessagesApp).isMainReady = true
         Log.d(TAG, "MainActivity ready - App Open Ad can now be shown")
-        MainBackPressInterstitialAdManager.preload(this)
         // Ensure Messages tab is selected when activity is visible
         // Only set if we're showing messages content, not a fragment
         if (binding.fragmentContainer.visibility == View.GONE) {
@@ -2816,18 +2811,9 @@ class MainActivity : BaseActivity() {
     }
 
     private fun showMainBackInterstitialThenExit() {
-        if (isShowingMainBackInterstitial) return
         if (exitBottomSheet?.isShowing == true) return
 
-        isShowingMainBackInterstitial = true
-        val handled = MainBackPressInterstitialAdManager.showIfAvailable(this) {
-            isShowingMainBackInterstitial = false
-            showExitBottomSheet()
-        }
-
-        if (!handled) {
-            isShowingMainBackInterstitial = false
-            MainBackPressInterstitialAdManager.preload(this)
+        showBackPressInterstitialOrRun {
             showExitBottomSheet()
         }
     }
