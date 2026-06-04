@@ -53,7 +53,6 @@ import com.text.messages.sms.messanger.data.model.Conversation
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
-import com.text.messages.sms.messanger.ui.personalize.ThemesActivity
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AfterCallAdPreloader
@@ -386,8 +385,10 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun applyCallerCardTheme() {
-        val themeColor = parseThemeColor(AppPreferences.getThemeColor(this), Color.parseColor("#347F80"))
-        val darkerColor = darkenColor(themeColor, 0.42f)
+        val callerTheme = AppPreferences.getCallerTheme(this)
+        val themeColor = parseThemeColor(callerTheme.topColor, Color.parseColor("#479DA2"))
+        val darkerColor = parseThemeColor(callerTheme.bottomColor, Color.parseColor("#034D57"))
+        val buttonColor = parseThemeColor(callerTheme.buttonColor, Color.parseColor("#469CA1"))
         headerSection.background = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(themeColor, darkerColor)
@@ -397,20 +398,20 @@ class CallAfterActivity : BaseActivity() {
         }
         listOf(callerAppOpen, callerSetting).forEach { view ->
             view.background = GradientDrawable().apply {
-                setColor(themeColor)
+                setColor(buttonColor)
                 cornerRadius = 6f * resources.displayMetrics.density
             }
         }
         textCallerViewMore.background = GradientDrawable().apply {
-            setColor(themeColor)
+            setColor(buttonColor)
             cornerRadius = 22f * resources.displayMetrics.density
         }
         if (viewModel.contactInfo.value?.photoUri.isNullOrBlank()) {
-            applyDefaultCallerAvatar(themeColor)
+            applyDefaultCallerAvatar(buttonColor)
         }
     }
 
-    private fun applyDefaultCallerAvatar(themeColor: Int = parseThemeColor(AppPreferences.getThemeColor(this), Color.parseColor("#347F80"))) {
+    private fun applyDefaultCallerAvatar(themeColor: Int = parseThemeColor(AppPreferences.getCallerTheme(this).buttonColor, Color.parseColor("#469CA1"))) {
         imageAvatar.visibility = View.VISIBLE
         imageAvatar.background = ContextCompat.getDrawable(this, R.drawable.bg_caller_avatar_circle)
         imageAvatar.setImageResource(R.drawable.ic_caller_avatar_person)
@@ -581,7 +582,7 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun openThemeSelection() {
-        startActivity(Intent(this, ThemesActivity::class.java))
+        startActivity(Intent(this, CallerThemeActivity::class.java))
     }
 
     private fun openCallerSettings() {

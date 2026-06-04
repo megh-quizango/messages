@@ -12,6 +12,8 @@ object AppPreferences {
     private const val KEY_THEME_WALLPAPER = "theme_wallpaper"
     private const val DEFAULT_THEME_COLOR = "#0C56CF"
     private const val DEFAULT_THEME_COLOR_LIGHT = "#E6F0FF"
+    private const val KEY_CALLER_THEME_INDEX = "caller_theme_index"
+    private const val DEFAULT_CALLER_THEME_INDEX = 3
     
     // Bubble preferences
     private const val KEY_BUBBLE_COLOR = "bubble_color"
@@ -62,6 +64,40 @@ object AppPreferences {
             editor.putString(KEY_THEME_WALLPAPER, wallpaperName)
         }
         editor.commit()
+    }
+
+    data class CallerTheme(
+        val index: Int,
+        val topColor: String,
+        val bottomColor: String,
+        val buttonColor: String
+    )
+
+    val callerThemes: List<CallerTheme> = listOf(
+        CallerTheme(0, "#1690FF", "#1660C8", "#0CB7FF"),
+        CallerTheme(1, "#FF7378", "#DB0008", "#FF5A61"),
+        CallerTheme(2, "#FFA750", "#D86C00", "#FF9D3A"),
+        CallerTheme(3, "#479DA2", "#034D57", "#469CA1"),
+        CallerTheme(4, "#6643E8", "#213359", "#7E66E0"),
+        CallerTheme(5, "#E45A42", "#671629", "#D84A38"),
+        CallerTheme(6, "#A92C80", "#550F3E", "#A2297B"),
+        CallerTheme(7, "#3785C0", "#12476F", "#3582BC")
+    )
+
+    fun getCallerThemeIndex(context: Context): Int {
+        return getPrefs(context)
+            .getInt(KEY_CALLER_THEME_INDEX, DEFAULT_CALLER_THEME_INDEX)
+            .coerceIn(callerThemes.indices)
+    }
+
+    fun setCallerThemeIndex(context: Context, index: Int) {
+        getPrefs(context).edit()
+            .putInt(KEY_CALLER_THEME_INDEX, index.coerceIn(callerThemes.indices))
+            .commit()
+    }
+
+    fun getCallerTheme(context: Context): CallerTheme {
+        return callerThemes[getCallerThemeIndex(context)]
     }
     
     // Bubble methods
