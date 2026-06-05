@@ -2564,6 +2564,7 @@ class MainActivity : BaseActivity() {
             // Check if a fragment is currently visible - if so, don't update RecyclerView
             if (isFragmentVisible()) {
                 Log.d(TAG, "isLoading observer: SKIPPING UI UPDATE - Fragment is visible (Contacts/Personalize/Settings)")
+                setMainSyncingVisible(false)
                 return@observe
             }
             
@@ -2621,6 +2622,7 @@ class MainActivity : BaseActivity() {
             Log.d(TAG, "ensureLoadingStopped: SKIPPING RecyclerView update - Fragment is visible")
             // Still hide shimmer and enable UI elements, but don't show RecyclerView
             hideShimmer()
+            setMainSyncingVisible(false)
             binding.bottomNavigationView.visibility = View.VISIBLE
             binding.fabStartChat.visibility = View.VISIBLE
             enableSearchBar()
@@ -2631,6 +2633,7 @@ class MainActivity : BaseActivity() {
         // Directly enable UI elements regardless of loading state
         // This ensures UI is always enabled when conversations are received
         hideShimmer()
+        setMainSyncingVisible(false)
         binding.recyclerViewConversations.visibility = View.VISIBLE
         binding.bottomNavigationView.visibility = View.VISIBLE
         binding.fabStartChat.visibility = View.VISIBLE
@@ -2715,6 +2718,7 @@ class MainActivity : BaseActivity() {
      * Show shimmer loading effect
      */
     private fun showShimmer() {
+        setMainSyncingVisible(true)
         val shimmer = binding.shimmerLayout.root
         shimmer.visibility = View.VISIBLE
         shimmer.stopShimmer()
@@ -2729,9 +2733,15 @@ class MainActivity : BaseActivity() {
      * Hide shimmer loading effect
      */
     private fun hideShimmer() {
+        setMainSyncingVisible(false)
         val shimmer = binding.shimmerLayout.root
         shimmer.stopShimmer()
         shimmer.visibility = View.GONE
+    }
+
+    private fun setMainSyncingVisible(visible: Boolean) {
+        if (!::binding.isInitialized) return
+        binding.mainSyncing.root.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
     /**

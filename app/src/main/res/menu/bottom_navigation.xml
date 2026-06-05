@@ -12,12 +12,12 @@
 
     <item
         android:id="@+id/nav_personalize"
-        android:icon="@drawable/personalize_vector"
+        android:icon="@drawable/personavigation"
         android:title="@string/gen_bottom_navigation_title_3" />
 
     <item
         android:id="@+id/nav_settings"
-        android:icon="@drawable/settings_vector"
+        android:icon="@drawable/settingnavigation"
         android:title="@string/gen_bottom_navigation_title_4" />
 
 </menu>

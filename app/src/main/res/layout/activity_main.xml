@@ -257,7 +257,7 @@
         android:clipToPadding="false"
         android:padding="8dp"
         app:layout_constraintTop_toBottomOf="@id/categoryTabs"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintBottom_toTopOf="@id/mainSyncing"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -301,6 +301,25 @@
         android:layout_height="0dp"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/categoryTabs"
+        app:layout_constraintBottom_toTopOf="@id/mainSyncing"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <include
+        android:id="@+id/mainSyncing"
+        layout="@layout/main_syncing"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavTopDivider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <View
+        android:id="@+id/bottomNavTopDivider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="?android:attr/divider"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -321,6 +340,17 @@
         app:itemTextColor="@color/bottom_nav_item_selector"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_navigation"
+        app:itemTextAppearanceActive="@style/BottomNavigationItemTextAppearance"
+        app:itemTextAppearanceInactive="@style/BottomNavigationItemTextAppearance"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavBottomDivider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <View
+        android:id="@+id/bottomNavBottomDivider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/gray"
         app:layout_constraintBottom_toTopOf="@id/bannerAdContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -359,7 +389,7 @@
         app:icon="@drawable/start"
         app:iconTint="@color/white"
         app:cornerRadius="80dp"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavTopDivider"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="12dp"/>

@@ -392,6 +392,8 @@
     <string name="callercad_stay_connected_always">Stay Connected, Always</string>
     <string name="callercad_view_more">View more</string>
     <string name="caller_overlay_duration">Duration : %1$s</string>
+    <string name="main_syncing">Syncing messages…</string>
+    <string name="wait_few_seconds">Please wait for few seconds to complete the process</string>
 
     <string-array name="security_questions">
         <item>What\'s your favorite color?</item>
