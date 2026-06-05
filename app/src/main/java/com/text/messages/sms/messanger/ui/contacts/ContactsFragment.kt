@@ -2,6 +2,7 @@ package com.text.messages.sms.messanger.ui.contacts
 
 import android.Manifest
 import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
@@ -12,6 +13,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -69,6 +71,7 @@ class ContactsFragment : Fragment() {
         setupBackButton()
         setupSearchBar()
         setupRecyclerView()
+        focusSearchAndShowKeyboard()
         
         // Request permission and load contacts
         checkContactsPermissionAndLoad()
@@ -101,6 +104,16 @@ class ContactsFragment : Fragment() {
                 filterContacts(s?.toString() ?: "")
             }
         })
+    }
+
+    private fun focusSearchAndShowKeyboard() {
+        binding.editTextSearch.postDelayed({
+            if (_binding == null || !isAdded) return@postDelayed
+            binding.editTextSearch.requestFocus()
+            binding.editTextSearch.setSelection(binding.editTextSearch.text?.length ?: 0)
+            val inputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.showSoftInput(binding.editTextSearch, InputMethodManager.SHOW_IMPLICIT)
+        }, 250)
     }
     
     private fun setupRecyclerView() {

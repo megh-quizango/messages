@@ -2,6 +2,7 @@ package com.text.messages.sms.messanger.ui.contacts
 
 import android.Manifest
 import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
 import androidx.activity.enableEdgeToEdge
 import android.content.pm.PackageManager
@@ -13,6 +14,8 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import com.text.messages.sms.messanger.ui.base.BaseActivity
@@ -148,6 +151,7 @@ class ContactsActivity : BaseActivity() {
             }
         }
         setupBannerAd()
+        focusSearchAndShowKeyboard()
         
         // Register theme change receiver
         themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
@@ -170,6 +174,17 @@ class ContactsActivity : BaseActivity() {
                 filterContacts(s?.toString() ?: "")
             }
         })
+    }
+
+    private fun focusSearchAndShowKeyboard() {
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        binding.editTextSearch.postDelayed({
+            if (isFinishing || isDestroyed) return@postDelayed
+            binding.editTextSearch.requestFocus()
+            binding.editTextSearch.setSelection(binding.editTextSearch.text?.length ?: 0)
+            val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.showSoftInput(binding.editTextSearch, InputMethodManager.SHOW_IMPLICIT)
+        }, 250)
     }
     
     private fun setupRecyclerView() {
