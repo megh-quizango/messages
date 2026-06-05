@@ -12,8 +12,8 @@
 
     <FrameLayout
         android:id="@+id/avatarContainer"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -31,8 +31,8 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="@string/gen_item_conversation_text_1"
-            android:textColor="@color/gray_dark"
-            android:textSize="13sp"
+            android:textColor="@color/white"
+            android:textSize="22sp"
             android:textStyle="normal"
             android:visibility="gone"
             android:elevation="0dp"
