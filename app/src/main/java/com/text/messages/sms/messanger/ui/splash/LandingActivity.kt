@@ -22,8 +22,10 @@ import com.text.messages.sms.messanger.databinding.ActivityResumeBinding
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.main.MainViewModel
+import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
 import com.text.messages.sms.messanger.ui.welcome.WelcomeActivity
 import com.text.messages.sms.messanger.util.AppOpenAdManager
+import com.text.messages.sms.messanger.util.PermissionManager
 import androidx.lifecycle.ViewModelProvider
 
 class LandingActivity : BaseActivity() {
@@ -159,7 +161,10 @@ class LandingActivity : BaseActivity() {
                 // App is default SMS app - continue to main flow
                 // Also update SharedPreferences to reflect current state
                 sharedPreferences.edit().putBoolean("IS_DEFAULT_SMS_SET", true).apply()
-                if (showResumeScreen) {
+                if (!PermissionManager.hasOverlayPermission(this)) {
+                    Log.d("LandingActivity", "Overlay permission missing - redirecting to OverlayPermissionActivity")
+                    startActivity(Intent(this, OverlayPermissionActivity::class.java))
+                } else if (showResumeScreen) {
                     Log.d("LandingActivity", "App is default - showing in-place resume screen")
                     staysOnLauncher = true
                     showResumeScreenAndNavigate()

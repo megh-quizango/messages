@@ -467,9 +467,9 @@
         <!-- Default SMS App Changed Receiver -->
         <receiver
             android:name=".receiver.DefaultSmsChangedReceiver"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_DEFAULT_CHANGED" />
+                <action android:name="android.provider.action.DEFAULT_SMS_PACKAGE_CHANGED" />
             </intent-filter>
         </receiver>
 
