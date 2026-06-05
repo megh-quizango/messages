@@ -2,6 +2,8 @@ package com.text.messages.sms.messanger.util
 
 import android.app.Activity
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdListener
@@ -23,6 +25,7 @@ object ThemeTransitionAdManager {
     private var isLoadingInterstitial = false
     private var isLoadingNativeFullscreen = false
     private var didInterstitialLoadFail = false
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     fun preload(context: Context) {
         val appContext = context.applicationContext
@@ -57,6 +60,7 @@ object ThemeTransitionAdManager {
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdShowedFullScreenContent() {
+                AppOpenManager.suppressAppOpenFor(4_000L)
                 AnalyticsHelper.logAdImpression("interstitial", adUnitId)
             }
 
@@ -65,19 +69,28 @@ object ThemeTransitionAdManager {
             }
 
             override fun onAdDismissedFullScreenContent() {
-                onDismiss()
-                preload(activity.applicationContext)
+                completeAfterAd(activity, onDismiss)
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                 AnalyticsHelper.logAdError("interstitial", adUnitId, adError.code.toString())
-                onDismiss()
-                preload(activity.applicationContext)
+                completeAfterAd(activity, onDismiss)
             }
         }
 
         ad.show(activity)
         return true
+    }
+
+    private fun completeAfterAd(activity: Activity, onDismiss: () -> Unit) {
+        val appContext = activity.applicationContext
+        AppOpenManager.suppressAppOpenFor(4_000L)
+        mainHandler.postDelayed({
+            if (!activity.isDestroyed) {
+                onDismiss()
+            }
+            preload(appContext)
+        }, 80L)
     }
 
     fun hasNativeFullscreenAd(): Boolean {

@@ -1,6 +1,8 @@
 package com.text.messages.sms.messanger.ui.language
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
@@ -9,7 +11,6 @@ import androidx.core.view.WindowInsetsCompat
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import com.text.messages.sms.messanger.util.AppOpenManager
 import com.text.messages.sms.messanger.util.LanguageTransitionAdManager
-import com.text.messages.sms.messanger.util.ThemeManager
 
 class LanguageTransitionAdActivity : BaseActivity() {
 
@@ -22,12 +23,12 @@ class LanguageTransitionAdActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        val root = FrameLayout(this)
+        val root = FrameLayout(this).apply {
+            setBackgroundColor(Color.TRANSPARENT)
+        }
         setContentView(root)
-
-        ThemeManager.setupNavigationBar(this)
-        ThemeManager.applyTheme(this, root)
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

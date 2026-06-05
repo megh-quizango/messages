@@ -2,6 +2,8 @@ package com.text.messages.sms.messanger.util
 
 import android.app.Activity
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
@@ -22,6 +24,7 @@ object MainBackPressInterstitialAdManager {
     private var isLoadingFallback = false
     private var currentPrimaryAdUnitId: String? = null
     private var currentFallbackAdUnitId: String? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     fun preload(context: Context) {
         val appContext = context.applicationContext
@@ -123,6 +126,7 @@ object MainBackPressInterstitialAdManager {
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdShowedFullScreenContent() {
+                AppOpenManager.suppressAppOpenFor(4_000L)
                 AnalyticsHelper.logAdImpression(adType, adUnitId)
             }
 
@@ -131,14 +135,12 @@ object MainBackPressInterstitialAdManager {
             }
 
             override fun onAdDismissedFullScreenContent() {
-                onFinish()
-                preload(activity.applicationContext)
+                completeAfterAd(activity, onFinish)
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                 AnalyticsHelper.logAdError(adType, adUnitId, adError.code.toString())
-                onFinish()
-                preload(activity.applicationContext)
+                completeAfterAd(activity, onFinish)
             }
         }
 
@@ -153,5 +155,16 @@ object MainBackPressInterstitialAdManager {
         isLoadingFallback = false
         currentPrimaryAdUnitId = null
         currentFallbackAdUnitId = null
+    }
+
+    private fun completeAfterAd(activity: Activity, onFinish: () -> Unit) {
+        val appContext = activity.applicationContext
+        AppOpenManager.suppressAppOpenFor(4_000L)
+        mainHandler.postDelayed({
+            if (!activity.isDestroyed) {
+                onFinish()
+            }
+            preload(appContext)
+        }, 80L)
     }
 }

@@ -126,7 +126,7 @@
             android:name=".ui.language.LanguageTransitionAdActivity"
             android:exported="false"
             android:excludeFromRecents="true"
-            android:theme="@style/Theme.Messages.Resume" />
+            android:theme="@style/Theme.Messages.AdTransition" />
 
         <activity
             android:name=".ui.language.LanguageNativeFullscreenAdActivity"
@@ -137,7 +137,7 @@
             android:name=".ui.personalize.ThemeTransitionAdActivity"
             android:exported="false"
             android:excludeFromRecents="true"
-            android:theme="@style/Theme.Messages.Resume" />
+            android:theme="@style/Theme.Messages.AdTransition" />
 
         <activity
             android:name=".ui.personalize.ThemeNativeFullscreenAdActivity"
@@ -148,7 +148,7 @@
             android:name=".ui.settings.ImExTransitionAdActivity"
             android:exported="false"
             android:excludeFromRecents="true"
-            android:theme="@style/Theme.Messages.Resume" />
+            android:theme="@style/Theme.Messages.AdTransition" />
 
         <activity
             android:name=".ui.settings.ImExNativeFullscreenAdActivity"
