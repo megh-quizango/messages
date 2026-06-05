@@ -2,7 +2,6 @@ package com.text.messages.sms.messanger.ui.main
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.util.Log
 import android.util.TypedValue
@@ -15,7 +14,6 @@ import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
 import com.google.android.material.button.MaterialButton
@@ -25,7 +23,6 @@ import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.AvatarHelper
 import com.text.messages.sms.messanger.util.OtpHelper
 import com.text.messages.sms.messanger.util.SimHelper
-import com.text.messages.sms.messanger.util.ThemeManager
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -199,22 +196,16 @@ class ConversationAdapter(
         private val nativeAdView: NativeAdView = itemView.findViewById(R.id.nativeAdView)
         private val nativeAdLabel: TextView = itemView.findViewById(R.id.nativeAdLabel)
         private val nativeAdIcon: ImageView = itemView.findViewById(R.id.nativeAdIcon)
-        private val nativeAdMedia: MediaView = itemView.findViewById(R.id.nativeAdMedia)
         private val nativeAdHeadline: TextView = itemView.findViewById(R.id.nativeAdHeadline)
         private val nativeAdBody: TextView = itemView.findViewById(R.id.nativeAdBody)
-        private val nativeAdCallToAction: MaterialButton = itemView.findViewById(R.id.nativeAdCallToAction)
+        private val nativeAdCallToAction: TextView = itemView.findViewById(R.id.nativeAdCallToAction)
 
         fun bind(nativeAd: NativeAd) {
             val context = itemView.context
-            val themeColor = ThemeManager.getThemeColor(context)
-
-            nativeAdLabel.backgroundTintList = ColorStateList.valueOf(themeColor)
-            nativeAdCallToAction.backgroundTintList = ColorStateList.valueOf(themeColor)
 
             nativeAdView.headlineView = nativeAdHeadline
             nativeAdView.bodyView = nativeAdBody
             nativeAdView.iconView = nativeAdIcon
-            nativeAdView.mediaView = nativeAdMedia
             nativeAdView.callToActionView = nativeAdCallToAction
 
             nativeAdHeadline.text = nativeAd.headline
@@ -230,10 +221,6 @@ class ConversationAdapter(
             val icon = nativeAd.icon
             nativeAdIcon.visibility = if (icon?.drawable == null) View.GONE else View.VISIBLE
             nativeAdIcon.setImageDrawable(icon?.drawable)
-
-            val mediaContent = nativeAd.mediaContent
-            nativeAdMedia.visibility = if (mediaContent == null) View.GONE else View.VISIBLE
-            nativeAdMedia.mediaContent = mediaContent
 
             nativeAdView.setNativeAd(nativeAd)
         }

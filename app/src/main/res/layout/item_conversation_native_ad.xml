@@ -3,118 +3,119 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nativeAdView"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:minHeight="198dp"
-    android:background="?android:attr/selectableItemBackground">
+    android:layout_height="80dp"
+    android:background="#7FF8F8F8"
+    android:layoutDirection="locale">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/nativeAdContent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="198dp"
-        android:paddingStart="12dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="0dp">
+        android:layout_height="match_parent"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp">
 
-        <FrameLayout
-            android:id="@+id/nativeIconContainer"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <ImageView
+            android:id="@+id/nativeAdIcon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="5dp"
+            android:adjustViewBounds="true"
+            android:background="@drawable/bg_rounded_icon"
+            android:contentDescription="@string/ad_icon"
+            android:padding="2dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:id="@+id/nativeAdIcon"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_rounded_icon"
-                android:contentDescription="@string/ad_icon"
-                android:padding="4dp"
-                android:scaleType="centerCrop" />
-
-            <TextView
-                android:id="@+id/nativeAdLabel"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_gravity="end|bottom"
-                android:background="@drawable/bg_ad_badge"
-                android:gravity="center"
-                android:includeFontPadding="false"
-                android:text="@string/ad"
-                android:textColor="@color/white"
-                android:textSize="8sp"
-                android:textStyle="bold" />
-        </FrameLayout>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/nativeAdHeadline"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="10dp"
             android:ellipsize="end"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
+            android:maxLength="24"
             android:maxLines="1"
             android:text="@string/gen_native_ad_layout_text_2"
             android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="normal"
-            app:layout_constraintEnd_toStartOf="@+id/nativeAdCallToAction"
-            app:layout_constraintStart_toEndOf="@+id/nativeIconContainer"
-            app:layout_constraintTop_toTopOf="@+id/nativeIconContainer" />
+            android:textSize="15sp"
+            app:layout_constraintBottom_toTopOf="@id/nativeAdBody"
+            app:layout_constraintEnd_toStartOf="@id/nativeAdCallToAction"
+            app:layout_constraintStart_toEndOf="@id/nativeAdIcon"
+            app:layout_constraintTop_toTopOf="@id/nativeAdIcon"
+            app:layout_constraintVertical_chainStyle="packed" />
 
         <TextView
             android:id="@+id/nativeAdBody"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="10dp"
             android:ellipsize="end"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
+            android:maxLength="89"
             android:maxLines="1"
             android:text="@string/gen_native_ad_layout_text_3"
-            android:textColor="@color/gray_dark"
+            android:textColor="#6B6B6B"
             android:textSize="13sp"
-            app:layout_constraintEnd_toStartOf="@+id/nativeAdCallToAction"
-            app:layout_constraintStart_toStartOf="@+id/nativeAdHeadline"
-            app:layout_constraintTop_toBottomOf="@+id/nativeAdHeadline" />
+            app:layout_constraintBottom_toBottomOf="@id/nativeAdIcon"
+            app:layout_constraintEnd_toStartOf="@id/nativeAdCallToAction"
+            app:layout_constraintStart_toStartOf="@id/nativeAdHeadline"
+            app:layout_constraintTop_toBottomOf="@id/nativeAdHeadline" />
 
-        <com.google.android.material.button.MaterialButton
+        <TextView
             android:id="@+id/nativeAdCallToAction"
             android:layout_width="wrap_content"
-            android:layout_height="34dp"
-            android:minWidth="76dp"
-            android:minHeight="0dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/bg_inline_native_cta"
+            android:ellipsize="end"
+            android:fontFamily="@font/poppins"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:minWidth="70dp"
+            android:paddingStart="11dp"
+            android:paddingTop="7dp"
+            android:paddingEnd="11dp"
+            android:paddingBottom="7dp"
+            android:singleLine="true"
             android:text="@string/gen_native_ad_layout_text_5"
-            android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:textColor="@color/gray_dark"
+            android:textSize="11sp"
             android:textStyle="bold"
-            app:cornerRadius="18dp"
-            app:iconPadding="0dp"
-            app:layout_constraintBottom_toBottomOf="@+id/nativeIconContainer"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/nativeIconContainer" />
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.gms.ads.nativead.MediaView
-            android:id="@+id/nativeAdMedia"
-            android:layout_width="0dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_rounded_icon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/nativeAdHeadline"
-            app:layout_constraintTop_toBottomOf="@+id/nativeAdBody" />
+        <TextView
+            android:id="@+id/nativeAdLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:paddingBottom="1dp"
+            android:text="@string/ad"
+            android:textColor="#CC979797"
+            android:textSize="9sp"
+            app:layout_constraintBottom_toTopOf="@id/viewNativeAdDivider"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <View
             android:id="@+id/viewNativeAdDivider"
             android:layout_width="0dp"
             android:layout_height="0.5dp"
-            android:layout_marginTop="10dp"
             android:background="#D0D0D0"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/nativeAdHeadline"
-            app:layout_constraintTop_toBottomOf="@+id/nativeAdMedia" />
+            app:layout_constraintStart_toStartOf="@id/nativeAdHeadline" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.gms.ads.nativead.NativeAdView>
