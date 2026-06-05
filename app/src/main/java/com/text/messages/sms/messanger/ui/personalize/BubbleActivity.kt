@@ -54,8 +54,7 @@ class BubbleActivity : BaseActivity() {
         setupColorSelection()
         setupApplyButton()
         
-        // Select first color by default
-        binding.colorCircle1.performClick()
+        restoreSelectedColor()
         
         // Register theme change receiver
         themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
@@ -77,38 +76,61 @@ class BubbleActivity : BaseActivity() {
     
     private fun setupColorSelection() {
         val colorCircles = listOf(
-            binding.colorCircle1,
-            binding.colorCircle2,
-            binding.colorCircle3,
-            binding.colorCircle4,
-            binding.colorCircle5,
-            binding.colorCircle6
-        )
-        
-        val icons = listOf(
-            binding.iconSelected1,
-            binding.iconSelected2,
-            binding.iconSelected3,
-            binding.iconSelected4,
-            binding.iconSelected5,
-            binding.iconSelected6
+            findViewById<View>(R.id.colorCircle1),
+            findViewById<View>(R.id.colorCircle2),
+            findViewById<View>(R.id.colorCircle3),
+            findViewById<View>(R.id.colorCircle4),
+            findViewById<View>(R.id.colorCircle5),
+            findViewById<View>(R.id.colorCircle6),
+            findViewById<View>(R.id.colorCircle7),
+            findViewById<View>(R.id.colorCircle8),
+            findViewById<View>(R.id.colorCircle9),
+            findViewById<View>(R.id.colorCircle10),
+            findViewById<View>(R.id.colorCircle11),
+            findViewById<View>(R.id.colorCircle12)
         )
         
         colorCircles.forEachIndexed { index, circle ->
+            circle.findViewById<View>(R.id.viewColor)?.backgroundTintList =
+                android.content.res.ColorStateList.valueOf(Color.parseColor(colors[index]))
             circle.setOnClickListener {
-                // Hide previous selection
-                selectedIcon?.visibility = View.GONE
-                
-                // Show current selection
-                icons[index].visibility = View.VISIBLE
-                selectedColorCircle = circle
-                selectedIcon = icons[index]
-                selectedColor = colors[index]
-                
-                // Update sent message bubble color
-                updateSentBubbleColor(selectedColor)
+                selectColor(circle, colors[index])
             }
         }
+    }
+
+    private fun restoreSelectedColor() {
+        val savedColor = AppPreferences.getBubbleColor(this)
+        val selectedIndex = colors.indexOfFirst { it.equals(savedColor, ignoreCase = true) }
+            .takeIf { it >= 0 }
+            ?: 0
+        findViewById<View>(
+            listOf(
+                R.id.colorCircle1,
+                R.id.colorCircle2,
+                R.id.colorCircle3,
+                R.id.colorCircle4,
+                R.id.colorCircle5,
+                R.id.colorCircle6,
+                R.id.colorCircle7,
+                R.id.colorCircle8,
+                R.id.colorCircle9,
+                R.id.colorCircle10,
+                R.id.colorCircle11,
+                R.id.colorCircle12
+            )[selectedIndex]
+        )?.performClick()
+    }
+
+    private fun selectColor(circle: View, colorHex: String) {
+        selectedIcon?.visibility = View.GONE
+
+        val icon = circle.findViewById<ImageView>(R.id.imgCheck)
+        icon.visibility = View.VISIBLE
+        selectedColorCircle = circle
+        selectedIcon = icon
+        selectedColor = colorHex
+        updateSentBubbleColor(selectedColor)
     }
     
     private fun updateSentBubbleColor(colorHex: String) {
