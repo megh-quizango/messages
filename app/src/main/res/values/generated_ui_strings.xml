@@ -198,7 +198,8 @@
     <string name="gen_activity_ringtone_text_12">Love</string>
     <string name="gen_activity_ringtone_text_13">Water</string>
     <string name="gen_activity_ringtone_text_14">Tick</string>
-    <string name="gen_activity_ringtone_text_15">Wind Chimes</string>
+    <string name="gen_activity_ringtone_text_15">System</string>
+    <string name="gen_activity_ringtone_text_16">Customize</string>
     <string name="gen_activity_scheduled_messages_content_description_1">Back</string>
     <string name="gen_activity_scheduled_messages_text_2">Scheduled</string>
     <string name="gen_activity_scheduled_messages_text_3">Automatically send a message, at the exact moment you\'d like</string>

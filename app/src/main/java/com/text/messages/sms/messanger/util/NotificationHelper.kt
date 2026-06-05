@@ -9,7 +9,6 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
@@ -42,14 +41,12 @@ object NotificationHelper {
     private const val TAG = "NotificationHelper"
     private const val CHANNEL_ID = "sms_notifications"
     private const val PREFS_NAME = "notifications_settings"
-    private const val RINGTONE_PREFS_NAME = "ringtone_settings"
     
     private const val KEY_NOTIFICATION_PREVIEW = "notification_preview"
     private const val KEY_WAKE_SCREEN = "wake_screen"
     private const val KEY_BUTTON_1_ACTION = "button_1_action"
     private const val KEY_BUTTON_2_ACTION = "button_2_action"
     private const val KEY_BUTTON_3_ACTION = "button_3_action"
-    private const val KEY_SELECTED_RINGTONE = "selected_ringtone"
     
     fun initialize(context: Context) {
         createNotificationChannel(context)
@@ -103,9 +100,17 @@ object NotificationHelper {
                 Log.d(TAG, "Button actions - 1: $button1Action, 2: $button2Action, 3: $button3Action")
                 
                 // Get ringtone preference
-                val ringtonePrefs = context.getSharedPreferences(RINGTONE_PREFS_NAME, Context.MODE_PRIVATE)
-                val selectedRingtone = ringtonePrefs.getString(KEY_SELECTED_RINGTONE, "default")
-                val notificationSound = getNotificationSoundUri(context, selectedRingtone)
+                val ringtonePrefs = context.getSharedPreferences(RingtoneSoundResolver.PREFS_NAME, Context.MODE_PRIVATE)
+                val selectedRingtone = ringtonePrefs.getString(
+                    RingtoneSoundResolver.KEY_SELECTED_RINGTONE,
+                    RingtoneSoundResolver.DEFAULT
+                )
+                val pickedRingtoneUri = ringtonePrefs.getString(RingtoneSoundResolver.KEY_SELECTED_RINGTONE_URI, null)
+                val notificationSound = RingtoneSoundResolver.getNotificationSoundUri(
+                    context,
+                    selectedRingtone,
+                    pickedRingtoneUri
+                )
                 
                 // Build notification
                 withContext(Dispatchers.Main) {
@@ -602,47 +607,6 @@ object NotificationHelper {
         return phoneNumber.replace(Regex("[^0-9]"), "")
     }
     
-    /**
-     * Maps ringtone name to Android system notification sound URI
-     * Returns null for default system notification sound
-     * Returns Uri.EMPTY for sound_off (silent)
-     */
-    private fun getNotificationSoundUri(context: Context, ringtoneName: String?): Uri? {
-        return when (ringtoneName) {
-            "sound_off" -> Uri.EMPTY // Silent - no sound
-            "default" -> null // Use default system notification sound
-            else -> {
-                // For all other ringtones, try to get a different notification sound from system
-                // Since Android doesn't have specific sounds for these names,
-                // we'll use the default notification sound but allow the system to handle variations
-                // In a production app, you'd bundle custom sound files in res/raw/
-                var selectedUri: Uri? = null
-                try {
-                    val ringtoneManager = RingtoneManager(context)
-                    ringtoneManager.setType(RingtoneManager.TYPE_NOTIFICATION)
-                    val cursor = ringtoneManager.cursor
-                    
-                    // Try to get a different sound based on the ringtone name
-                    // This is a simple hash-based selection from available sounds
-                    val availableCount = cursor?.count ?: 0
-                    if (availableCount > 0 && ringtoneName != null) {
-                        // Use a hash of the ringtone name to select a consistent sound
-                        val index = Math.abs(ringtoneName.hashCode()) % availableCount
-                        cursor?.let { c ->
-                            if (c.moveToPosition(index)) {
-                                selectedUri = ringtoneManager.getRingtoneUri(index)
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Error getting custom notification sound, using default", e)
-                }
-                // Return selected URI or fallback to default notification sound
-                selectedUri ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            }
-        }
-    }
-    
     fun cancelNotification(context: Context, threadId: Long) {
         val notificationManager = NotificationManagerCompat.from(context)
         notificationManager.cancel(threadId.toInt())
@@ -665,9 +629,17 @@ object NotificationHelper {
     ) {
         try {
             // Get ringtone preference
-            val ringtonePrefs = context.getSharedPreferences(RINGTONE_PREFS_NAME, Context.MODE_PRIVATE)
-            val selectedRingtone = ringtonePrefs.getString(KEY_SELECTED_RINGTONE, "default")
-            val notificationSound = getNotificationSoundUri(context, selectedRingtone)
+            val ringtonePrefs = context.getSharedPreferences(RingtoneSoundResolver.PREFS_NAME, Context.MODE_PRIVATE)
+            val selectedRingtone = ringtonePrefs.getString(
+                RingtoneSoundResolver.KEY_SELECTED_RINGTONE,
+                RingtoneSoundResolver.DEFAULT
+            )
+            val pickedRingtoneUri = ringtonePrefs.getString(RingtoneSoundResolver.KEY_SELECTED_RINGTONE_URI, null)
+            val notificationSound = RingtoneSoundResolver.getNotificationSoundUri(
+                context,
+                selectedRingtone,
+                pickedRingtoneUri
+            )
             
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_chat_bubble)

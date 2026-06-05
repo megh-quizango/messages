@@ -386,6 +386,7 @@
     <string name="callercad_private_number">Private Number</string>
     <string name="callercad_outgoing_call_preview">Outgoing call : 3 seconds</string>
     <string name="callercad_theme_applied_successfully">Theme applied successfully</string>
+    <string name="ringtone_applied_successfully">Ringtone applied successfully</string>
     <string name="callercad_after_call_theme">After Call Theme</string>
     <string name="caller_cad_icon">Caller Cad</string>
     <string name="callercad_app_name">#Messages</string>
