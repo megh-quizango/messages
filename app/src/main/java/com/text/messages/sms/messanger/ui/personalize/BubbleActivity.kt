@@ -169,9 +169,10 @@ class BubbleActivity : BaseActivity() {
     }
 
     private fun applyBubbleScreenChrome() {
+        val headingColor = Color.parseColor("#111111")
         binding.textHeading.text = getString(R.string.gen_activity_bubble_text_2)
-        binding.textHeading.setTextColor(Color.WHITE)
-        binding.buttonBack.imageTintList = ColorStateList.valueOf(Color.WHITE)
+        binding.textHeading.setTextColor(headingColor)
+        binding.buttonBack.imageTintList = ColorStateList.valueOf(headingColor)
         binding.buttonApply.backgroundTintList = null
         binding.buttonApply.setTextColor(Color.WHITE)
     }

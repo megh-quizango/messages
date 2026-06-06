@@ -4,8 +4,9 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#4D000000"
-    android:fitsSystemWindows="true">
+    android:background="@color/white"
+    android:fitsSystemWindows="true"
+    android:tag="exclude_theme_wallpaper">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolbar"
@@ -30,7 +31,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
+            app:tint="@color/black_color" />
 
         <TextView
             android:id="@+id/textHeading"
@@ -40,7 +41,7 @@
             android:fontFamily="@font/poppins"
             android:includeFontPadding="false"
             android:text="@string/gen_activity_bubble_text_2"
-            android:textColor="@color/white"
+            android:textColor="@color/black_color"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
