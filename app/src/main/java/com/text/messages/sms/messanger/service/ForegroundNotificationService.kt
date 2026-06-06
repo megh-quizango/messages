@@ -15,7 +15,7 @@ import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.text.messages.sms.messanger.R
-import com.text.messages.sms.messanger.ui.compose.ComposeActivity
+import com.text.messages.sms.messanger.ui.contacts.ContactsActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.manageapps.ManageAppsActivity
 import com.text.messages.sms.messanger.ui.personalize.ThemesActivity
@@ -80,23 +80,39 @@ class ForegroundNotificationService : Service() {
 
     private fun bindActions(remoteViews: RemoteViews) {
         remoteViews.setOnClickPendingIntent(R.id.btn1, activityIntent(MainActivity::class.java, 101))
-        remoteViews.setOnClickPendingIntent(R.id.btn2, activityIntent(ComposeActivity::class.java, 102))
+        remoteViews.setOnClickPendingIntent(R.id.btn2, startChatIntent())
         remoteViews.setOnClickPendingIntent(R.id.btn3, activityIntent(ManageAppsActivity::class.java, 103))
         remoteViews.setOnClickPendingIntent(R.id.btn4, activityIntent(ThemesActivity::class.java, 105))
     }
 
-    private fun activityIntent(activityClass: Class<*>, requestCode: Int): PendingIntent {
-        val intent = Intent(this, activityClass).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                Intent.FLAG_ACTIVITY_SINGLE_TOP
+    private fun startChatIntent(): PendingIntent {
+        val intent = baseActivityIntent(ContactsActivity::class.java).apply {
+            putExtra("from_fab", true)
         }
+        return PendingIntent.getActivity(
+            this,
+            102,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun activityIntent(activityClass: Class<*>, requestCode: Int): PendingIntent {
+        val intent = baseActivityIntent(activityClass)
         return PendingIntent.getActivity(
             this,
             requestCode,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+    }
+
+    private fun baseActivityIntent(activityClass: Class<*>): Intent {
+        return Intent(this, activityClass).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
     }
 
     companion object {

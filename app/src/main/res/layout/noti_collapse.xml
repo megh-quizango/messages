@@ -10,16 +10,16 @@
 
     <LinearLayout
         android:id="@+id/btn1"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="center"
         android:orientation="vertical">
 
         <ImageView
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_gravity="center"
+            android:layout_centerVertical="true"
             android:contentDescription="@string/foreground_notification_conversation"
             android:padding="3dp"
             android:src="@drawable/ic_notification_messages" />
@@ -36,16 +36,16 @@
 
     <LinearLayout
         android:id="@+id/btn2"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="center"
         android:orientation="vertical">
 
         <ImageView
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_gravity="center"
+            android:layout_centerVertical="true"
             android:contentDescription="@string/foreground_notification_new_sms"
             android:padding="3dp"
             android:src="@drawable/ic_notification_new_message" />
@@ -62,16 +62,16 @@
 
     <LinearLayout
         android:id="@+id/btn3"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="center"
         android:orientation="vertical">
 
         <ImageView
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_gravity="center"
+            android:layout_centerVertical="true"
             android:contentDescription="@string/manage_apps"
             android:padding="3dp"
             android:src="@drawable/ic_notification_apps" />
@@ -88,16 +88,16 @@
 
     <LinearLayout
         android:id="@+id/btn4"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="center"
         android:orientation="vertical">
 
         <ImageView
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_gravity="center"
+            android:layout_centerVertical="true"
             android:contentDescription="@string/foreground_notification_theme"
             android:padding="3dp"
             android:src="@drawable/ic_notification_theme" />
