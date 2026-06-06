@@ -30,7 +30,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/black_color" />
+            app:tint="@color/white" />
 
         <TextView
             android:id="@+id/textHeading"
@@ -39,8 +39,8 @@
             android:layout_marginStart="8dp"
             android:fontFamily="@font/poppins"
             android:includeFontPadding="false"
-            android:text="@string/messges"
-            android:textColor="@color/black_color"
+            android:text="@string/gen_activity_bubble_text_2"
+            android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"

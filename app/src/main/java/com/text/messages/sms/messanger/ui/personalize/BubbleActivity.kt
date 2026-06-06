@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityBubbleBinding
 import android.content.BroadcastReceiver
+import android.content.res.ColorStateList
 import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.ThemeChangeHelper
 import com.text.messages.sms.messanger.util.ThemeManager
@@ -42,6 +43,8 @@ class BubbleActivity : BaseActivity() {
         
         // Apply theme
         ThemeManager.applyTheme(this, binding.root)
+        applyBubbleScreenChrome()
+        binding.root.post { applyBubbleScreenChrome() }
         
         // Handle window insets
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -59,6 +62,12 @@ class BubbleActivity : BaseActivity() {
         // Register theme change receiver
         themeChangeReceiver = ThemeChangeHelper.registerThemeChangeReceiver(this, binding.root)
         ThemeTransitionAdManager.preload(applicationContext)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        applyBubbleScreenChrome()
+        binding.root.post { applyBubbleScreenChrome() }
     }
     
     override fun onDestroy() {
@@ -146,6 +155,7 @@ class BubbleActivity : BaseActivity() {
     private fun setupApplyButton() {
         // Set background tint to null to prevent Material Design from overriding the background
         binding.buttonApply.backgroundTintList = null
+        binding.buttonApply.setTextColor(Color.WHITE)
         
         binding.buttonApply.setOnClickListener {
             // Save bubble color preference
@@ -156,6 +166,14 @@ class BubbleActivity : BaseActivity() {
             
             PersonalizationSaveAdNavigator.showAdThenFinish(this)
         }
+    }
+
+    private fun applyBubbleScreenChrome() {
+        binding.textHeading.text = getString(R.string.gen_activity_bubble_text_2)
+        binding.textHeading.setTextColor(Color.WHITE)
+        binding.buttonBack.imageTintList = ColorStateList.valueOf(Color.WHITE)
+        binding.buttonApply.backgroundTintList = null
+        binding.buttonApply.setTextColor(Color.WHITE)
     }
 }
 
