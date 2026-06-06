@@ -4,12 +4,14 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.StateListDrawable
 import android.graphics.drawable.ColorDrawable
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
@@ -80,6 +82,7 @@ object ThemeManager {
         // Always apply theme to ensure it works even if default colors are used
         // Apply immediately and synchronously
         applyThemeToView(context, rootView, themeColor, themeColorLight)
+        applyReferenceHeaderStyle(rootView, themeColor)
         
         // Force immediate invalidation and layout
         rootView.invalidate()
@@ -88,6 +91,7 @@ object ThemeManager {
         // Also apply after layout to catch any views that weren't ready
         rootView.post {
             applyThemeToView(context, rootView, themeColor, themeColorLight)
+            applyReferenceHeaderStyle(rootView, themeColor)
             rootView.invalidate()
             rootView.requestLayout()
         }
@@ -102,6 +106,7 @@ object ThemeManager {
         
         // Apply multiple times immediately
         applyThemeToView(context, rootView, themeColor, themeColorLight)
+        applyReferenceHeaderStyle(rootView, themeColor)
         rootView.invalidate()
         rootView.requestLayout()
         
@@ -118,8 +123,84 @@ object ThemeManager {
         // Apply again after a micro-delay
         rootView.post {
             applyThemeToView(context, rootView, themeColor, themeColorLight)
+            applyReferenceHeaderStyle(rootView, themeColor)
             rootView.invalidate()
             rootView.requestLayout()
+        }
+    }
+
+    private fun applyReferenceHeaderStyle(rootView: View, themeColor: String) {
+        val themeColorInt = Color.parseColor(themeColor)
+        val black = Color.parseColor("#111111")
+        val hasBottomNav = findViewByEntryName(rootView, "bottomNavigationView") != null
+
+        findHeaderTextViews(rootView).forEach { textView ->
+            val idName = getEntryName(textView)
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 21f)
+            textView.includeFontPadding = false
+            textView.typeface = Typeface.create(textView.typeface, Typeface.BOLD)
+            textView.letterSpacing = 0f
+            textView.setSingleLine(true)
+            textView.ellipsize = android.text.TextUtils.TruncateAt.END
+            textView.setTextColor(
+                if (idName == "textMainHeading" || (idName == "textHeading" && hasBottomNav)) {
+                    themeColorInt
+                } else {
+                    black
+                }
+            )
+        }
+    }
+
+    private fun findHeaderTextViews(rootView: View): List<TextView> {
+        val result = mutableListOf<TextView>()
+        collectHeaderTextViews(rootView, result)
+        return result
+    }
+
+    private fun collectHeaderTextViews(view: View, result: MutableList<TextView>) {
+        if (view is TextView && isReferenceHeaderTextView(view)) {
+            result.add(view)
+        }
+
+        if (view is android.view.ViewGroup) {
+            for (i in 0 until view.childCount) {
+                collectHeaderTextViews(view.getChildAt(i), result)
+            }
+        }
+    }
+
+    private fun isReferenceHeaderTextView(textView: TextView): Boolean {
+        return when (getEntryName(textView)) {
+            "textHeading", "textMainHeading", "textCallerThemeTitle" -> true
+            "textTitle" -> getEntryName(textView.parent as? View) == "toolbar"
+            else -> false
+        }
+    }
+
+    private fun findViewByEntryName(view: View, entryName: String): View? {
+        if (getEntryName(view) == entryName) {
+            return view
+        }
+
+        if (view is android.view.ViewGroup) {
+            for (i in 0 until view.childCount) {
+                findViewByEntryName(view.getChildAt(i), entryName)?.let { return it }
+            }
+        }
+
+        return null
+    }
+
+    private fun getEntryName(view: View?): String? {
+        if (view == null || view.id == View.NO_ID) {
+            return null
+        }
+
+        return try {
+            view.resources.getResourceEntryName(view.id)
+        } catch (e: Exception) {
+            null
         }
     }
     

@@ -32,7 +32,7 @@
         android:includeFontPadding="false"
         android:text="@string/gen_activity_themes_text_2"
         android:textColor="@color/black"
-        android:textSize="28sp"
+        android:textSize="21sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/buttonBack"
         app:layout_constraintStart_toEndOf="@id/buttonBack"

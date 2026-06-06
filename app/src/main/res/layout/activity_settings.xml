@@ -32,7 +32,7 @@
         android:layout_marginStart="16dp"
         android:text="@string/gen_activity_settings_text_2"
         android:textColor="@color/black"
-        android:textSize="20sp"
+        android:textSize="21sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="@id/buttonBack"
         app:layout_constraintBottom_toBottomOf="@id/buttonBack"
