@@ -68,17 +68,21 @@ object AppOpenAdManager {
             AdRequest.Builder(adUnitId).build(),
             object : AdLoadCallback<AppOpenAd> {
                 override fun onAdLoaded(ad: AppOpenAd) {
-                    isLoadingAd = false
-                    currentAd = ad
-                    loadTimeMs = System.currentTimeMillis()
-                    showLoadedAd(activity, ad, onFinish)
+                    handler.post {
+                        isLoadingAd = false
+                        currentAd = ad
+                        loadTimeMs = System.currentTimeMillis()
+                        showLoadedAd(activity, ad, onFinish)
+                    }
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    isLoadingAd = false
-                    currentAd = null
-                    Log.w(TAG, "Cold-start app open ad failed to load: ${loadAdError.message}")
-                    onFinish()
+                    handler.post {
+                        isLoadingAd = false
+                        currentAd = null
+                        Log.w(TAG, "Cold-start app open ad failed to load: ${loadAdError.message}")
+                        onFinish()
+                    }
                 }
             }
         )
@@ -93,18 +97,22 @@ object AppOpenAdManager {
 
         ad.adEventCallback = object : AppOpenAdEventCallback {
             override fun onAdShowedFullScreenContent() {
-                isShowingAd = true
+                handler.post { isShowingAd = true }
             }
 
             override fun onAdDismissedFullScreenContent() {
-                cleanup()
-                onFinish()
+                handler.post {
+                    cleanup()
+                    onFinish()
+                }
             }
 
             override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
-                Log.w(TAG, "Cold-start app open ad failed to show: ${fullScreenContentError.message}")
-                cleanup()
-                onFinish()
+                handler.post {
+                    Log.w(TAG, "Cold-start app open ad failed to show: ${fullScreenContentError.message}")
+                    cleanup()
+                    onFinish()
+                }
             }
         }
 

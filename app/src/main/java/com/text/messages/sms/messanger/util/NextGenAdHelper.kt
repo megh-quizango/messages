@@ -1,6 +1,8 @@
 package com.text.messages.sms.messanger.util
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.AdView
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
@@ -21,6 +23,15 @@ import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoaderCallba
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdRequest
 
 object NextGenAdHelper {
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    private inline fun runOnMain(crossinline block: () -> Unit) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            block()
+        } else {
+            mainHandler.post { block() }
+        }
+    }
 
     fun startInterstitialPreload(adUnitId: String) {
         if (adUnitId.isBlank()) return
@@ -43,8 +54,13 @@ object NextGenAdHelper {
         InterstitialAd.load(
             AdRequest.Builder(adUnitId).build(),
             object : AdLoadCallback<InterstitialAd> {
-                override fun onAdLoaded(ad: InterstitialAd) = onLoaded(ad)
-                override fun onAdFailedToLoad(adError: LoadAdError) = onFailed(adError)
+                override fun onAdLoaded(ad: InterstitialAd) {
+                    runOnMain { onLoaded(ad) }
+                }
+
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    runOnMain { onFailed(adError) }
+                }
             }
         )
     }
@@ -58,11 +74,20 @@ object NextGenAdHelper {
         onFailedToShow: (FullScreenContentError) -> Unit
     ) {
         ad.adEventCallback = object : InterstitialAdEventCallback {
-            override fun onAdShowedFullScreenContent() = onShowed()
-            override fun onAdClicked() = onClicked()
-            override fun onAdDismissedFullScreenContent() = onDismissed()
+            override fun onAdShowedFullScreenContent() {
+                runOnMain { onShowed() }
+            }
+
+            override fun onAdClicked() {
+                runOnMain { onClicked() }
+            }
+
+            override fun onAdDismissedFullScreenContent() {
+                runOnMain { onDismissed() }
+            }
+
             override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
-                onFailedToShow(fullScreenContentError)
+                runOnMain { onFailedToShow(fullScreenContentError) }
             }
         }
         ad.show(activity)
@@ -84,9 +109,17 @@ object NextGenAdHelper {
         NativeAdLoader.load(
             builder.build(),
             object : NativeAdLoaderCallback {
-                override fun onNativeAdLoaded(nativeAd: NativeAd) = onLoaded(nativeAd)
-                override fun onAdFailedToLoad(adError: LoadAdError) = onFailed(adError)
-                override fun onAdLoadingCompleted() = onCompleted()
+                override fun onNativeAdLoaded(nativeAd: NativeAd) {
+                    runOnMain { onLoaded(nativeAd) }
+                }
+
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    runOnMain { onFailed(adError) }
+                }
+
+                override fun onAdLoadingCompleted() {
+                    runOnMain { onCompleted() }
+                }
             }
         )
     }
@@ -107,15 +140,24 @@ object NextGenAdHelper {
             BannerAdRequest.Builder(adUnitId, adSize).build(),
             object : AdLoadCallback<BannerAd> {
                 override fun onAdLoaded(ad: BannerAd) {
-                    ad.adEventCallback = object : BannerAdEventCallback {
-                        override fun onAdClicked() = onClicked()
-                        override fun onAdImpression() = onImpression()
+                    runOnMain {
+                        ad.adEventCallback = object : BannerAdEventCallback {
+                            override fun onAdClicked() {
+                                runOnMain { onClicked() }
+                            }
+
+                            override fun onAdImpression() {
+                                runOnMain { onImpression() }
+                            }
+                        }
+                        adView.registerBannerAd(ad, activity)
+                        onLoaded(ad)
                     }
-                    adView.registerBannerAd(ad, activity)
-                    onLoaded(ad)
                 }
 
-                override fun onAdFailedToLoad(adError: LoadAdError) = onFailed(adError)
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    runOnMain { onFailed(adError) }
+                }
             }
         )
     }

@@ -72,19 +72,22 @@ class AppOpenManager(
             AdRequest.Builder(adUnitId).build(),
             object : AdLoadCallback<AppOpenAd> {
                 override fun onAdLoaded(ad: AppOpenAd) {
-                    appOpenAd = ad
-                    isLoadingAd = false
-                    loadTimeMs = System.currentTimeMillis()
-                    // If user resumed from background while ad was loading, show it now
-                    if (pendingShowOnLoad && currentActivity != null && !isShowingAd) {
-                        pendingShowOnLoad = false
-                        mainHandler.post { showAdIfAvailable() }
+                    mainHandler.post {
+                        appOpenAd = ad
+                        isLoadingAd = false
+                        loadTimeMs = System.currentTimeMillis()
+                        if (pendingShowOnLoad && currentActivity != null && !isShowingAd) {
+                            pendingShowOnLoad = false
+                            showAdIfAvailable()
+                        }
                     }
                 }
 
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    isLoadingAd = false
-                    pendingShowOnLoad = false
+                    mainHandler.post {
+                        isLoadingAd = false
+                        pendingShowOnLoad = false
+                    }
                 }
             }
         )
@@ -115,19 +118,23 @@ class AppOpenManager(
             object : AppOpenAdEventCallback {
 
                 override fun onAdShowedFullScreenContent() {
-                    isShowingAd = true
+                    mainHandler.post { isShowingAd = true }
                 }
 
                 override fun onAdDismissedFullScreenContent() {
-                    appOpenAd = null
-                    isShowingAd = false
-                    loadAd()
+                    mainHandler.post {
+                        appOpenAd = null
+                        isShowingAd = false
+                        loadAd()
+                    }
                 }
 
                 override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
-                    appOpenAd = null
-                    isShowingAd = false
-                    loadAd()
+                    mainHandler.post {
+                        appOpenAd = null
+                        isShowingAd = false
+                        loadAd()
+                    }
                 }
             }
 

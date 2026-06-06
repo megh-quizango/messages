@@ -1,6 +1,8 @@
 package com.text.messages.sms.messanger.util
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -52,29 +54,43 @@ fun AdView.loadBannerAdWithRemoteConfig(): AdView {
     adViewToLoad.loadAd(
         adRequest,
         object : AdLoadCallback<BannerAd> {
-            override fun onAdLoaded(ad: BannerAd) {
-                ad.adEventCallback = object : com.google.android.libraries.ads.mobile.sdk.banner.BannerAdEventCallback {
-                    override fun onAdClicked() {
-                        AnalyticsHelper.logAdClick("banner", adUnitIdToUse)
-                    }
+            private val mainHandler = Handler(Looper.getMainLooper())
 
-                    override fun onAdImpression() {
-                        AnalyticsHelper.logAdImpression("banner", adUnitIdToUse)
-                    }
+            private fun runOnMain(block: () -> Unit) {
+                if (Looper.myLooper() == Looper.getMainLooper()) {
+                    block()
+                } else {
+                    mainHandler.post(block)
                 }
-                adViewToLoad.registerBannerAd(ad, activity)
-                AdLoadingShimmerHelper.showBannerContent(adViewToLoad)
-                AnalyticsHelper.logAdLoad("banner", adUnitIdToUse, true)
+            }
+
+            override fun onAdLoaded(ad: BannerAd) {
+                runOnMain {
+                    ad.adEventCallback = object : com.google.android.libraries.ads.mobile.sdk.banner.BannerAdEventCallback {
+                        override fun onAdClicked() {
+                            runOnMain { AnalyticsHelper.logAdClick("banner", adUnitIdToUse) }
+                        }
+
+                        override fun onAdImpression() {
+                            runOnMain { AnalyticsHelper.logAdImpression("banner", adUnitIdToUse) }
+                        }
+                    }
+                    adViewToLoad.registerBannerAd(ad, activity)
+                    AdLoadingShimmerHelper.showBannerContent(adViewToLoad)
+                    AnalyticsHelper.logAdLoad("banner", adUnitIdToUse, true)
+                }
             }
 
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                AdLoadingShimmerHelper.hideBanner(adViewToLoad)
-                AnalyticsHelper.logAdLoad("banner", adUnitIdToUse, false)
-                AnalyticsHelper.logAdError("banner", adUnitIdToUse, loadAdError.code.toString())
-                android.util.Log.w(
-                    "AdHelper",
-                    "Banner failed: code=${loadAdError.code} message=${loadAdError.message} unit=$adUnitIdToUse"
-                )
+                runOnMain {
+                    AdLoadingShimmerHelper.hideBanner(adViewToLoad)
+                    AnalyticsHelper.logAdLoad("banner", adUnitIdToUse, false)
+                    AnalyticsHelper.logAdError("banner", adUnitIdToUse, loadAdError.code.toString())
+                    android.util.Log.w(
+                        "AdHelper",
+                        "Banner failed: code=${loadAdError.code} message=${loadAdError.message} unit=$adUnitIdToUse"
+                    )
+                }
             }
         }
     )
