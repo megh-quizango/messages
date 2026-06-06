@@ -25,7 +25,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.gms.ads.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityContactsBinding

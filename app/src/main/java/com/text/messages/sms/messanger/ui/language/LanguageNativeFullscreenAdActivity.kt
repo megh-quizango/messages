@@ -4,9 +4,7 @@ import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.gms.ads.nativead.MediaView
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdView
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import com.text.messages.sms.messanger.databinding.ActivityLanguageNativeFullscreenAdBinding
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import com.text.messages.sms.messanger.util.LanguageTransitionAdManager
@@ -78,7 +76,6 @@ class LanguageNativeFullscreenAdActivity : BaseActivity() {
 
     private fun bindNativeAd(ad: NativeAd) {
         val nativeAdView = binding.nativeFullscreenAdView
-        nativeAdView.mediaView = binding.adMediaView
         nativeAdView.headlineView = binding.adHeadlineView
         nativeAdView.bodyView = binding.adBodyView
         nativeAdView.iconView = binding.adIconView
@@ -100,7 +97,7 @@ class LanguageNativeFullscreenAdActivity : BaseActivity() {
 
         binding.adCallToActionView.text = ad.callToAction ?: getString(com.text.messages.sms.messanger.R.string.open)
 
-        nativeAdView.setNativeAd(ad)
+        nativeAdView.registerNativeAd(ad, mediaView)
     }
 
     override fun onDestroy() {

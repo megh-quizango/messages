@@ -52,7 +52,7 @@ import com.text.messages.sms.messanger.databinding.BottomSheetAttachmentsBinding
 import com.text.messages.sms.messanger.databinding.BottomSheetQuickNoteBinding
 import com.text.messages.sms.messanger.databinding.ItemAttachmentImageBinding
 import com.text.messages.sms.messanger.databinding.ItemAttachmentContactBinding
-import com.google.android.gms.ads.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 import com.text.messages.sms.messanger.data.model.Message
 import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper

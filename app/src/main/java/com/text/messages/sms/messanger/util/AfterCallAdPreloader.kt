@@ -5,11 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 
 /**
  * Preloads a native ad during RINGING/OFFHOOK so [CallAfterActivity] can show it faster.
@@ -31,15 +27,7 @@ object AfterCallAdPreloader {
         if (adUnitId.isBlank()) return
 
         isLoading = true
-        val appContext = context.applicationContext
-        try {
-            MobileAds.initialize(appContext) {
-                loadNative(appContext, adUnitId)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Ad preload init failed", e)
-            isLoading = false
-        }
+        loadNative(adUnitId)
     }
 
     fun consumePreloadedAd(): NativeAd? {
@@ -54,27 +42,21 @@ object AfterCallAdPreloader {
         isLoading = false
     }
 
-    private fun loadNative(context: Context, adUnitId: String) {
-        com.google.android.gms.ads.AdLoader.Builder(context, adUnitId)
-            .forNativeAd { nativeAd ->
+    private fun loadNative(adUnitId: String) {
+        NextGenAdHelper.loadNative(
+            adUnitId = adUnitId,
+            preferLandscape = true,
+            onLoaded = { nativeAd ->
                 preloadedAd?.destroy()
                 preloadedAd = nativeAd
                 isLoading = false
                 Log.d(TAG, "Native ad preloaded for after-call")
+            },
+            onFailed = { error ->
+                isLoading = false
+                Log.d(TAG, "After-call ad preload failed: ${error.message}")
             }
-            .withAdListener(object : com.google.android.gms.ads.AdListener() {
-                override fun onAdFailedToLoad(error: LoadAdError) {
-                    isLoading = false
-                    Log.d(TAG, "After-call ad preload failed: ${error.message}")
-                }
-            })
-            .withNativeAdOptions(
-                NativeAdOptions.Builder()
-                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
-                    .build()
-            )
-            .build()
-            .loadAd(AdRequest.Builder().build())
+        )
     }
 
     private fun hasNetwork(context: Context): Boolean {

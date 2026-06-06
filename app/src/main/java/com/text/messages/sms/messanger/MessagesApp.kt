@@ -7,7 +7,8 @@ import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.google.android.gms.ads.MobileAds
+import com.google.android.libraries.ads.mobile.sdk.MobileAds
+import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -114,10 +115,19 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
             }
         }
 
-        // AdMob init (callback-based, safe on main thread after first frame)
-        MobileAds.initialize(this) {
-            Log.d("MessagesApp", "AdMob SDK initialized (deferred) appId=${BuildConfig.ADMOB_APP_ID}")
-            AdConfig.logResolvedIds(this@MessagesApp)
+        // GMA Next-Gen SDK must be initialized on a background thread.
+        bgExecutor.execute {
+            try {
+                MobileAds.initialize(
+                    this@MessagesApp,
+                    InitializationConfig.Builder(BuildConfig.ADMOB_APP_ID).build()
+                ) {
+                    Log.d("MessagesApp", "GMA Next-Gen SDK initialized appId=${BuildConfig.ADMOB_APP_ID}")
+                    AdConfig.logResolvedIds(this@MessagesApp)
+                }
+            } catch (e: Exception) {
+                Log.e("MessagesApp", "GMA Next-Gen SDK init failed", e)
+            }
         }
 
         // AppOpenManager registration (after first frame)

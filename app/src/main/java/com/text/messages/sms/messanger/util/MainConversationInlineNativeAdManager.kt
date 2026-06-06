@@ -2,12 +2,8 @@ package com.text.messages.sms.messanger.util
 
 import android.content.Context
 import android.util.Log
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdEventCallback
 
 object MainConversationInlineNativeAdManager {
     private const val TAG = "MainConversationInlineNativeAd"
@@ -58,39 +54,32 @@ object MainConversationInlineNativeAdManager {
         loadingSlots[slotIndex] = true
         val adType = "main_inline_native_${slotIndex + 1}"
 
-        val adLoader = AdLoader.Builder(context, adUnitId)
-            .forNativeAd { nativeAd ->
+        NextGenAdHelper.loadNative(
+            adUnitId = adUnitId,
+            preferLandscape = true,
+            onLoaded = { nativeAd ->
+                nativeAd.adEventCallback = object : NativeAdEventCallback {
+                    override fun onAdClicked() {
+                        AnalyticsHelper.logAdClick(adType, adUnitId)
+                    }
+
+                    override fun onAdImpression() {
+                        AnalyticsHelper.logAdImpression(adType, adUnitId)
+                    }
+                }
                 nativeAds[slotIndex]?.destroy()
                 nativeAds[slotIndex] = nativeAd
                 loadingSlots[slotIndex] = false
                 AnalyticsHelper.logAdLoad(adType, adUnitId, true)
                 onAdsChanged()
+            },
+            onFailed = { loadAdError ->
+                loadingSlots[slotIndex] = false
+                AnalyticsHelper.logAdLoad(adType, adUnitId, false)
+                AnalyticsHelper.logAdError(adType, adUnitId, loadAdError.code.toString())
+                Log.w(TAG, "loadSlot: failed slot=$slotIndex code=${loadAdError.code} message=${loadAdError.message}")
+                onAdsChanged()
             }
-            .withAdListener(object : AdListener() {
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    loadingSlots[slotIndex] = false
-                    AnalyticsHelper.logAdLoad(adType, adUnitId, false)
-                    AnalyticsHelper.logAdError(adType, adUnitId, loadAdError.code.toString())
-                    Log.w(TAG, "loadSlot: failed slot=$slotIndex code=${loadAdError.code} message=${loadAdError.message}")
-                    onAdsChanged()
-                }
-
-                override fun onAdClicked() {
-                    AnalyticsHelper.logAdClick(adType, adUnitId)
-                }
-
-                override fun onAdImpression() {
-                    AnalyticsHelper.logAdImpression(adType, adUnitId)
-                }
-            })
-            .withNativeAdOptions(
-                NativeAdOptions.Builder()
-                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
-                    .setMediaAspectRatio(NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_LANDSCAPE)
-                    .build()
-            )
-            .build()
-
-        adLoader.loadAd(AdRequest.Builder().build())
+        )
     }
 }

@@ -5,16 +5,8 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 
 object ThemeTransitionAdManager {
 
@@ -58,27 +50,24 @@ object ThemeTransitionAdManager {
         interstitialAd = null
         val adUnitId = AdConfig.resolveThemeInterstitialAdUnitId(activity)
 
-        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdShowedFullScreenContent() {
+        NextGenAdHelper.showInterstitial(
+            activity = activity,
+            ad = ad,
+            onShowed = {
                 AppOpenManager.suppressAppOpenFor(4_000L)
                 AnalyticsHelper.logAdImpression("interstitial", adUnitId)
-            }
-
-            override fun onAdClicked() {
+            },
+            onClicked = {
                 AnalyticsHelper.logAdClick("interstitial", adUnitId)
-            }
-
-            override fun onAdDismissedFullScreenContent() {
+            },
+            onDismissed = {
                 completeAfterAd(activity, onDismiss)
-            }
-
-            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+            },
+            onFailedToShow = { adError ->
                 AnalyticsHelper.logAdError("interstitial", adUnitId, adError.code.toString())
                 completeAfterAd(activity, onDismiss)
             }
-        }
-
-        ad.show(activity)
+        )
         return true
     }
 
@@ -119,26 +108,29 @@ object ThemeTransitionAdManager {
 
         isLoadingInterstitial = true
         didInterstitialLoadFail = false
-        InterstitialAd.load(
-            context,
+        NextGenAdHelper.startInterstitialPreload(adUnitId)
+        NextGenAdHelper.pollInterstitial(adUnitId)?.let { ad ->
+            interstitialAd = ad
+            isLoadingInterstitial = false
+            didInterstitialLoadFail = false
+            AnalyticsHelper.logAdLoad("interstitial", adUnitId, true)
+            return
+        }
+        NextGenAdHelper.loadInterstitial(
             adUnitId,
-            AdRequest.Builder().build(),
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    interstitialAd = ad
-                    isLoadingInterstitial = false
-                    didInterstitialLoadFail = false
-                    AnalyticsHelper.logAdLoad("interstitial", adUnitId, true)
-                }
-
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    interstitialAd = null
-                    isLoadingInterstitial = false
-                    didInterstitialLoadFail = true
-                    AnalyticsHelper.logAdLoad("interstitial", adUnitId, false)
-                    AnalyticsHelper.logAdError("interstitial", adUnitId, loadAdError.code.toString())
-                    Log.w(TAG, "Theme interstitial failed to load: ${loadAdError.message}")
-                }
+            onLoaded = { ad ->
+                interstitialAd = ad
+                isLoadingInterstitial = false
+                didInterstitialLoadFail = false
+                AnalyticsHelper.logAdLoad("interstitial", adUnitId, true)
+            },
+            onFailed = { loadAdError ->
+                interstitialAd = null
+                isLoadingInterstitial = false
+                didInterstitialLoadFail = true
+                AnalyticsHelper.logAdLoad("interstitial", adUnitId, false)
+                AnalyticsHelper.logAdError("interstitial", adUnitId, loadAdError.code.toString())
+                Log.w(TAG, "Theme interstitial failed to load: ${loadAdError.message}")
             }
         )
     }
@@ -154,28 +146,21 @@ object ThemeTransitionAdManager {
         }
 
         isLoadingNativeFullscreen = true
-        val adLoader = AdLoader.Builder(context, adUnitId)
-            .forNativeAd { ad ->
+        NextGenAdHelper.loadNative(
+            adUnitId = adUnitId,
+            preferLandscape = false,
+            onLoaded = { ad ->
                 nativeFullscreenAd?.destroy()
                 nativeFullscreenAd = ad
                 isLoadingNativeFullscreen = false
                 AnalyticsHelper.logAdLoad("native_fullscreen", adUnitId, true)
+            },
+            onFailed = { loadAdError ->
+                isLoadingNativeFullscreen = false
+                AnalyticsHelper.logAdLoad("native_fullscreen", adUnitId, false)
+                AnalyticsHelper.logAdError("native_fullscreen", adUnitId, loadAdError.code.toString())
+                Log.w(TAG, "Theme native fullscreen failed to load: ${loadAdError.message}")
             }
-            .withNativeAdOptions(
-                NativeAdOptions.Builder()
-                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
-                    .build()
-            )
-            .withAdListener(object : AdListener() {
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    isLoadingNativeFullscreen = false
-                    AnalyticsHelper.logAdLoad("native_fullscreen", adUnitId, false)
-                    AnalyticsHelper.logAdError("native_fullscreen", adUnitId, loadAdError.code.toString())
-                    Log.w(TAG, "Theme native fullscreen failed to load: ${loadAdError.message}")
-                }
-            })
-            .build()
-
-        adLoader.loadAd(AdRequest.Builder().build())
+        )
     }
 }

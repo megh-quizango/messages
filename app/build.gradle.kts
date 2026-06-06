@@ -174,7 +174,7 @@ dependencies {
     kapt("androidx.room:room-compiler:$roomVersion")
     
     // AdMob
-    implementation("com.google.android.gms:play-services-ads:23.5.0")
+    implementation("com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.1.1")
 
     // Core Facebook SDK for App Ads and Tracking
     implementation(libs.facebook.android.sdk)

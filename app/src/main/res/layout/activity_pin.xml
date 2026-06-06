@@ -288,12 +288,10 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <com.google.android.gms.ads.AdView
+        <com.google.android.libraries.ads.mobile.sdk.banner.AdView
             android:id="@+id/adViewBanner"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:adSize="BANNER"
-            app:adUnitId="@string/banner_ad_unit_placeholder" />
+            android:layout_height="match_parent" />
 
     </FrameLayout>
 

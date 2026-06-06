@@ -8,7 +8,7 @@ import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.gms.ads.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 import com.google.gson.Gson
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityArchiveBinding

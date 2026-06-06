@@ -7,7 +7,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.facebook.shimmer.ShimmerFrameLayout
-import com.google.android.gms.ads.AdView
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView
 import kotlin.math.roundToInt
 import com.text.messages.sms.messanger.R
 
@@ -170,7 +170,7 @@ object AdLoadingShimmerHelper {
 
     private fun getBannerHeightPx(adView: AdView): Int {
         val context = adView.context
-        return adView.adSize?.getHeightInPixels(context)
+        return adView.getBannerAd()?.getAdSize()?.getHeightInPixels(context)
             ?: (50f * context.resources.displayMetrics.density).roundToInt()
     }
 

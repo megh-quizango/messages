@@ -1004,7 +1004,7 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <com.google.android.gms.ads.nativead.NativeAdView
+        <com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
             android:id="@+id/nativeAdView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -1030,7 +1030,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <com.google.android.gms.ads.nativead.MediaView
+                <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
                     android:id="@+id/adMedia"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
@@ -1086,7 +1086,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/adIcon" />
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.gms.ads.nativead.NativeAdView>
+        </com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView>
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

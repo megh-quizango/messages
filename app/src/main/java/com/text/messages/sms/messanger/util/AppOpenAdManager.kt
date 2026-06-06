@@ -4,11 +4,12 @@ import android.app.Activity
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.appopen.AppOpenAd
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAd
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAdEventCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 
 object AppOpenAdManager {
 
@@ -19,6 +20,7 @@ object AppOpenAdManager {
     private var isLoadingAd = false
     private var isShowingAd = false
     private var currentAd: AppOpenAd? = null
+    private var loadTimeMs: Long = 0L
 
     fun showColdStartAppOpenAd(activity: Activity, onFinish: () -> Unit) {
         if (activity.isFinishing || activity.isDestroyed) {
@@ -43,7 +45,7 @@ object AppOpenAdManager {
             return
         }
 
-        currentAd?.let { loadedAd ->
+        currentAd?.takeIf { System.currentTimeMillis() - loadTimeMs < 4 * 60 * 60 * 1000L }?.let { loadedAd ->
             showLoadedAd(activity, loadedAd, onFinish)
             return
         }
@@ -62,16 +64,13 @@ object AppOpenAdManager {
 
         isLoadingAd = true
 
-        @Suppress("DEPRECATION")
         AppOpenAd.load(
-            activity,
-            adUnitId,
-            AdRequest.Builder().build(),
-            AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT,
-            object : AppOpenAd.AppOpenAdLoadCallback() {
+            AdRequest.Builder(adUnitId).build(),
+            object : AdLoadCallback<AppOpenAd> {
                 override fun onAdLoaded(ad: AppOpenAd) {
                     isLoadingAd = false
                     currentAd = ad
+                    loadTimeMs = System.currentTimeMillis()
                     showLoadedAd(activity, ad, onFinish)
                 }
 
@@ -92,7 +91,7 @@ object AppOpenAdManager {
             return
         }
 
-        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+        ad.adEventCallback = object : AppOpenAdEventCallback {
             override fun onAdShowedFullScreenContent() {
                 isShowingAd = true
             }
@@ -102,8 +101,8 @@ object AppOpenAdManager {
                 onFinish()
             }
 
-            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                Log.w(TAG, "Cold-start app open ad failed to show: ${adError.message}")
+            override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
+                Log.w(TAG, "Cold-start app open ad failed to show: ${fullScreenContentError.message}")
                 cleanup()
                 onFinish()
             }

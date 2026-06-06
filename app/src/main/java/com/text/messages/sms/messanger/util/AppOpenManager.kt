@@ -5,8 +5,12 @@ import android.app.Application
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import com.google.android.gms.ads.*
-import com.google.android.gms.ads.appopen.AppOpenAd
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAd
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAdEventCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.language.LanguageNativeFullscreenAdActivity
@@ -43,6 +47,7 @@ class AppOpenManager(
     private var isLoadingAd = false
     private var isShowingAd = false
     private var currentActivity: Activity? = null
+    private var loadTimeMs: Long = 0L
 
     /** Number of activities currently in "started" state. When this goes 1 -> 0, app went to background. */
     private var startedActivityCount = 0
@@ -63,18 +68,13 @@ class AppOpenManager(
 
         isLoadingAd = true
 
-        val request = AdRequest.Builder().build()
-
-        @Suppress("DEPRECATION")
         AppOpenAd.load(
-            application,
-            adUnitId,
-            request,
-            AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT,
-            object : AppOpenAd.AppOpenAdLoadCallback() {
+            AdRequest.Builder(adUnitId).build(),
+            object : AdLoadCallback<AppOpenAd> {
                 override fun onAdLoaded(ad: AppOpenAd) {
                     appOpenAd = ad
                     isLoadingAd = false
+                    loadTimeMs = System.currentTimeMillis()
                     // If user resumed from background while ad was loading, show it now
                     if (pendingShowOnLoad && currentActivity != null && !isShowingAd) {
                         pendingShowOnLoad = false
@@ -82,7 +82,7 @@ class AppOpenManager(
                     }
                 }
 
-                override fun onAdFailedToLoad(error: LoadAdError) {
+                override fun onAdFailedToLoad(adError: LoadAdError) {
                     isLoadingAd = false
                     pendingShowOnLoad = false
                 }
@@ -91,7 +91,7 @@ class AppOpenManager(
     }
 
     private fun isAdAvailable(): Boolean {
-        return appOpenAd != null
+        return appOpenAd != null && System.currentTimeMillis() - loadTimeMs < 4 * 60 * 60 * 1000L
     }
 
     /**
@@ -111,8 +111,8 @@ class AppOpenManager(
             return
         }
 
-        appOpenAd?.fullScreenContentCallback =
-            object : FullScreenContentCallback() {
+        appOpenAd?.adEventCallback =
+            object : AppOpenAdEventCallback {
 
                 override fun onAdShowedFullScreenContent() {
                     isShowingAd = true
@@ -124,7 +124,7 @@ class AppOpenManager(
                     loadAd()
                 }
 
-                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
                     appOpenAd = null
                     isShowingAd = false
                     loadAd()

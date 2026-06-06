@@ -5,12 +5,8 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
 
 object MainBackPressInterstitialAdManager {
 
@@ -45,8 +41,10 @@ object MainBackPressInterstitialAdManager {
         currentFallbackAdUnitId = fallbackAdUnitId
 
         if (primaryAdUnitId.isNotBlank()) {
+            NextGenAdHelper.startInterstitialPreload(primaryAdUnitId)
             loadPrimary(appContext, primaryAdUnitId, fallbackAdUnitId)
         } else if (fallbackAdUnitId.isNotBlank()) {
+            NextGenAdHelper.startInterstitialPreload(fallbackAdUnitId)
             loadFallback(appContext, fallbackAdUnitId)
         }
     }
@@ -54,27 +52,29 @@ object MainBackPressInterstitialAdManager {
     private fun loadPrimary(context: Context, adUnitId: String, fallbackAdUnitId: String) {
         if (isLoadingPrimary || primaryInterstitialAd != null) return
 
-        isLoadingPrimary = true
-        InterstitialAd.load(
-            context,
-            adUnitId,
-            AdRequest.Builder().build(),
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    primaryInterstitialAd = ad
-                    isLoadingPrimary = false
-                    AnalyticsHelper.logAdLoad(AD_TYPE, adUnitId, true)
-                }
+        NextGenAdHelper.pollInterstitial(adUnitId)?.let { preloadedAd ->
+            primaryInterstitialAd = preloadedAd
+            AnalyticsHelper.logAdLoad(AD_TYPE, adUnitId, true)
+            return
+        }
 
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    primaryInterstitialAd = null
-                    isLoadingPrimary = false
-                    AnalyticsHelper.logAdLoad(AD_TYPE, adUnitId, false)
-                    AnalyticsHelper.logAdError(AD_TYPE, adUnitId, loadAdError.code.toString())
-                    Log.w(TAG, "Main back interstitial failed to load: ${loadAdError.message}")
-                    if (fallbackAdUnitId.isNotBlank()) {
-                        loadFallback(context, fallbackAdUnitId)
-                    }
+        isLoadingPrimary = true
+        NextGenAdHelper.loadInterstitial(
+            adUnitId,
+            onLoaded = { ad ->
+                primaryInterstitialAd = ad
+                isLoadingPrimary = false
+                AnalyticsHelper.logAdLoad(AD_TYPE, adUnitId, true)
+            },
+            onFailed = { loadAdError ->
+                primaryInterstitialAd = null
+                isLoadingPrimary = false
+                AnalyticsHelper.logAdLoad(AD_TYPE, adUnitId, false)
+                AnalyticsHelper.logAdError(AD_TYPE, adUnitId, loadAdError.code.toString())
+                Log.w(TAG, "Main back interstitial failed to load: ${loadAdError.message}")
+                if (fallbackAdUnitId.isNotBlank()) {
+                    NextGenAdHelper.startInterstitialPreload(fallbackAdUnitId)
+                    loadFallback(context, fallbackAdUnitId)
                 }
             }
         )
@@ -83,25 +83,26 @@ object MainBackPressInterstitialAdManager {
     private fun loadFallback(context: Context, adUnitId: String) {
         if (isLoadingFallback || fallbackInterstitialAd != null) return
 
-        isLoadingFallback = true
-        InterstitialAd.load(
-            context,
-            adUnitId,
-            AdRequest.Builder().build(),
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    fallbackInterstitialAd = ad
-                    isLoadingFallback = false
-                    AnalyticsHelper.logAdLoad(FALLBACK_AD_TYPE, adUnitId, true)
-                }
+        NextGenAdHelper.pollInterstitial(adUnitId)?.let { preloadedAd ->
+            fallbackInterstitialAd = preloadedAd
+            AnalyticsHelper.logAdLoad(FALLBACK_AD_TYPE, adUnitId, true)
+            return
+        }
 
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    fallbackInterstitialAd = null
-                    isLoadingFallback = false
-                    AnalyticsHelper.logAdLoad(FALLBACK_AD_TYPE, adUnitId, false)
-                    AnalyticsHelper.logAdError(FALLBACK_AD_TYPE, adUnitId, loadAdError.code.toString())
-                    Log.w(TAG, "Main back fallback interstitial failed to load: ${loadAdError.message}")
-                }
+        isLoadingFallback = true
+        NextGenAdHelper.loadInterstitial(
+            adUnitId,
+            onLoaded = { ad ->
+                fallbackInterstitialAd = ad
+                isLoadingFallback = false
+                AnalyticsHelper.logAdLoad(FALLBACK_AD_TYPE, adUnitId, true)
+            },
+            onFailed = { loadAdError ->
+                fallbackInterstitialAd = null
+                isLoadingFallback = false
+                AnalyticsHelper.logAdLoad(FALLBACK_AD_TYPE, adUnitId, false)
+                AnalyticsHelper.logAdError(FALLBACK_AD_TYPE, adUnitId, loadAdError.code.toString())
+                Log.w(TAG, "Main back fallback interstitial failed to load: ${loadAdError.message}")
             }
         )
     }
@@ -124,27 +125,24 @@ object MainBackPressInterstitialAdManager {
             return false
         }
 
-        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdShowedFullScreenContent() {
+        NextGenAdHelper.showInterstitial(
+            activity = activity,
+            ad = ad,
+            onShowed = {
                 AppOpenManager.suppressAppOpenFor(4_000L)
                 AnalyticsHelper.logAdImpression(adType, adUnitId)
-            }
-
-            override fun onAdClicked() {
+            },
+            onClicked = {
                 AnalyticsHelper.logAdClick(adType, adUnitId)
-            }
-
-            override fun onAdDismissedFullScreenContent() {
+            },
+            onDismissed = {
                 completeAfterAd(activity, onFinish)
-            }
-
-            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+            },
+            onFailedToShow = { adError ->
                 AnalyticsHelper.logAdError(adType, adUnitId, adError.code.toString())
                 completeAfterAd(activity, onFinish)
             }
-        }
-
-        ad.show(activity)
+        )
         return true
     }
 

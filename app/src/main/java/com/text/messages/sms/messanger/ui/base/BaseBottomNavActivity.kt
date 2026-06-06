@@ -6,7 +6,6 @@ import android.view.ViewTreeObserver
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.gms.ads.AdRequest
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.util.ThemeManager
@@ -17,7 +16,7 @@ import android.content.BroadcastReceiver
 abstract class BaseBottomNavActivity : BaseActivity() {
     
     protected lateinit var bottomNavigationView: BottomNavigationView
-    protected lateinit var adViewBanner: com.google.android.gms.ads.AdView
+    protected lateinit var adViewBanner: com.google.android.libraries.ads.mobile.sdk.banner.AdView
     
     private var isSettingSelectedItem = false
     private var themeChangeReceiver: BroadcastReceiver? = null
@@ -114,12 +113,10 @@ abstract class BaseBottomNavActivity : BaseActivity() {
     
     override fun onResume() {
         super.onResume()
-        adViewBanner.resume()
     }
     
     override fun onPause() {
         super.onPause()
-        adViewBanner.pause()
     }
     
     override fun onDestroy() {
