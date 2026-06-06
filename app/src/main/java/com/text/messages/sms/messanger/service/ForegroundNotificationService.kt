@@ -17,7 +17,6 @@ import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.ui.contacts.ContactsActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.manageapps.ManageAppsActivity
-import com.text.messages.sms.messanger.ui.personalize.ThemesActivity
 import com.text.messages.sms.messanger.util.RingtoneSoundResolver
 
 class ForegroundNotificationService : Service() {
@@ -46,8 +45,8 @@ class ForegroundNotificationService : Service() {
     }
 
     private fun createNotification(): Notification {
-        val collapsed = RemoteViews(packageName, R.layout.noti_collapse)
-        val expanded = RemoteViews(packageName, R.layout.noti_expand)
+        val collapsed = RemoteViews(packageName, R.layout.custom_notification)
+        val expanded = RemoteViews(packageName, R.layout.custom_notification_big)
         bindActions(collapsed)
         bindActions(expanded)
 
@@ -77,10 +76,9 @@ class ForegroundNotificationService : Service() {
     }
 
     private fun bindActions(remoteViews: RemoteViews) {
-        remoteViews.setOnClickPendingIntent(R.id.btn1, activityIntent(MainActivity::class.java, 101))
-        remoteViews.setOnClickPendingIntent(R.id.btn2, startChatIntent())
-        remoteViews.setOnClickPendingIntent(R.id.btn3, activityIntent(ManageAppsActivity::class.java, 103))
-        remoteViews.setOnClickPendingIntent(R.id.btn4, activityIntent(ThemesActivity::class.java, 105))
+        remoteViews.setOnClickPendingIntent(R.id.inboxButton, activityIntent(MainActivity::class.java, 101))
+        remoteViews.setOnClickPendingIntent(R.id.newMessageButton, startChatIntent())
+        remoteViews.setOnClickPendingIntent(R.id.manageAppsButton, activityIntent(ManageAppsActivity::class.java, 103))
     }
 
     private fun startChatIntent(): PendingIntent {
