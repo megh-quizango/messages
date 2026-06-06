@@ -29,6 +29,7 @@
         android:id="@+id/textHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:tag="theme_heading"
         android:text="@string/gen_fragment_contacts_text_2"
         android:textSize="21sp"
         android:textStyle="bold"

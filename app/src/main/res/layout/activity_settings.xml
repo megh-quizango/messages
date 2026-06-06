@@ -30,6 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:tag="theme_heading"
         android:text="@string/gen_activity_settings_text_2"
         android:textColor="@color/black"
         android:textSize="21sp"

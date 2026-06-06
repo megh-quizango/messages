@@ -143,7 +143,9 @@ object ThemeManager {
             textView.setSingleLine(true)
             textView.ellipsize = android.text.TextUtils.TruncateAt.END
             textView.setTextColor(
-                if (idName == "textMainHeading" || (idName == "textHeading" && hasBottomNav)) {
+                if (idName == "textMainHeading" ||
+                    (idName == "textHeading" && (hasBottomNav || textView.tag == "theme_heading"))
+                ) {
                     themeColorInt
                 } else {
                     black
