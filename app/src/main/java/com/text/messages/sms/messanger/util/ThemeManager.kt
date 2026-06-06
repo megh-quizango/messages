@@ -1,12 +1,9 @@
 package com.text.messages.sms.messanger.util
 
 import android.content.Context
-import android.graphics.Canvas
+import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.PixelFormat
 import android.graphics.PorterDuff
-import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
@@ -23,6 +20,7 @@ import android.widget.SeekBar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.button.MaterialButton
@@ -1152,142 +1150,40 @@ object ThemeManager {
         }
     }
     
-    /**
-     * Apply theme-based styling to a Switch toggle
-     * This creates a pill-shaped toggle with theme-based colors:
-     * - Track: White background with theme border when checked, gray when unchecked
-     * - Thumb: Theme color circle when checked, gray when unchecked
-     * 
-     * @param switchToggle The Switch to style
-     * @param context The context to get theme colors
-     */
     fun applyToggleTheme(switchToggle: SwitchMaterial, context: Context) {
-        Log.d("ThemeManager", "applyToggleTheme called - switchToggle: $switchToggle, visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}")
         val themeColor = getThemeColor(context)
         val density = context.resources.displayMetrics.density
-        Log.d("ThemeManager", "Theme color: $themeColor, density: $density")
-
-        val thumbSize = (16 * density).toInt()
         val trackWidth = (40 * density).toInt()
         val trackHeight = (22 * density).toInt()
-        val strokeWidth = (2 * density).toInt()
+        val disabledThumbColor = Color.parseColor("#B9B9B9")
+        val uncheckedThumbColor = Color.parseColor("#B9B9B9")
+        val disabledTrackColor = Color.parseColor("#D6D6D6")
+        val uncheckedTrackColor = Color.parseColor("#D6D6D6")
+        val checkedTrackColor = ColorUtils.setAlphaComponent(themeColor, 0x66)
+        val states = arrayOf(
+            intArrayOf(-android.R.attr.state_enabled),
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf()
+        )
 
-        // Create thumb state list drawable
-        val thumbDrawable = StateListDrawable().apply {
-            addState(intArrayOf(android.R.attr.state_checked), CircleThumbDrawable(themeColor, thumbSize))
-            addState(intArrayOf(), CircleThumbDrawable(Color.parseColor("#9696A3"), thumbSize))
-        }
-
-        // Create track state list drawable
-        val trackDrawable = StateListDrawable().apply {
-            addState(
-                intArrayOf(android.R.attr.state_checked),
-                PillTrackDrawable(Color.WHITE, themeColor, trackWidth, trackHeight, strokeWidth)
-            )
-            addState(
-                intArrayOf(),
-                PillTrackDrawable(Color.WHITE, Color.parseColor("#9696A3"), trackWidth, trackHeight, strokeWidth)
-            )
-        }
-
-        // Apply custom drawables
-        switchToggle.thumbDrawable = thumbDrawable
-        switchToggle.trackDrawable = trackDrawable
-
-        // Clear any tints to use drawable colors directly
-        switchToggle.thumbTintList = null
-        switchToggle.trackTintList = null
-
-        // Set dimensions to match our custom design
+        switchToggle.setUseMaterialThemeColors(false)
+        switchToggle.showText = false
+        switchToggle.splitTrack = false
+        switchToggle.thumbTextPadding = 0
+        switchToggle.thumbTintList = ColorStateList(
+            states,
+            intArrayOf(disabledThumbColor, themeColor, uncheckedThumbColor)
+        )
+        switchToggle.trackTintList = ColorStateList(
+            states,
+            intArrayOf(disabledTrackColor, checkedTrackColor, uncheckedTrackColor)
+        )
         switchToggle.switchMinWidth = trackWidth
-        switchToggle.minimumHeight = trackHeight
-        switchToggle.minHeight = trackHeight
         switchToggle.minWidth = trackWidth
-
-        // Force the Switch to redraw
+        switchToggle.minimumWidth = trackWidth
+        switchToggle.minHeight = trackHeight
+        switchToggle.minimumHeight = trackHeight
         switchToggle.invalidate()
-        switchToggle.requestLayout()
-
-        Log.d("ThemeManager", "After applyToggleTheme - visibility: ${switchToggle.visibility}, alpha: ${switchToggle.alpha}, width: ${switchToggle.width}, height: ${switchToggle.height}, minWidth: ${switchToggle.switchMinWidth}, minHeight: ${switchToggle.minHeight}")
-    }
-
-    private class CircleThumbDrawable(
-        private val color: Int,
-        private val size: Int
-    ) : Drawable() {
-        private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-            color = this@CircleThumbDrawable.color
-        }
-
-        override fun draw(canvas: Canvas) {
-            val radius = minOf(size, bounds.width(), bounds.height()) / 2f
-            canvas.drawCircle(bounds.exactCenterX(), bounds.exactCenterY(), radius, paint)
-        }
-
-        override fun setAlpha(alpha: Int) {
-            paint.alpha = alpha
-        }
-
-        override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {
-            paint.colorFilter = colorFilter
-        }
-
-        @Deprecated("Deprecated in Java")
-        override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
-
-        override fun getIntrinsicWidth(): Int = size
-
-        override fun getIntrinsicHeight(): Int = size
-    }
-
-    private class PillTrackDrawable(
-        private val fillColor: Int,
-        private val strokeColor: Int,
-        private val width: Int,
-        private val height: Int,
-        private val strokeWidth: Int
-    ) : Drawable() {
-        private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-            color = fillColor
-        }
-        private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            strokeWidth = this@PillTrackDrawable.strokeWidth.toFloat()
-            color = strokeColor
-        }
-        private val rect = RectF()
-
-        override fun draw(canvas: Canvas) {
-            val drawableWidth = minOf(width.toFloat(), bounds.width().toFloat())
-            val drawableHeight = minOf(height.toFloat(), bounds.height().toFloat())
-            val left = bounds.exactCenterX() - drawableWidth / 2f
-            val top = bounds.exactCenterY() - drawableHeight / 2f
-            rect.set(left, top, left + drawableWidth, top + drawableHeight)
-            val radius = drawableHeight / 2f
-            canvas.drawRoundRect(rect, radius, radius, fillPaint)
-            val inset = strokeWidth / 2f
-            rect.inset(inset, inset)
-            canvas.drawRoundRect(rect, radius - inset, radius - inset, strokePaint)
-        }
-
-        override fun setAlpha(alpha: Int) {
-            fillPaint.alpha = alpha
-            strokePaint.alpha = alpha
-        }
-
-        override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {
-            fillPaint.colorFilter = colorFilter
-            strokePaint.colorFilter = colorFilter
-        }
-
-        @Deprecated("Deprecated in Java")
-        override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
-
-        override fun getIntrinsicWidth(): Int = width
-
-        override fun getIntrinsicHeight(): Int = height
     }
     
     /**
