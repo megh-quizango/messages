@@ -26,6 +26,7 @@ import com.text.messages.sms.messanger.util.LocaleHelper
 import com.text.messages.sms.messanger.util.OnboardingInstallGuard
 import com.text.messages.sms.messanger.util.RequiredPermissionGate
 import com.text.messages.sms.messanger.util.RemoteConfigHelper
+import com.text.messages.sms.messanger.service.ForegroundNotificationService
 import java.util.concurrent.Executors
 
 class MessagesApp : Application(), DefaultLifecycleObserver {
@@ -48,6 +49,7 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
 
     // Flag to track when MainActivity is ready
     var isMainReady = false
+    private var foregroundNotificationStarted = false
 
     override fun onCreate() {
         super<Application>.onCreate()
@@ -75,6 +77,10 @@ class MessagesApp : Application(), DefaultLifecycleObserver {
     override fun onStart(owner: LifecycleOwner) {
         Log.d("MessagesApp", "=== onStart called ===")
         Log.d("MessagesApp", "isMainReady: $isMainReady")
+        if (!foregroundNotificationStarted) {
+            foregroundNotificationStarted = true
+            ForegroundNotificationService.start(this)
+        }
     }
 
     /**

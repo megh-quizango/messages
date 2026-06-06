@@ -94,6 +94,9 @@
     <string name="settings_unable_open_play_store">Unable to open Play Store</string>
     <string name="settings_unable_share_play_store_link">Unable to share Play Store link</string>
     <string name="settings_app_name">#Messages</string>
+    <string name="foreground_notification_conversation" translatable="false">Conversation</string>
+    <string name="foreground_notification_new_sms" translatable="false">New SMS</string>
+    <string name="foreground_notification_theme" translatable="false">Theme</string>
     <string name="settings_share_app_chooser_title">Share App</string>
     <string name="settings_share_app_message">Check out %1$s on Play Store: https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="settings_error_opening_file_picker">Error opening file picker</string>

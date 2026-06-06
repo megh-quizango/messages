@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialogmain"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/color_primary"
+    android:orientation="horizontal"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp">
+
+    <LinearLayout
+        android:id="@+id/btn1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/foreground_notification_conversation"
+            android:padding="3dp"
+            android:src="@drawable/ic_notification_messages" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/foreground_notification_conversation"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/btn2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/foreground_notification_new_sms"
+            android:padding="3dp"
+            android:src="@drawable/ic_notification_new_message" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/foreground_notification_new_sms"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/btn3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/manage_apps"
+            android:padding="3dp"
+            android:src="@drawable/ic_notification_apps" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/manage_apps"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/btn4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/foreground_notification_theme"
+            android:padding="3dp"
+            android:src="@drawable/ic_notification_theme" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/foreground_notification_theme"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>
