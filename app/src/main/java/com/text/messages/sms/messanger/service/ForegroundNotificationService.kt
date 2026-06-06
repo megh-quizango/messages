@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -66,8 +65,7 @@ class ForegroundNotificationService : Service() {
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setColorized(true)
-            .setColor(Color.parseColor("#2569F1"))
+            .setColorized(false)
             .setCustomContentView(collapsed)
             .setCustomBigContentView(expanded)
             .setSound(notificationSound)
