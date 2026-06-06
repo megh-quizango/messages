@@ -84,7 +84,7 @@ object AfterCallNotificationHelper {
             val text = notificationText(appContext, event.number)
 
             val builder = NotificationCompat.Builder(appContext, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_call)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_MAX)

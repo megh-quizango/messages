@@ -231,7 +231,7 @@ object NotificationHelper {
         
         // Build standard notification (no custom view)
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_chat_bubble) // REQUIRED - must be white/transparent vector
+            .setSmallIcon(R.drawable.ic_notification)
             .setLargeIcon(largeIcon) // Contact photo
             .setContentTitle(title) // Contact name
             .setContentText(text) // Message text
@@ -642,7 +642,7 @@ object NotificationHelper {
             )
             
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_chat_bubble)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setLargeIcon(largeIcon)
                 .setContentTitle(contactName)
                 .setContentText(messageText)
