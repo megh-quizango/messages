@@ -416,7 +416,7 @@ class CallAfterActivity : BaseActivity() {
         imageAvatar.background = ContextCompat.getDrawable(this, R.drawable.bg_caller_avatar_circle)
         imageAvatar.setImageResource(R.drawable.ic_caller_avatar_person)
         imageAvatar.imageTintList = ColorStateList.valueOf(themeColor)
-        imageAvatar.scaleType = ImageView.ScaleType.CENTER
+        imageAvatar.scaleType = ImageView.ScaleType.CENTER_CROP
         imageAvatar.setPadding(9.dpToPx(), 9.dpToPx(), 9.dpToPx(), 9.dpToPx())
     }
 

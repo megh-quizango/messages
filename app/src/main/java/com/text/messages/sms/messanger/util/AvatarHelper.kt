@@ -100,7 +100,7 @@ object AvatarHelper {
             setImageDrawable(null)
             setCircleBackgroundColor(backgroundColor)
             imageTintList = ColorStateList.valueOf(Color.WHITE)
-            scaleType = ImageView.ScaleType.CENTER
+            scaleType = ImageView.ScaleType.CENTER_CROP
             setPadding(0, 0, 0, 0)
             elevation = 0f
             translationZ = 0f
@@ -125,7 +125,7 @@ object AvatarHelper {
             visibility = View.VISIBLE
             setCircleBackgroundColor(backgroundColor)
             imageTintList = ColorStateList.valueOf(Color.WHITE)
-            scaleType = ImageView.ScaleType.CENTER
+            scaleType = ImageView.ScaleType.CENTER_CROP
             setImageResource(R.drawable.ic_reference_person)
         }
         textView?.visibility = View.GONE
