@@ -74,12 +74,14 @@ object LanguageTransitionAdManager {
     private fun completeAfterAd(activity: Activity, onDismiss: () -> Unit) {
         val appContext = activity.applicationContext
         AppOpenManager.suppressAppOpenFor(4_000L)
-        mainHandler.postDelayed({
+        mainHandler.post {
             if (!activity.isDestroyed) {
                 onDismiss()
             }
+        }
+        mainHandler.postDelayed({
             preload(appContext)
-        }, 80L)
+        }, 250L)
     }
 
     fun hasNativeFullscreenAd(): Boolean {

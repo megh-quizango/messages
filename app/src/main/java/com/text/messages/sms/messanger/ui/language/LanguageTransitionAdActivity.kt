@@ -1,8 +1,6 @@
 package com.text.messages.sms.messanger.ui.language
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
@@ -23,10 +21,9 @@ class LanguageTransitionAdActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val root = FrameLayout(this).apply {
-            setBackgroundColor(Color.TRANSPARENT)
+            setBackgroundColor(android.graphics.Color.WHITE)
         }
         setContentView(root)
 
