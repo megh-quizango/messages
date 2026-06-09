@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.os.Looper
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.libraries.ads.mobile.sdk.banner.AdView
@@ -18,6 +19,10 @@ object AdLoadingShimmerHelper {
     private const val NATIVE_SHIMMER_TAG = "native_ad_loading_shimmer"
 
     fun showBannerLoading(adView: AdView) {
+        if (!isMainThread()) {
+            adView.post { showBannerLoading(adView) }
+            return
+        }
         setBannerHostVisibility(adView, View.VISIBLE)
         val shimmer = ensureBannerShimmer(adView) ?: return
         val bannerHeight = getBannerHeightPx(adView)
@@ -29,6 +34,10 @@ object AdLoadingShimmerHelper {
     }
 
     fun showBannerContent(adView: AdView) {
+        if (!isMainThread()) {
+            adView.post { showBannerContent(adView) }
+            return
+        }
         setBannerHostVisibility(adView, View.VISIBLE)
         val bannerHeight = getBannerHeightPx(adView)
         updateViewHeight(adView, bannerHeight)
@@ -38,6 +47,10 @@ object AdLoadingShimmerHelper {
     }
 
     fun hideBanner(adView: AdView) {
+        if (!isMainThread()) {
+            adView.post { hideBanner(adView) }
+            return
+        }
         findBannerShimmer(adView)?.let(::stopAndHideShimmer)
         adView.visibility = View.GONE
         setBannerHostVisibility(adView, View.GONE)
@@ -48,6 +61,10 @@ object AdLoadingShimmerHelper {
         adView: View? = null,
         shimmerLayoutRes: Int = R.layout.layout_native_ad_shimmer
     ) {
+        if (!isMainThread()) {
+            container.post { showNativeLoading(container, adView, shimmerLayoutRes) }
+            return
+        }
         val shimmer = ensureNativeShimmer(container, shimmerLayoutRes) ?: return
         container.visibility = View.VISIBLE
         adView?.visibility = View.GONE
@@ -56,12 +73,20 @@ object AdLoadingShimmerHelper {
     }
 
     fun showNativeContent(container: ViewGroup, adView: View? = null) {
+        if (!isMainThread()) {
+            container.post { showNativeContent(container, adView) }
+            return
+        }
         findNativeShimmer(container)?.let(::stopAndHideShimmer)
         container.visibility = View.VISIBLE
         adView?.visibility = View.VISIBLE
     }
 
     fun hideNative(container: ViewGroup, adView: View? = null) {
+        if (!isMainThread()) {
+            container.post { hideNative(container, adView) }
+            return
+        }
         findNativeShimmer(container)?.let(::stopAndHideShimmer)
         adView?.visibility = View.GONE
         container.visibility = View.GONE
@@ -134,6 +159,10 @@ object AdLoadingShimmerHelper {
     }
 
     private fun restartShimmer(shimmer: ShimmerFrameLayout) {
+        if (!isMainThread()) {
+            shimmer.post { restartShimmer(shimmer) }
+            return
+        }
         shimmer.stopShimmer()
         if (shimmer.isAttachedToWindow) {
             shimmer.post {
@@ -156,8 +185,16 @@ object AdLoadingShimmerHelper {
     }
 
     private fun stopAndHideShimmer(shimmer: ShimmerFrameLayout) {
+        if (!isMainThread()) {
+            shimmer.post { stopAndHideShimmer(shimmer) }
+            return
+        }
         shimmer.stopShimmer()
         shimmer.visibility = View.GONE
+    }
+
+    private fun isMainThread(): Boolean {
+        return Looper.myLooper() == Looper.getMainLooper()
     }
 
     private fun updateViewHeight(view: View, heightPx: Int) {
