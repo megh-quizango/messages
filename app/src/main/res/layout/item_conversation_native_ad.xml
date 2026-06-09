@@ -4,13 +4,21 @@
     android:id="@+id/nativeAdView"
     android:layout_width="match_parent"
     android:layout_height="120dp"
-    android:background="#7FF8F8F8"
+    android:background="@android:color/transparent"
     android:layoutDirection="locale">
+
+    <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
+        android:id="@+id/nativeAdMedia"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:visibility="invisible" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/nativeAdContent"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="96dp"
+        android:layout_gravity="center_vertical"
+        android:background="#7FF8F8F8"
         android:paddingStart="10dp"
         android:paddingEnd="10dp">
 
@@ -24,15 +32,6 @@
             android:contentDescription="@string/ad_icon"
             android:padding="2dp"
             android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
-            android:id="@+id/nativeAdMedia"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
