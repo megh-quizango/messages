@@ -1,13 +1,17 @@
 package com.text.messages.sms.messanger.ui.welcome
 
+import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.animation.ObjectAnimator
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import com.text.messages.sms.messanger.ui.base.BaseActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.WindowInsetsCompat
@@ -21,6 +25,13 @@ class WelcomeActivity : BaseActivity() {
     private lateinit var binding: ActivityWelcomeBinding
     private lateinit var sharedPreferences: SharedPreferences
     private var buttonShimmerAnimator: ObjectAnimator? = null
+    private var welcomePermissionIndex = 0
+
+    private val welcomePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        requestNextWelcomePermission()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +67,7 @@ class WelcomeActivity : BaseActivity() {
     
     private fun setupUI() {
         binding.buttonAgreeContinue.setOnClickListener {
-            continueToLanguage()
+            requestWelcomePermissionsThenContinue()
         }
         
         binding.textPrivacyPolicy.setOnClickListener {
@@ -70,6 +81,32 @@ class WelcomeActivity : BaseActivity() {
     private fun configureStatusBar() {
         window.statusBarColor = getColor(android.R.color.white)
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
+    }
+
+    private fun requestWelcomePermissionsThenContinue() {
+        welcomePermissionIndex = 0
+        requestNextWelcomePermission()
+    }
+
+    private fun requestNextWelcomePermission() {
+        val permissions = getWelcomePermissions()
+        while (welcomePermissionIndex < permissions.size) {
+            val permission = permissions[welcomePermissionIndex++]
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                welcomePermissionLauncher.launch(permission)
+                return
+            }
+        }
+        continueToLanguage()
+    }
+
+    private fun getWelcomePermissions(): List<String> {
+        return buildList {
+            add(Manifest.permission.READ_PHONE_STATE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     private fun continueToLanguage() {
