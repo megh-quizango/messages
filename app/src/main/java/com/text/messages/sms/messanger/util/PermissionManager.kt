@@ -26,6 +26,22 @@ object PermissionManager {
             add(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
+
+    /**
+     * Runtime permission chain used by the reference app during first-run default SMS onboarding:
+     * READ_SMS -> SEND_SMS -> READ_CONTACTS -> POST_NOTIFICATIONS (Android 13+).
+     * SMS role is requested before this list is launched.
+     */
+    fun getOnboardingRuntimePermissions(): List<String> {
+        return buildList {
+            add(Manifest.permission.READ_SMS)
+            add(Manifest.permission.SEND_SMS)
+            add(Manifest.permission.READ_CONTACTS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
     
     /**
      * Check if all required permissions are granted

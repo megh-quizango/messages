@@ -1,6 +1,5 @@
 package com.text.messages.sms.messanger.ui.defaultsms
 
-import android.Manifest
 import android.app.AlertDialog
 import android.app.role.RoleManager
 import android.animation.ObjectAnimator
@@ -27,9 +26,14 @@ import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.overlaypermission.OverlayPermissionActivity
 import com.text.messages.sms.messanger.util.ButtonShimmerAnimator
 import com.text.messages.sms.messanger.util.DefaultSmsHelper
+import com.text.messages.sms.messanger.util.PermissionManager
 import com.text.messages.sms.messanger.util.ThemeManager
 
 class DefaultSmsActivity : BaseActivity() {
+
+    companion object {
+        private const val KEY_RUNTIME_PERMISSION_FLOW_COMPLETED = "ONBOARDING_RUNTIME_PERMISSION_FLOW_COMPLETED"
+    }
 
     private lateinit var binding: ActivityDefaultSmsBinding
     private var isFromSettings = false
@@ -37,6 +41,8 @@ class DefaultSmsActivity : BaseActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private var buttonShimmerAnimator: ObjectAnimator? = null
     private var permissionsRequested = false
+    private var permissionRequestIndex = 0
+    private var currentPermissionRequest: String? = null
     
     // ActivityResultLauncher for RoleManager (Android 10+)
     private val roleRequestLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
@@ -51,38 +57,31 @@ class DefaultSmsActivity : BaseActivity() {
                 .putBoolean("IS_DEFAULT_SMS_SET", true)
                 .apply()
             
-            // Now request runtime permissions (SMS/Phone) after default handler is set
+            // Now request the reference onboarding runtime chain after default handler is set.
             // This complies with Google Play policy: default handler prompt must come before runtime permissions
             requestRuntimePermissions()
         }
         // If not default, activity remains open - user must set it as default
     }
     
-    // Permission launcher for SMS and Phone permissions
-    private val requestPermissionsLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        Log.d("DefaultSmsActivity", "Permission request result: $permissions")
-        val allGranted = permissions.all { it.value }
-        if (allGranted) {
-            // All runtime permissions granted, proceed to next screen
-            Log.d("DefaultSmsActivity", "All permissions granted")
-            onPermissionsGranted()
+    // Permission launcher for the reference-style sequential onboarding chain.
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        val permission = currentPermissionRequest ?: return@registerForActivityResult
+        Log.d("DefaultSmsActivity", "Permission request result: $permission=$granted")
+
+        if (granted || isOptionalOnboardingPermission(permission)) {
+            requestNextRuntimePermission()
+            return@registerForActivityResult
+        }
+
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+            permissionsRequested = false
+            permissionRequestIndex = 0
+            requestRuntimePermissions()
         } else {
-            // Some permissions denied
-            val deniedPermissions = permissions.filter { !it.value }
-            val firstDenied = deniedPermissions.keys.firstOrNull() ?: ""
-            Log.d("DefaultSmsActivity", "Some permissions denied: $deniedPermissions")
-            
-            if (firstDenied.isNotEmpty() && 
-                ActivityCompat.shouldShowRequestPermissionRationale(this, firstDenied)) {
-                // User denied but can still grant, show dialog again
-                permissionsRequested = false
-                requestRuntimePermissions()
-            } else {
-                // User permanently denied, show settings dialog
-                showPermissionSettingsDialog()
-            }
+            showPermissionSettingsDialog()
         }
     }
 
@@ -313,21 +312,12 @@ class DefaultSmsActivity : BaseActivity() {
     }
     
     private fun hasAllRequiredPermissions(): Boolean {
-        return getRequiredRuntimePermissions().isEmpty()
+        val completedReferenceFlow = sharedPreferences.getBoolean(KEY_RUNTIME_PERMISSION_FLOW_COMPLETED, false)
+        return completedReferenceFlow && getMissingBlockingRuntimePermissions().isEmpty()
     }
     
     private fun getAllRequiredPermissions(): List<String> {
-        // Only SMS permissions - these must be requested AFTER default handler is set
-        // POST_NOTIFICATIONS and READ_PHONE_STATE are requested in WelcomeActivity
-        val requiredPermissions = mutableListOf<String>()
-        
-        // SMS permissions - request these after app becomes default SMS handler
-        requiredPermissions.add(Manifest.permission.READ_SMS)
-        requiredPermissions.add(Manifest.permission.SEND_SMS)
-        requiredPermissions.add(Manifest.permission.RECEIVE_SMS)
-        requiredPermissions.add(Manifest.permission.READ_PHONE_STATE)
-        
-        return requiredPermissions
+        return PermissionManager.getOnboardingRuntimePermissions()
     }
     
     private fun getRequiredRuntimePermissions(): List<String> {
@@ -336,6 +326,16 @@ class DefaultSmsActivity : BaseActivity() {
         return allPermissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
+    }
+
+    private fun getMissingBlockingRuntimePermissions(): List<String> {
+        return getAllRequiredPermissions().filterNot(::isOptionalOnboardingPermission).filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun isOptionalOnboardingPermission(permission: String): Boolean {
+        return permission == android.Manifest.permission.READ_CONTACTS
     }
     
     private fun requestRuntimePermissions() {
@@ -351,27 +351,29 @@ class DefaultSmsActivity : BaseActivity() {
             Log.d("DefaultSmsActivity", "Permission $permission: ${if (isGranted) "GRANTED" else "NOT GRANTED"}")
         }
         
-        // IMPORTANT: Always request permissions explicitly, even if already granted
-        // This ensures Google Play compliance - we must go through the permission request flow
-        // Android will handle already-granted permissions gracefully:
-        // - If permissions are auto-granted (when app becomes default SMS handler), Android will
-        //   immediately return granted status in the callback without showing a dialog
-        // - If permissions are not granted, Android will show the permission dialog
-        // This demonstrates proper permission request flow to Google Play reviewers
         if (!permissionsRequested) {
             permissionsRequested = true
-            
-            if (missingPermissions.isEmpty()) {
-                // All permissions already granted (likely auto-granted when set as default SMS handler)
-                // Still request them explicitly to go through the proper flow
-                Log.d("DefaultSmsActivity", "All permissions already granted (auto-granted), but requesting explicitly for compliance")
-                // Request all permissions - Android will immediately return granted in callback
-                requestPermissionsLauncher.launch(allPermissions.toTypedArray())
-            } else {
-                // Some permissions missing - request them (Android will show dialog)
-                Log.d("DefaultSmsActivity", "Launching permission request dialog for: $missingPermissions")
-                requestPermissionsLauncher.launch(missingPermissions.toTypedArray())
-            }
+            permissionRequestIndex = 0
+            requestNextRuntimePermission()
+        }
+    }
+
+    private fun requestNextRuntimePermission() {
+        val permissions = getAllRequiredPermissions()
+        if (permissionRequestIndex >= permissions.size) {
+            onPermissionsGranted()
+            return
+        }
+
+        val permission = permissions[permissionRequestIndex++]
+        currentPermissionRequest = permission
+        val isGranted = ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+        Log.d("DefaultSmsActivity", "Onboarding permission $permission: ${if (isGranted) "GRANTED" else "NOT GRANTED"}")
+
+        if (isGranted) {
+            requestNextRuntimePermission()
+        } else {
+            requestPermissionLauncher.launch(permission)
         }
     }
     
@@ -394,7 +396,11 @@ class DefaultSmsActivity : BaseActivity() {
     }
     
     private fun onPermissionsGranted() {
-        // All permissions granted, navigate to next screen
+        sharedPreferences.edit()
+            .putBoolean(KEY_RUNTIME_PERMISSION_FLOW_COMPLETED, true)
+            .apply()
+
+        // Required onboarding permissions are granted; optional contacts may have been skipped.
         if (isFromSettings) {
             // If opened from settings, just finish (user can continue from MainActivity)
             finish()
