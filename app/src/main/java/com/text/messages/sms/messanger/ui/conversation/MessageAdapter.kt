@@ -259,14 +259,13 @@ class MessageAdapter(
                 buttonCopyOtp?.setOnClickListener {
                     copyOTPToClipboard(otp)
                 }
-                
-                // Set up delete button (hides OTP box)
-                imageDeleteOtp?.setOnClickListener {
-                    layoutOtpBox?.visibility = View.GONE
-                }
+
+                imageDeleteOtp?.visibility = View.GONE
+                imageDeleteOtp?.setOnClickListener(null)
             } else {
                 // Hide OTP box if no OTP
                 layoutOtpBox?.visibility = View.GONE
+                imageDeleteOtp?.setOnClickListener(null)
             }
             
             // Apply font size and font family

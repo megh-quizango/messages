@@ -237,7 +237,7 @@ object NotificationHelper {
             .setContentText(text) // Message text
             .setStyle(NotificationCompat.BigTextStyle().bigText(text)) // Expandable text style
             .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setAutoCancel(true)
+            .setAutoCancel(false)
             .setContentIntent(pendingIntent)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // Show on lock screen
@@ -648,7 +648,7 @@ object NotificationHelper {
                 .setContentText(messageText)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(messageText))
                 .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setAutoCancel(true)
+                .setAutoCancel(false)
                 .setContentIntent(pendingIntent)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
