@@ -1,6 +1,8 @@
 package com.text.messages.sms.messanger.ui.manageapps
 
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
@@ -38,6 +40,7 @@ class ManageAppsCompleteActivity : BaseActivity() {
         
         // Apply theme
         ThemeManager.applyTheme(this, binding.root)
+        applyManageAppsChrome()
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -55,12 +58,27 @@ class ManageAppsCompleteActivity : BaseActivity() {
         setupBackButton()
         initializeNativeAdView()
         loadNativeAd()
+        binding.root.post {
+            applyManageAppsChrome()
+            binding.root.post { applyManageAppsChrome() }
+        }
     }
 
     private fun setupBackButton() {
         binding.buttonBack.setOnClickListener {
             finish()
         }
+    }
+
+    private fun applyManageAppsChrome() {
+        val white = Color.WHITE
+        val blue = Color.parseColor("#0C56CF")
+        binding.root.setBackgroundColor(Color.WHITE)
+        binding.headerContainer.setBackgroundColor(blue)
+        binding.textHeading.setTextColor(white)
+        binding.textStoppedApps.setTextColor(white)
+        binding.buttonBack.imageTintList = ColorStateList.valueOf(white)
+        binding.buttonBack.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
     }
 
     private fun initializeNativeAdView() {

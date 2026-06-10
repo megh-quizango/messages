@@ -63,8 +63,6 @@ class BackgroundAppsAdapter(
             binding.buttonStop.setOnClickListener {
                 if (!app.isStopped) {
                     onStopClick(app.packageName)
-                    @Suppress("DEPRECATION")
-                    notifyItemChanged(adapterPosition)
                 }
             }
         }

@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
@@ -42,6 +44,7 @@ class ManageAppsDetailActivity : BaseActivity() {
     private var adaptiveBannerView: AdView? = null
     private val backgroundApps = mutableListOf<BackgroundApp>()
     private val stoppedApps = mutableSetOf<String>()
+    private var discoveredAppsCount = 0
 
     data class BackgroundApp(
         val packageName: String,
@@ -59,6 +62,7 @@ class ManageAppsDetailActivity : BaseActivity() {
         
         // Apply theme
         ThemeManager.applyTheme(this, binding.root)
+        applyManageAppsChrome()
         
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -85,6 +89,8 @@ class ManageAppsDetailActivity : BaseActivity() {
         // Apply theme after views are laid out
         binding.root.post {
             ThemeManager.applyTheme(this, binding.root)
+            applyManageAppsChrome()
+            binding.root.post { applyManageAppsChrome() }
         }
     }
 
@@ -97,12 +103,7 @@ class ManageAppsDetailActivity : BaseActivity() {
     private fun setupRecyclerView() {
         adapter = BackgroundAppsAdapter(
             onStopClick = { packageName ->
-                stoppedApps.add(packageName)
-                // Update the list with stopped status
-                val updatedList = backgroundApps.map { 
-                    it.copy(isStopped = stoppedApps.contains(it.packageName))
-                }
-                adapter.submitList(updatedList)
+                stopBackgroundApp(packageName)
             }
         )
         binding.recyclerViewApps.layoutManager = LinearLayoutManager(this)
@@ -127,11 +128,12 @@ class ManageAppsDetailActivity : BaseActivity() {
             withContext(Dispatchers.Main) {
                 backgroundApps.clear()
                 backgroundApps.addAll(apps)
+                discoveredAppsCount = apps.size
                 
                 binding.progressIndicator.visibility = View.GONE
                 binding.recyclerViewApps.visibility = View.VISIBLE
                 
-                binding.textAppsTotal.text = getString(R.string.manage_apps_total_apps_format, apps.size)
+                updateAppsTotal()
                 adapter.submitList(backgroundApps.map { 
                     it.copy(isStopped = stoppedApps.contains(it.packageName))
                 })
@@ -153,7 +155,11 @@ class ManageAppsDetailActivity : BaseActivity() {
                 if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0 ||
                     (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
                     
-                    val appName = packageManager.getApplicationLabel(appInfo).toString()
+                    val appName = if (appInfo.packageName == this.packageName) {
+                        getString(R.string.settings_app_name)
+                    } else {
+                        packageManager.getApplicationLabel(appInfo).toString()
+                    }
                     val icon = packageManager.getApplicationIcon(appInfo)
                     
                     apps.add(BackgroundApp(
@@ -168,6 +174,43 @@ class ManageAppsDetailActivity : BaseActivity() {
         }
         
         return apps.sortedBy { it.appName }
+    }
+
+    private fun stopBackgroundApp(packageName: String) {
+        if (stoppedApps.contains(packageName)) return
+
+        try {
+            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            activityManager.killBackgroundProcesses(packageName)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        stoppedApps.add(packageName)
+        backgroundApps.removeAll { it.packageName == packageName }
+        adapter.submitList(backgroundApps.toList())
+        updateAppsTotal()
+    }
+
+    private fun updateAppsTotal() {
+        val total = if (discoveredAppsCount > 0) discoveredAppsCount else backgroundApps.size
+        binding.textAppsTotal.text = getString(R.string.manage_apps_total_apps_format, total)
+    }
+
+    private fun applyManageAppsChrome() {
+        val white = Color.WHITE
+        val blue = Color.parseColor("#0C56CF")
+        binding.root.setBackgroundColor(Color.WHITE)
+        binding.headerContainer.setBackgroundColor(blue)
+        binding.barContainer.setBackgroundColor(blue)
+        binding.textHeading.setTextColor(white)
+        binding.textRamUsed.setTextColor(white)
+        binding.textBackgroundApps.setTextColor(white)
+        binding.textAppsTotal.setTextColor(white)
+        binding.buttonBack.imageTintList = ColorStateList.valueOf(white)
+        binding.buttonBack.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+        binding.buttonDone.backgroundTintList = ColorStateList.valueOf(blue)
+        binding.buttonDone.setTextColor(white)
     }
 
     private fun initializeNativeAdView() {
