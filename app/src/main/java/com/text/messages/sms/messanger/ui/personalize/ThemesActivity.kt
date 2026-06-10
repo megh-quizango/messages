@@ -8,10 +8,8 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import android.view.View
-import android.widget.TextView
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -277,30 +275,17 @@ class ThemesActivity : BaseActivity() {
     private fun updateSelectedPreview(cardId: Int) {
         val color = themeColors[cardId] ?: AppPreferences.getThemeColor(this)
         val colorInt = Color.parseColor(color)
-        val lightColor = AppPreferences.getLighterColor(color)
-        val lightColorInt = Color.parseColor(lightColor)
-
-        binding.previewTitle.setTextColor(colorInt)
-        binding.previewSearch.backgroundTintList = ColorStateList.valueOf(lightColorInt)
-        binding.previewBottomNav.setBackgroundColor(colorInt)
-        binding.previewStartChat.backgroundTintList = ColorStateList.valueOf(colorInt)
         binding.buttonSave.backgroundTintList = ColorStateList.valueOf(colorInt)
-        tintPreviewUnreadDots(colorInt)
-
-        binding.previewPhoneCard.setCardBackgroundColor(lightColorInt)
+        binding.previewPhoneCard.setCardBackgroundColor(Color.WHITE)
         binding.imageSelectedThemePreview.alpha = 1f
-        binding.imageSelectedThemePreview.setImageDrawable(null)
-        binding.imageSelectedThemePreview.setBackgroundColor(lightColorInt)
-    }
+        binding.imageSelectedThemePreview.clearColorFilter()
 
-    private fun tintPreviewUnreadDots(colorInt: Int) {
-        for (i in 0 until binding.previewRows.childCount) {
-            val row = binding.previewRows.getChildAt(i)
-            row.findViewById<TextView>(R.id.previewUnread)?.background = GradientDrawable().apply {
-                shape = GradientDrawable.OVAL
-                setColor(colorInt)
-            }
+        if (cardId == binding.cardThemeBlackBlue.id) {
+            binding.imageSelectedThemePreview.setImageResource(R.drawable.theme_preview_black)
+            return
         }
+
+        binding.imageSelectedThemePreview.setImageResource(R.drawable.theme_preview)
     }
 
     private fun showPreviewMode() {
