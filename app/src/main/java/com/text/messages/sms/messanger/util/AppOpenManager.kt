@@ -12,6 +12,7 @@ import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 import com.text.messages.sms.messanger.ui.caller.CallAfterActivity
+import com.text.messages.sms.messanger.ui.caller.CallerMoreActivity
 import com.text.messages.sms.messanger.ui.language.LanguageActivity
 import com.text.messages.sms.messanger.ui.language.LanguageNativeFullscreenAdActivity
 import com.text.messages.sms.messanger.ui.language.LanguageTransitionAdActivity
@@ -196,6 +197,7 @@ class AppOpenManager(
 
     private fun shouldShowAppOpenOn(activity: Activity): Boolean {
         return activity !is CallAfterActivity &&
+            activity !is CallerMoreActivity &&
             activity !is LandingActivity &&
             activity !is OverlayPermissionActivity &&
             activity !is OverlayPermissionGuideActivity &&

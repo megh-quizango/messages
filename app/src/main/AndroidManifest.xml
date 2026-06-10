@@ -331,6 +331,12 @@
             android:exported="false"
             android:theme="@style/Theme.Messages" />
 
+        <!-- CallerMoreActivity -->
+        <activity
+            android:name=".ui.caller.CallerMoreActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Messages" />
+
         <!-- CallAfterActivity -->
         <activity
             android:name=".ui.caller.CallAfterActivity"

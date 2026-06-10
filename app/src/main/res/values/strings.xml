@@ -208,6 +208,13 @@
     <string name="callercad_write_personal_message">Write personal message</string>
     <string name="callercad_recents">Recents</string>
     <string name="callercad_no_recent">No recent messages</string>
+    <string name="schedule_message">Schedule message</string>
+    <string name="schedule">Schedule</string>
+    <string name="callercad_suggested_apps">Suggested Apps</string>
+    <string name="callercad_create_new_reminder">Create new reminder</string>
+    <string name="callercad_calendar_2025">Calendar 2025</string>
+    <string name="callercad_gallery_app">Gallery App</string>
+    <string name="ad_label">AD</string>
     <string name="sms_sent_success">Message sent</string>
     <string name="sms_sent_failed">Failed to send message</string>
     <string name="completed_call">Call completed</string>

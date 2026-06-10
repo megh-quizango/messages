@@ -10,6 +10,8 @@ import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.enableEdgeToEdge
 import android.os.SystemClock
 import android.provider.AlarmClock
@@ -82,6 +84,7 @@ class CallAfterActivity : BaseActivity() {
         private const val TAG = "CallAfterActivity"
         private const val DEBOUNCE_DELAY_MS = 500L
         private const val AFTER_CALL_APP_OPEN_SUPPRESSION_MS = 30_000L
+        private const val ROTATING_CARD_INTERVAL_MS = 5_000L
         private const val PACKAGE_WHATSAPP = "com.whatsapp"
         private const val PACKAGE_WHATSAPP_BUSINESS = "com.whatsapp.w4b"
         private const val PACKAGE_GMAIL = "com.google.android.gm"
@@ -105,7 +108,11 @@ class CallAfterActivity : BaseActivity() {
     private lateinit var callerSetting: View
     private lateinit var textCallerViewMore: View
     private lateinit var callerDemoGallery: View
+    private lateinit var quickReplyPreviewRow: View
+    private lateinit var scheduleActionRow: View
     private lateinit var quickReplyPreviewViews: List<TextView>
+    private lateinit var textCallerAppTitle: TextView
+    private lateinit var buttonScheduleCard: View
     private lateinit var imageAvatar: ImageView
     private lateinit var textAvatarLetter: TextView
     private lateinit var textContactName: TextView
@@ -164,6 +171,15 @@ class CallAfterActivity : BaseActivity() {
     private var currentNativeAd: NativeAd? = null
     private var selectedTab: AfterCallTab = AfterCallTab.MESSAGES
     private var lastClickTime: Long = 0
+    private val rotatingCardHandler = Handler(Looper.getMainLooper())
+    private var rotatingCardIndex = 0
+    private val rotatingCardRunnable = object : Runnable {
+        override fun run() {
+            rotatingCardIndex = (rotatingCardIndex + 1) % 2
+            updateRotatingCard()
+            rotatingCardHandler.postDelayed(this, ROTATING_CARD_INTERVAL_MS)
+        }
+    }
 
     private var callerNumber: String? = null
     private var callType: String = "completed"
@@ -291,6 +307,10 @@ class CallAfterActivity : BaseActivity() {
         callerSetting = findViewById(R.id.callerSetting)
         textCallerViewMore = findViewById(R.id.textCallerViewMore)
         callerDemoGallery = findViewById(R.id.callerDemoGallery)
+        quickReplyPreviewRow = findViewById(R.id.quickReplyPreviewRow)
+        scheduleActionRow = findViewById(R.id.scheduleActionRow)
+        textCallerAppTitle = findViewById(R.id.textCallerAppTitle)
+        buttonScheduleCard = findViewById(R.id.buttonScheduleCard)
         quickReplyPreviewViews = listOf(
             findViewById(R.id.quickReplyPreviewOne),
             findViewById(R.id.quickReplyPreviewTwo),
@@ -364,6 +384,7 @@ class CallAfterActivity : BaseActivity() {
         setupReminderUi()
         setupQuickActions()
         setupHeaderActions()
+        startRotatingCard()
         buttonAddReminder.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
             showReminderEditor()
@@ -588,7 +609,15 @@ class CallAfterActivity : BaseActivity() {
         }
         callerDemoGallery.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
-            showQuickRepliesSheet()
+            if (rotatingCardIndex == 0) {
+                showQuickRepliesSheet()
+            } else {
+                openScheduledForCaller()
+            }
+        }
+        buttonScheduleCard.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            openScheduledForCaller()
         }
     }
 
@@ -602,6 +631,21 @@ class CallAfterActivity : BaseActivity() {
 
     private fun openCurrentApp() {
         navigateToMainActivity()
+    }
+
+    private fun startRotatingCard() {
+        rotatingCardIndex = ((callEndTime / 1000L) % 2L).toInt()
+        updateRotatingCard()
+        rotatingCardHandler.removeCallbacks(rotatingCardRunnable)
+        rotatingCardHandler.postDelayed(rotatingCardRunnable, ROTATING_CARD_INTERVAL_MS)
+    }
+
+    private fun updateRotatingCard() {
+        val showQuickReplies = rotatingCardIndex == 0
+        quickReplyPreviewRow.visibility = if (showQuickReplies) View.VISIBLE else View.GONE
+        textCallerViewMore.visibility = if (showQuickReplies) View.VISIBLE else View.GONE
+        textCallerAppTitle.visibility = if (showQuickReplies) View.VISIBLE else View.GONE
+        scheduleActionRow.visibility = if (showQuickReplies) View.GONE else View.VISIBLE
     }
 
     private fun sendQuickMessage(message: String) {
@@ -701,87 +745,12 @@ class CallAfterActivity : BaseActivity() {
     }
 
     private fun showMoreActionsSheet() {
-        val sheetView = LayoutInflater.from(this)
-            .inflate(R.layout.bottom_sheet_after_call_more_actions, null, false)
-        val bottomSheet = BottomSheetDialog(this)
-        bottomSheet.setContentView(sheetView)
-        bottomSheet.setOnShowListener {
-            bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        }
-
-        bindMoreSheetAction(
-            sheetView,
-            bottomSheet,
-            R.id.actionAddCaller,
-            R.drawable.ic_person_add,
-            getString(R.string.after_call_action_add_caller_contacts)
-        ) {
-            addToContacts()
-        }
-        bindMoreSheetAction(
-            sheetView,
-            bottomSheet,
-            R.id.actionMessages,
-            R.drawable.ic_chat_bubble,
-            getString(R.string.after_call_action_messages)
-        ) {
-            openConversation()
-        }
-        bindMoreSheetAction(
-            sheetView,
-            bottomSheet,
-            R.id.actionSendMail,
-            R.drawable.ic_after_call_mail,
-            getString(R.string.after_call_action_send_email)
-        ) {
-            sendEmail()
-        }
-        bindMoreSheetAction(
-            sheetView,
-            bottomSheet,
-            R.id.actionCalendar,
-            R.drawable.ic_after_call_calendar,
-            getString(R.string.after_call_action_calendar)
-        ) {
-            openCalendar()
-        }
-        bindMoreSheetAction(
-            sheetView,
-            bottomSheet,
-            R.id.actionWeb,
-            R.drawable.ic_after_call_globe,
-            getString(R.string.after_call_action_web)
-        ) {
-            openBrowser()
-        }
-        bindMoreSheetAction(
-            sheetView,
-            bottomSheet,
-            R.id.actionCallInfo,
-            R.drawable.caller_ic_settings,
-            getString(R.string.after_call_action_call_information_settings)
-        ) {
-            openCallerSettings()
-        }
-
-        bottomSheet.show()
-    }
-
-    private fun bindMoreSheetAction(
-        sheetView: View,
-        bottomSheet: BottomSheetDialog,
-        rowId: Int,
-        iconRes: Int,
-        title: String,
-        onClick: () -> Unit
-    ) {
-        val row = sheetView.findViewById<View>(rowId)
-        row.findViewById<ImageView>(R.id.imageActionIcon).setImageResource(iconRes)
-        row.findViewById<TextView>(R.id.textActionTitle).text = title
-        row.setOnClickListener {
-            bottomSheet.dismiss()
-            onClick()
-        }
+        startActivity(
+            Intent(this, CallerMoreActivity::class.java).apply {
+                putExtra(CallAfterLauncher.EXTRA_CALLER_NUMBER, callerNumber)
+                putExtra("CALLER_NAME", textContactName.text?.toString())
+            }
+        )
     }
 
     private fun handleQuickAction(action: AfterCallActionItem) {
@@ -1310,6 +1279,34 @@ class CallAfterActivity : BaseActivity() {
         }
     }
 
+    private fun openScheduledForCaller() {
+        val number = callerNumber
+        if (number.isNullOrBlank()) {
+            startActivity(Intent(this, com.text.messages.sms.messanger.ui.scheduled.ScheduledMessagesActivity::class.java))
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val threadId = withContext(Dispatchers.IO) {
+                    Telephony.Threads.getOrCreateThreadId(this@CallAfterActivity, number)
+                }
+                startActivity(
+                    Intent(this@CallAfterActivity, ConversationDetailActivity::class.java).apply {
+                        putExtra("thread_id", threadId)
+                        putExtra("address", number)
+                        putExtra("contact_name", viewModel.contactInfo.value?.name ?: number)
+                        putExtra("is_scheduling", true)
+                    }
+                )
+                finish()
+            } catch (e: Exception) {
+                Log.e(TAG, "Unable to open scheduled message flow", e)
+                startActivity(Intent(this@CallAfterActivity, com.text.messages.sms.messanger.ui.scheduled.ScheduledMessagesActivity::class.java))
+            }
+        }
+    }
+
     private fun openConversationDetail(threadId: Long, address: String) {
         startActivity(
             Intent(this, ConversationDetailActivity::class.java).apply {
@@ -1708,6 +1705,7 @@ class CallAfterActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        rotatingCardHandler.removeCallbacks(rotatingCardRunnable)
         currentNativeAd?.destroy()
         currentNativeAd = null
         adaptiveBannerView?.destroy()

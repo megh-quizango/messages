@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0F0F0"
+    android:fitsSystemWindows="true"
+    tools:context=".ui.caller.CallerMoreActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="#F0F0F0"
+        android:elevation="1dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/buttonBack"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="15dp"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins"
+                android:text="@string/caller_cad_more"
+                android:textColor="@color/black"
+                android:textSize="23sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingTop="22dp"
+        android:paddingBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="14dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/suggestedAppsSection"
+                android:layout_width="match_parent"
+                android:layout_height="196dp"
+                android:background="@drawable/bg_after_call_suggested_apps"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/textSuggestedApps"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins"
+                    android:text="@string/callercad_suggested_apps"
+                    android:textColor="#D7D7D7"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@id/textAdBadge"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/textAdBadge"
+                    android:layout_width="44dp"
+                    android:layout_height="34dp"
+                    android:background="@drawable/bg_after_call_ad_badge"
+                    android:fontFamily="@font/poppins"
+                    android:gravity="center"
+                    android:text="@string/ad_label"
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:id="@+id/suggestedAppsRow"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingTop="6dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/textSuggestedApps">
+
+                    <LinearLayout
+                        android:id="@+id/suggestedCalendar"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="66dp"
+                            android:layout_height="66dp"
+                            android:background="@drawable/bg_after_call_suggested_icon"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center"
+                            android:text="31"
+                            android:textColor="#777777"
+                            android:textSize="30sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="@string/callercad_calendar_2025"
+                            android:textColor="#D7D7D7"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/suggestedGallery"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="66dp"
+                            android:layout_height="66dp"
+                            android:background="@drawable/bg_after_call_suggested_icon"
+                            android:padding="13dp"
+                            android:src="@drawable/ic_gallery"
+                            app:tint="#3B78D8" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="@string/callercad_gallery_app"
+                            android:textColor="#D7D7D7"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:id="@+id/moreMainView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_after_call_more_group"
+                android:orientation="vertical"
+                android:paddingHorizontal="2dp"
+                android:paddingVertical="14dp">
+
+                <include
+                    android:id="@+id/actionReminder"
+                    layout="@layout/include_caller_more_row" />
+
+                <include
+                    android:id="@+id/actionAddCaller"
+                    layout="@layout/include_caller_more_row" />
+
+                <include
+                    android:id="@+id/actionMessages"
+                    layout="@layout/include_caller_more_row" />
+
+                <include
+                    android:id="@+id/actionSendMail"
+                    layout="@layout/include_caller_more_row" />
+
+                <include
+                    android:id="@+id/actionCalendar"
+                    layout="@layout/include_caller_more_row" />
+
+                <include
+                    android:id="@+id/actionWeb"
+                    layout="@layout/include_caller_more_row" />
+
+                <include
+                    android:id="@+id/actionCallInfo"
+                    layout="@layout/include_caller_more_row" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
