@@ -247,18 +247,18 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/callerDemoGallery"
                 android:layout_width="0dp"
-                android:layout_height="86dp"
+                android:layout_height="106dp"
                 android:layout_marginStart="10dp"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="10dp"
-                android:background="@drawable/bg_caller_app_promo"
+                android:background="@drawable/bg_after_call_quick_reply_panel"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                android:paddingStart="12dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="12dp"
-                android:paddingBottom="8dp"
+                android:paddingStart="14dp"
+                android:paddingTop="11dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="11dp"
                 android:tag="exclude_from_theme_background"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -276,7 +276,7 @@
                     android:maxLines="1"
                     android:text="@string/callercad_quick_replies"
                     android:textColor="@color/black"
-                    android:textSize="15sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@id/textCallerViewMore"
                     app:layout_constraintStart_toStartOf="parent"
@@ -285,17 +285,17 @@
                 <TextView
                     android:id="@+id/textCallerViewMore"
                     android:layout_width="wrap_content"
-                    android:layout_height="30dp"
+                    android:layout_height="42dp"
                     android:background="@drawable/bg_caller_view_more"
                     android:fontFamily="@font/poppins"
                     android:gravity="center"
                     android:includeFontPadding="false"
-                    android:minWidth="62dp"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
+                    android:minWidth="78dp"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
                     android:text="@string/caller_cad_more"
                     android:textColor="@color/white"
-                    android:textSize="12sp"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -303,8 +303,8 @@
                 <LinearLayout
                     android:id="@+id/quickReplyPreviewRow"
                     android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_height="42dp"
+                    android:layout_marginTop="13dp"
                     android:baselineAligned="false"
                     android:gravity="center"
                     android:orientation="horizontal"
@@ -331,7 +331,7 @@
                         android:paddingHorizontal="6dp"
                         android:text="@string/quick_response_1"
                         android:textColor="@color/black"
-                        android:textSize="11sp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/quickReplyPreviewTwo"
@@ -351,7 +351,7 @@
                         android:paddingHorizontal="6dp"
                         android:text="@string/quick_response_2"
                         android:textColor="@color/black"
-                        android:textSize="11sp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/quickReplyPreviewThree"
@@ -371,7 +371,7 @@
                         android:paddingHorizontal="6dp"
                         android:text="@string/quick_response_3"
                         android:textColor="@color/black"
-                        android:textSize="11sp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>

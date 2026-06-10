@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_rounded"
+    android:clipToPadding="false"
+    android:overScrollMode="never"
+    android:paddingBottom="30dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="18dp">
+
+        <include
+            android:id="@+id/actionAddCaller"
+            layout="@layout/include_after_call_more_action" />
+
+        <include
+            android:id="@+id/actionMessages"
+            layout="@layout/include_after_call_more_action" />
+
+        <include
+            android:id="@+id/actionSendMail"
+            layout="@layout/include_after_call_more_action" />
+
+        <include
+            android:id="@+id/actionCalendar"
+            layout="@layout/include_after_call_more_action" />
+
+        <include
+            android:id="@+id/actionWeb"
+            layout="@layout/include_after_call_more_action" />
+
+        <include
+            android:id="@+id/actionCallInfo"
+            layout="@layout/include_after_call_more_action" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

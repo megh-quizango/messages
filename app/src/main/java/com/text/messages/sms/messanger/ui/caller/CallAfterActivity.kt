@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
@@ -16,7 +17,10 @@ import android.provider.CalendarContract
 import android.provider.ContactsContract
 import android.provider.Telephony
 import android.text.InputType
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
@@ -25,6 +29,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.NumberPicker
+import android.widget.RadioButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -44,6 +49,7 @@ import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdEventCallback
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.text.messages.sms.messanger.MessagesApp
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.data.model.Conversation
@@ -451,13 +457,13 @@ class CallAfterActivity : BaseActivity() {
             if (isDebounced()) makeCall()
         }
         tabQuickMessages.setOnClickListener {
-            if (isDebounced()) selectTab(AfterCallTab.QUICK_MESSAGES)
+            if (isDebounced()) showQuickRepliesSheet()
         }
         tabReminders.setOnClickListener {
             if (isDebounced()) addToContacts()
         }
         tabActions.setOnClickListener {
-            if (isDebounced()) selectTab(AfterCallTab.ACTIONS)
+            if (isDebounced()) showMoreActionsSheet()
         }
     }
 
@@ -578,11 +584,11 @@ class CallAfterActivity : BaseActivity() {
         }
         textCallerViewMore.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
-            selectTab(AfterCallTab.QUICK_MESSAGES)
+            showQuickRepliesSheet()
         }
         callerDemoGallery.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
-            selectTab(AfterCallTab.QUICK_MESSAGES)
+            showQuickRepliesSheet()
         }
     }
 
@@ -642,6 +648,140 @@ class CallAfterActivity : BaseActivity() {
                 }
             }
             .show()
+    }
+
+    private fun showQuickRepliesSheet() {
+        val sheetView = LayoutInflater.from(this)
+            .inflate(R.layout.bottom_sheet_after_call_quick_replies, null, false)
+        val bottomSheet = BottomSheetDialog(this)
+        bottomSheet.setContentView(sheetView)
+        bottomSheet.setOnShowListener {
+            bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+
+        val responses = viewModel.quickResponses.value.orEmpty().filterNot { it.isCustom }
+        val radioButtons = listOf<RadioButton>(
+            sheetView.findViewById(R.id.radioQuickReplyOne),
+            sheetView.findViewById(R.id.radioQuickReplyTwo),
+            sheetView.findViewById(R.id.radioQuickReplyThree)
+        )
+        radioButtons.forEachIndexed { index, radioButton ->
+            val response = responses.getOrNull(index)
+            if (response == null) {
+                radioButton.visibility = View.GONE
+                return@forEachIndexed
+            }
+            radioButton.text = response.text
+            radioButton.setOnClickListener {
+                radioButtons.forEach { it.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_radio_unselected, 0) }
+                radioButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_radio_selected, 0)
+                bottomSheet.dismiss()
+                sendQuickMessage(response.text)
+            }
+        }
+
+        val customInput = sheetView.findViewById<EditText>(R.id.editQuickReplyCustom)
+        val sendButton = sheetView.findViewById<TextView>(R.id.buttonQuickReplySend)
+        customInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                sendButton.visibility = if (s?.toString()?.trim().isNullOrEmpty()) View.GONE else View.VISIBLE
+            }
+            override fun afterTextChanged(s: Editable?) = Unit
+        })
+        sendButton.setOnClickListener {
+            val message = customInput.text?.toString()?.trim().orEmpty()
+            if (message.isNotEmpty()) {
+                bottomSheet.dismiss()
+                sendQuickMessage(message)
+            }
+        }
+
+        bottomSheet.show()
+    }
+
+    private fun showMoreActionsSheet() {
+        val sheetView = LayoutInflater.from(this)
+            .inflate(R.layout.bottom_sheet_after_call_more_actions, null, false)
+        val bottomSheet = BottomSheetDialog(this)
+        bottomSheet.setContentView(sheetView)
+        bottomSheet.setOnShowListener {
+            bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+
+        bindMoreSheetAction(
+            sheetView,
+            bottomSheet,
+            R.id.actionAddCaller,
+            R.drawable.ic_person_add,
+            getString(R.string.after_call_action_add_caller_contacts)
+        ) {
+            addToContacts()
+        }
+        bindMoreSheetAction(
+            sheetView,
+            bottomSheet,
+            R.id.actionMessages,
+            R.drawable.ic_chat_bubble,
+            getString(R.string.after_call_action_messages)
+        ) {
+            openConversation()
+        }
+        bindMoreSheetAction(
+            sheetView,
+            bottomSheet,
+            R.id.actionSendMail,
+            R.drawable.ic_after_call_mail,
+            getString(R.string.after_call_action_send_email)
+        ) {
+            sendEmail()
+        }
+        bindMoreSheetAction(
+            sheetView,
+            bottomSheet,
+            R.id.actionCalendar,
+            R.drawable.ic_after_call_calendar,
+            getString(R.string.after_call_action_calendar)
+        ) {
+            openCalendar()
+        }
+        bindMoreSheetAction(
+            sheetView,
+            bottomSheet,
+            R.id.actionWeb,
+            R.drawable.ic_after_call_globe,
+            getString(R.string.after_call_action_web)
+        ) {
+            openBrowser()
+        }
+        bindMoreSheetAction(
+            sheetView,
+            bottomSheet,
+            R.id.actionCallInfo,
+            R.drawable.caller_ic_settings,
+            getString(R.string.after_call_action_call_information_settings)
+        ) {
+            openCallerSettings()
+        }
+
+        bottomSheet.show()
+    }
+
+    private fun bindMoreSheetAction(
+        sheetView: View,
+        bottomSheet: BottomSheetDialog,
+        rowId: Int,
+        iconRes: Int,
+        title: String,
+        onClick: () -> Unit
+    ) {
+        val row = sheetView.findViewById<View>(rowId)
+        row.findViewById<ImageView>(R.id.imageActionIcon).setImageResource(iconRes)
+        row.findViewById<TextView>(R.id.textActionTitle).text = title
+        row.setOnClickListener {
+            bottomSheet.dismiss()
+            onClick()
+        }
     }
 
     private fun handleQuickAction(action: AfterCallActionItem) {

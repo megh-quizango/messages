@@ -202,6 +202,12 @@
     <string name="quick_response_3">On my way.</string>
     <string name="quick_response_4">Will call later.</string>
     <string name="quick_response_custom">Type custom message...</string>
+    <string name="callercad_sorry_i_can_t_talk_right_now">Sorry, I can\'t talk right now.</string>
+    <string name="callercad_can_i_call_you_later">Can I call you later?</string>
+    <string name="callercad_i_m_on_my_way">I\'m on my way.</string>
+    <string name="callercad_write_personal_message">Write personal message</string>
+    <string name="callercad_recents">Recents</string>
+    <string name="callercad_no_recent">No recent messages</string>
     <string name="sms_sent_success">Message sent</string>
     <string name="sms_sent_failed">Failed to send message</string>
     <string name="completed_call">Call completed</string>
