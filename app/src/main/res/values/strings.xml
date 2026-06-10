@@ -375,6 +375,10 @@
     <string name="after_call_action_instagram">Instagram</string>
     <string name="after_call_action_youtube">YouTube</string>
     <string name="after_call_action_web">Web</string>
+    <string name="after_call_action_messages">Messages</string>
+    <string name="after_call_action_calendar">Calendar</string>
+    <string name="after_call_action_call_information_settings">Call information settings</string>
+    <string name="after_call_action_add_caller_contacts">Add caller to your contacts</string>
     <string name="after_call_custom_message_title">Send quick message</string>
     <string name="after_call_custom_message_hint">Type custom message</string>
     <string name="after_call_reminder_label">Call %1$s</string>

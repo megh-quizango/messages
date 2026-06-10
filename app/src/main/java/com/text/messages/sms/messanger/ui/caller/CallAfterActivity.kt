@@ -12,6 +12,7 @@ import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import android.os.SystemClock
 import android.provider.AlarmClock
+import android.provider.CalendarContract
 import android.provider.ContactsContract
 import android.provider.Telephony
 import android.text.InputType
@@ -33,7 +34,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
@@ -97,6 +97,7 @@ class CallAfterActivity : BaseActivity() {
     private lateinit var callerSetting: View
     private lateinit var textCallerViewMore: View
     private lateinit var callerDemoGallery: View
+    private lateinit var quickReplyPreviewViews: List<TextView>
     private lateinit var imageAvatar: ImageView
     private lateinit var textAvatarLetter: TextView
     private lateinit var textContactName: TextView
@@ -280,6 +281,11 @@ class CallAfterActivity : BaseActivity() {
         callerSetting = findViewById(R.id.callerSetting)
         textCallerViewMore = findViewById(R.id.textCallerViewMore)
         callerDemoGallery = findViewById(R.id.callerDemoGallery)
+        quickReplyPreviewViews = listOf(
+            findViewById(R.id.quickReplyPreviewOne),
+            findViewById(R.id.quickReplyPreviewTwo),
+            findViewById(R.id.quickReplyPreviewThree)
+        )
         imageAvatar = findViewById(R.id.imageAvatar)
         textAvatarLetter = findViewById(R.id.textAvatarLetter)
         textContactName = findViewById(R.id.textContactName)
@@ -526,7 +532,7 @@ class CallAfterActivity : BaseActivity() {
         }
 
         recyclerQuickActions.apply {
-            layoutManager = object : GridLayoutManager(this@CallAfterActivity, 3) {
+            layoutManager = object : LinearLayoutManager(this@CallAfterActivity) {
                 override fun canScrollVertically(): Boolean = true
             }
             adapter = quickActionAdapter
@@ -535,15 +541,12 @@ class CallAfterActivity : BaseActivity() {
 
         quickActionAdapter.submitList(
             listOf(
-                AfterCallActionItem("add_contact", R.drawable.ic_person_add, getString(R.string.after_call_action_add_contact)),
-                AfterCallActionItem("send_sms", R.drawable.ic_chat_bubble, getString(R.string.after_call_action_send_sms)),
-                AfterCallActionItem("whatsapp", R.drawable.ic_send, getString(R.string.after_call_action_whatsapp)),
-                AfterCallActionItem("set_alarm", R.drawable.ic_after_call_alarm, getString(R.string.after_call_action_set_alarm)),
-                AfterCallActionItem("reminder", R.drawable.ic_after_call_bell, getString(R.string.after_call_action_reminder)),
+                AfterCallActionItem("add_contact", R.drawable.ic_person_add, getString(R.string.after_call_action_add_caller_contacts)),
+                AfterCallActionItem("send_sms", R.drawable.ic_chat_bubble, getString(R.string.after_call_action_messages)),
                 AfterCallActionItem("send_email", R.drawable.ic_after_call_mail, getString(R.string.after_call_action_send_email)),
-                AfterCallActionItem("instagram", R.drawable.ic_camera, getString(R.string.after_call_action_instagram)),
-                AfterCallActionItem("youtube", R.drawable.ic_after_call_play, getString(R.string.after_call_action_youtube)),
-                AfterCallActionItem("web", R.drawable.ic_after_call_globe, getString(R.string.after_call_action_web))
+                AfterCallActionItem("calendar", R.drawable.ic_after_call_calendar, getString(R.string.after_call_action_calendar)),
+                AfterCallActionItem("web", R.drawable.ic_after_call_globe, getString(R.string.after_call_action_web)),
+                AfterCallActionItem("call_settings", R.drawable.caller_ic_settings, getString(R.string.after_call_action_call_information_settings))
             )
         )
     }
@@ -571,11 +574,11 @@ class CallAfterActivity : BaseActivity() {
         }
         textCallerViewMore.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
-            openCurrentApp()
+            selectTab(AfterCallTab.QUICK_MESSAGES)
         }
         callerDemoGallery.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
-            openCurrentApp()
+            selectTab(AfterCallTab.QUICK_MESSAGES)
         }
     }
 
@@ -598,6 +601,22 @@ class CallAfterActivity : BaseActivity() {
         }
         viewModel.updateMessageText(message)
         viewModel.sendMessage()
+    }
+
+    private fun bindQuickReplyPreview(responses: List<CallAfterViewModel.QuickResponse>) {
+        quickReplyPreviewViews.forEachIndexed { index, textView ->
+            val response = responses.getOrNull(index)
+            textView.visibility = if (response == null || response.isCustom) View.INVISIBLE else View.VISIBLE
+            if (response == null || response.isCustom) {
+                textView.setOnClickListener(null)
+                return@forEachIndexed
+            }
+            textView.text = response.text
+            textView.setOnClickListener {
+                if (!isDebounced()) return@setOnClickListener
+                sendQuickMessage(response.text)
+            }
+        }
     }
 
     private fun showCustomMessageDialog() {
@@ -625,22 +644,10 @@ class CallAfterActivity : BaseActivity() {
         when (action.id) {
             "add_contact" -> addToContacts()
             "send_sms" -> openConversation()
-            "whatsapp" -> openWhatsAppOrSearch()
-            "set_alarm" -> openAlarmSetter()
-            "reminder" -> {
-                selectTab(AfterCallTab.REMINDERS)
-                showReminderEditor()
-            }
             "send_email" -> sendEmail()
-            "instagram" -> openInstalledAppOrFallback(
-                packageName = PACKAGE_INSTAGRAM,
-                fallbackUri = Uri.parse("https://www.instagram.com/")
-            )
-            "youtube" -> openInstalledAppOrFallback(
-                packageName = PACKAGE_YOUTUBE,
-                fallbackUri = Uri.parse("https://www.youtube.com/")
-            )
+            "calendar" -> openCalendar()
             "web" -> openBrowser()
+            "call_settings" -> openCallerSettings()
         }
     }
 
@@ -849,6 +856,7 @@ class CallAfterActivity : BaseActivity() {
     private fun observeViewModel() {
         viewModel.quickResponses.observe(this) { responses ->
             quickResponseAdapter.submitList(responses.toList())
+            bindQuickReplyPreview(responses)
         }
 
         viewModel.isSending.observe(this) { isSending ->
@@ -1233,6 +1241,21 @@ class CallAfterActivity : BaseActivity() {
             startExternalActivity(showAlarmIntent) -> finish()
             startExternalActivity(setAlarmIntent) -> finish()
             else ->
+            Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openCalendar() {
+        val labelTarget = textContactName.text?.toString()?.takeIf { it.isNotBlank() }
+            ?: callerNumber
+            ?: getString(R.string.unknown_number)
+        val intent = Intent(Intent.ACTION_INSERT).apply {
+            data = CalendarContract.Events.CONTENT_URI
+            putExtra(CalendarContract.Events.TITLE, getString(R.string.after_call_reminder_label, labelTarget))
+        }
+        if (startExternalActivity(intent)) {
+            finish()
+        } else {
             Toast.makeText(this, R.string.after_call_feature_unavailable, Toast.LENGTH_SHORT).show()
         }
     }
