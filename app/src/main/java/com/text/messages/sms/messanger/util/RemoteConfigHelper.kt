@@ -40,6 +40,8 @@ object RemoteConfigHelper {
     private const val DEFAULT_IMEX_NATIVE_FULLSCREEN_ONLY = false
     private const val DEFAULT_MAIN_BACK_INTERSTITIAL_AD_UNIT_ID = ""
     private const val DEFAULT_MAIN_BACK_FALLBACK_INTERSTITIAL_AD_UNIT_ID = ""
+    private const val DEFAULT_AFTER_CALL_SUGGESTED_APP_PACKAGE_IDS =
+        "com.google.android.calendar,com.google.android.apps.photos"
 
     // Remote Config keys
     private const val KEY_BANNER_AD_UNIT_ID = "banner_ad_unit_id"
@@ -71,6 +73,7 @@ object RemoteConfigHelper {
     private const val KEY_IMEX_NATIVE_FULLSCREEN_ONLY = "imex_native_fullscreen_only"
     private const val KEY_MAIN_BACK_INTERSTITIAL_AD_UNIT_ID = "interstitial_main_back"
     private const val KEY_MAIN_BACK_FALLBACK_INTERSTITIAL_AD_UNIT_ID = "interstitial_main_back_fallback"
+    private const val KEY_AFTER_CALL_SUGGESTED_APP_PACKAGE_IDS = "after_call_suggested_app_package_ids"
 
     fun initialize(remoteConfigInstance: FirebaseRemoteConfig) {
         remoteConfig = remoteConfigInstance
@@ -110,7 +113,8 @@ object RemoteConfigHelper {
             KEY_IMEX_NATIVE_FULLSCREEN_AD_UNIT_ID to DEFAULT_IMEX_NATIVE_FULLSCREEN_AD_UNIT_ID,
             KEY_IMEX_NATIVE_FULLSCREEN_ONLY to DEFAULT_IMEX_NATIVE_FULLSCREEN_ONLY,
             KEY_MAIN_BACK_INTERSTITIAL_AD_UNIT_ID to DEFAULT_MAIN_BACK_INTERSTITIAL_AD_UNIT_ID,
-            KEY_MAIN_BACK_FALLBACK_INTERSTITIAL_AD_UNIT_ID to DEFAULT_MAIN_BACK_FALLBACK_INTERSTITIAL_AD_UNIT_ID
+            KEY_MAIN_BACK_FALLBACK_INTERSTITIAL_AD_UNIT_ID to DEFAULT_MAIN_BACK_FALLBACK_INTERSTITIAL_AD_UNIT_ID,
+            KEY_AFTER_CALL_SUGGESTED_APP_PACKAGE_IDS to DEFAULT_AFTER_CALL_SUGGESTED_APP_PACKAGE_IDS
         )
         remoteConfigInstance.setDefaultsAsync(defaultValues)
         remoteConfigInstance.setDefaultsAsync(R.xml.remote_config_defaults)
@@ -299,6 +303,13 @@ object RemoteConfigHelper {
         val config = remoteConfig ?: return DEFAULT_MAIN_BACK_FALLBACK_INTERSTITIAL_AD_UNIT_ID
         val adUnitId = config.getString(KEY_MAIN_BACK_FALLBACK_INTERSTITIAL_AD_UNIT_ID).trim()
         return if (adUnitId.isBlank()) DEFAULT_MAIN_BACK_FALLBACK_INTERSTITIAL_AD_UNIT_ID else adUnitId
+    }
+
+    /** Comma/newline separated package IDs for the after-call More Suggested Apps section. */
+    fun getAfterCallSuggestedAppPackageIdsRaw(): String {
+        val config = remoteConfig ?: return DEFAULT_AFTER_CALL_SUGGESTED_APP_PACKAGE_IDS
+        val value = config.getString(KEY_AFTER_CALL_SUGGESTED_APP_PACKAGE_IDS).trim()
+        return if (value.isBlank()) DEFAULT_AFTER_CALL_SUGGESTED_APP_PACKAGE_IDS else value
     }
 
     fun fetchRemoteConfig() {

@@ -112,4 +112,8 @@
         <key>language_native_fullscreen_only</key>
         <value>false</value>
     </entry>
+    <entry>
+        <key>after_call_suggested_app_package_ids</key>
+        <value>com.google.android.calendar,com.google.android.apps.photos</value>
+    </entry>
 </defaultsMap>

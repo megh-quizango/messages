@@ -1244,7 +1244,7 @@ class CallAfterActivity : BaseActivity() {
         try {
             val intent = Intent(Intent.ACTION_INSERT).apply {
                 type = ContactsContract.Contacts.CONTENT_ITEM_TYPE
-                putExtra(ContactsContract.Intents.Insert.PHONE, callerNumber ?: "")
+                putExtra(ContactsContract.Intents.Insert.PHONE, "")
                 viewModel.contactInfo.value?.name?.takeIf { it.isNotBlank() }?.let {
                     putExtra(ContactsContract.Intents.Insert.NAME, it)
                 }

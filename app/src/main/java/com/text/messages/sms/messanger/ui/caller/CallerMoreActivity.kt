@@ -2,11 +2,11 @@ package com.text.messages.sms.messanger.ui.caller
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.provider.ContactsContract
-import android.provider.MediaStore
 import android.provider.Telephony
 import android.util.Log
 import android.view.View
@@ -21,6 +21,7 @@ import androidx.lifecycle.lifecycleScope
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import com.text.messages.sms.messanger.ui.conversation.ConversationDetailActivity
+import com.text.messages.sms.messanger.util.AfterCallSuggestedAppsRepository
 import com.text.messages.sms.messanger.util.AppOpenManager
 import com.text.messages.sms.messanger.util.CallAfterLauncher
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +37,7 @@ class CallerMoreActivity : BaseActivity() {
 
     private var callerNumber: String? = null
     private var callerName: String? = null
+    private var suggestedApps: List<AfterCallSuggestedAppsRepository.SuggestedApp> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -67,8 +69,50 @@ class CallerMoreActivity : BaseActivity() {
     }
 
     private fun setupSuggestedApps() {
-        findViewById<View>(R.id.suggestedCalendar).setOnClickListener { openCalendarApp() }
-        findViewById<View>(R.id.suggestedGallery).setOnClickListener { openGalleryApp() }
+        lifecycleScope.launch {
+            suggestedApps = withContext(Dispatchers.IO) {
+                AfterCallSuggestedAppsRepository.getSuggestedApps(this@CallerMoreActivity)
+            }
+            bindSuggestedApp(
+                app = suggestedApps.getOrNull(0),
+                containerId = R.id.suggestedCalendar,
+                iconId = R.id.imageSuggestedAppOne,
+                titleId = R.id.textSuggestedAppOne
+            )
+            bindSuggestedApp(
+                app = suggestedApps.getOrNull(1),
+                containerId = R.id.suggestedGallery,
+                iconId = R.id.imageSuggestedAppTwo,
+                titleId = R.id.textSuggestedAppTwo
+            )
+        }
+    }
+
+    private fun bindSuggestedApp(
+        app: AfterCallSuggestedAppsRepository.SuggestedApp?,
+        containerId: Int,
+        iconId: Int,
+        titleId: Int
+    ) {
+        val container = findViewById<View>(containerId)
+        val icon = findViewById<ImageView>(iconId)
+        val title = findViewById<TextView>(titleId)
+        if (app == null) {
+            container.visibility = View.INVISIBLE
+            container.setOnClickListener(null)
+            return
+        }
+        container.visibility = View.VISIBLE
+        title.text = app.name
+        val bitmap = app.iconFile?.takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.absolutePath) }
+        if (bitmap != null) {
+            icon.setImageBitmap(bitmap)
+        }
+        container.setOnClickListener {
+            startExternalActivity(
+                AfterCallSuggestedAppsRepository.createLaunchIntent(this, app.packageId)
+            )
+        }
     }
 
     private fun setupActions() {
@@ -121,7 +165,7 @@ class CallerMoreActivity : BaseActivity() {
             startActivity(
                 Intent(Intent.ACTION_INSERT).apply {
                     type = ContactsContract.Contacts.CONTENT_ITEM_TYPE
-                    putExtra(ContactsContract.Intents.Insert.PHONE, callerNumber.orEmpty())
+                    putExtra(ContactsContract.Intents.Insert.PHONE, "")
                     callerName?.let { putExtra(ContactsContract.Intents.Insert.NAME, it) }
                 }
             )
@@ -182,18 +226,6 @@ class CallerMoreActivity : BaseActivity() {
             Uri.parse("https://www.google.com/search?q=${Uri.encode(query)}")
         }
         startExternalActivity(Intent(Intent.ACTION_VIEW, uri))
-    }
-
-    private fun openCalendarApp() {
-        startExternalActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_CALENDAR))
-    }
-
-    private fun openGalleryApp() {
-        startExternalActivity(
-            Intent(Intent.ACTION_VIEW, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
-                type = "image/*"
-            }
-        )
     }
 
     private fun startExternalActivity(intent: Intent) {

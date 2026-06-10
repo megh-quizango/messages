@@ -116,18 +116,18 @@
                         android:gravity="center"
                         android:orientation="vertical">
 
-                        <TextView
+                        <ImageView
+                            android:id="@+id/imageSuggestedAppOne"
                             android:layout_width="52dp"
                             android:layout_height="52dp"
                             android:background="@drawable/bg_after_call_suggested_icon"
-                            android:fontFamily="@font/poppins"
-                            android:gravity="center"
-                            android:text="31"
-                            android:textColor="#777777"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
+                            android:padding="6dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_after_call_calendar"
+                            app:tint="@null" />
 
                         <TextView
+                            android:id="@+id/textSuggestedAppOne"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="9dp"
@@ -146,6 +146,7 @@
                         android:orientation="vertical">
 
                         <ImageView
+                            android:id="@+id/imageSuggestedAppTwo"
                             android:layout_width="52dp"
                             android:layout_height="52dp"
                             android:background="@drawable/bg_after_call_suggested_icon"
@@ -154,6 +155,7 @@
                             app:tint="#3B78D8" />
 
                         <TextView
+                            android:id="@+id/textSuggestedAppTwo"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="9dp"
