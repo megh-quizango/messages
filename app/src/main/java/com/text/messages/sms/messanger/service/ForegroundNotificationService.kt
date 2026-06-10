@@ -17,7 +17,6 @@ import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.ui.contacts.ContactsActivity
 import com.text.messages.sms.messanger.ui.main.MainActivity
 import com.text.messages.sms.messanger.ui.manageapps.ManageAppsActivity
-import com.text.messages.sms.messanger.util.RingtoneSoundResolver
 
 class ForegroundNotificationService : Service() {
 
@@ -39,8 +38,13 @@ class ForegroundNotificationService : Service() {
         val channel = NotificationChannel(
             CHANNEL_ID,
             CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_HIGH
-        )
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            setSound(null, null)
+            enableVibration(false)
+            enableLights(false)
+            lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        }
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
     }
 
@@ -50,28 +54,20 @@ class ForegroundNotificationService : Service() {
         bindActions(collapsed)
         bindActions(expanded)
 
-        val ringtonePrefs = getSharedPreferences(RingtoneSoundResolver.PREFS_NAME, Context.MODE_PRIVATE)
-        val selectedRingtone = ringtonePrefs.getString(
-            RingtoneSoundResolver.KEY_SELECTED_RINGTONE,
-            RingtoneSoundResolver.DEFAULT
-        )
-        val pickedRingtoneUri = ringtonePrefs.getString(RingtoneSoundResolver.KEY_SELECTED_RINGTONE_URI, null)
-        val notificationSound = RingtoneSoundResolver.getNotificationSoundUri(
-            this,
-            selectedRingtone,
-            pickedRingtoneUri
-        )
-
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setColorized(false)
+            .setColorized(true)
+            .setColor(0xFF2569F1.toInt())
             .setCustomContentView(collapsed)
             .setCustomBigContentView(expanded)
-            .setSound(notificationSound)
+            .setSound(null)
+            .setSilent(true)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setOngoing(true)
             .setOnlyAlertOnce(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .build()
     }
 
@@ -113,7 +109,7 @@ class ForegroundNotificationService : Service() {
 
     companion object {
         private const val TAG = "ForegroundNotification"
-        private const val CHANNEL_ID = "Insta"
+        private const val CHANNEL_ID = "Insta_persistent"
         private const val CHANNEL_NAME = "Forground"
         private const val SERVICE_ID = 404
 
