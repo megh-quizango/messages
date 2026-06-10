@@ -478,7 +478,7 @@ class CallAfterActivity : BaseActivity() {
         }
         tabQuickMessages.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
-            showQuickReplyInputCard()
+            showQuickRepliesSheet()
         }
         tabReminders.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
@@ -612,7 +612,7 @@ class CallAfterActivity : BaseActivity() {
         callerDemoGallery.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
             if (rotatingCardIndex == 0) {
-                quickReplyInput.requestFocus()
+                showQuickRepliesSheet()
             } else {
                 openScheduledForCaller()
             }
@@ -1243,7 +1243,7 @@ class CallAfterActivity : BaseActivity() {
     private fun addToContacts() {
         try {
             val intent = Intent(Intent.ACTION_INSERT).apply {
-                type = ContactsContract.Contacts.CONTENT_ITEM_TYPE
+                type = ContactsContract.RawContacts.CONTENT_TYPE
                 putExtra(ContactsContract.Intents.Insert.PHONE, "")
                 viewModel.contactInfo.value?.name?.takeIf { it.isNotBlank() }?.let {
                     putExtra(ContactsContract.Intents.Insert.NAME, it)

@@ -164,7 +164,7 @@ class CallerMoreActivity : BaseActivity() {
         try {
             startActivity(
                 Intent(Intent.ACTION_INSERT).apply {
-                    type = ContactsContract.Contacts.CONTENT_ITEM_TYPE
+                    type = ContactsContract.RawContacts.CONTENT_TYPE
                     putExtra(ContactsContract.Intents.Insert.PHONE, "")
                     callerName?.let { putExtra(ContactsContract.Intents.Insert.NAME, it) }
                 }

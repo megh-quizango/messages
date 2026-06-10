@@ -128,10 +128,13 @@
 
                         <TextView
                             android:id="@+id/textSuggestedAppOne"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="9dp"
+                            android:ellipsize="end"
                             android:fontFamily="@font/poppins"
+                            android:gravity="center"
+                            android:maxLines="1"
                             android:text="@string/callercad_calendar_2025"
                             android:textColor="#D7D7D7"
                             android:textSize="16sp" />
@@ -156,10 +159,13 @@
 
                         <TextView
                             android:id="@+id/textSuggestedAppTwo"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="9dp"
+                            android:ellipsize="end"
                             android:fontFamily="@font/poppins"
+                            android:gravity="center"
+                            android:maxLines="1"
                             android:text="@string/callercad_gallery_app"
                             android:textColor="#D7D7D7"
                             android:textSize="16sp" />
