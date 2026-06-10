@@ -8,13 +8,13 @@
     android:focusable="true"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="26dp"
-    android:paddingVertical="14dp">
+    android:paddingHorizontal="15dp"
+    android:paddingVertical="10dp">
 
     <ImageView
         android:id="@+id/imageActionIcon"
-        android:layout_width="26dp"
-        android:layout_height="26dp"
+        android:layout_width="19dp"
+        android:layout_height="19dp"
         android:adjustViewBounds="true"
         android:contentDescription="@null"
         android:scaleType="centerInside"
@@ -24,8 +24,8 @@
         android:id="@+id/textActionTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="26dp"
+        android:layout_marginStart="12dp"
         android:fontFamily="@font/poppins"
         android:textColor="@color/black"
-        android:textSize="20sp" />
+        android:textSize="12sp" />
 </LinearLayout>

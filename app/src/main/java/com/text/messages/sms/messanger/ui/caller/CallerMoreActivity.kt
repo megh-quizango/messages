@@ -119,7 +119,7 @@ class CallerMoreActivity : BaseActivity() {
     private fun addToContacts() {
         try {
             startActivity(
-                Intent(Intent.ACTION_INSERT_OR_EDIT).apply {
+                Intent(Intent.ACTION_INSERT).apply {
                     type = ContactsContract.Contacts.CONTENT_ITEM_TYPE
                     putExtra(ContactsContract.Intents.Insert.PHONE, callerNumber.orEmpty())
                     callerName?.let { putExtra(ContactsContract.Intents.Insert.NAME, it) }

@@ -646,6 +646,13 @@ class CallAfterActivity : BaseActivity() {
         textCallerViewMore.visibility = if (showQuickReplies) View.VISIBLE else View.GONE
         textCallerAppTitle.visibility = if (showQuickReplies) View.VISIBLE else View.GONE
         scheduleActionRow.visibility = if (showQuickReplies) View.GONE else View.VISIBLE
+        callerDemoGallery.setBackgroundResource(
+            if (showQuickReplies) {
+                R.drawable.bg_after_call_quick_reply_panel
+            } else {
+                R.drawable.bg_after_call_promo_card
+            }
+        )
     }
 
     private fun sendQuickMessage(message: String) {
@@ -1235,7 +1242,7 @@ class CallAfterActivity : BaseActivity() {
 
     private fun addToContacts() {
         try {
-            val intent = Intent(Intent.ACTION_INSERT_OR_EDIT).apply {
+            val intent = Intent(Intent.ACTION_INSERT).apply {
                 type = ContactsContract.Contacts.CONTENT_ITEM_TYPE
                 putExtra(ContactsContract.Intents.Insert.PHONE, callerNumber ?: "")
                 viewModel.contactInfo.value?.name?.takeIf { it.isNotBlank() }?.let {
