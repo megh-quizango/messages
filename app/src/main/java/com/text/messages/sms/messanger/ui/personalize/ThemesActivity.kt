@@ -276,7 +276,7 @@ class ThemesActivity : BaseActivity() {
         val color = themeColors[cardId] ?: AppPreferences.getThemeColor(this)
         val colorInt = Color.parseColor(color)
         binding.buttonSave.backgroundTintList = ColorStateList.valueOf(colorInt)
-        binding.previewPhoneCard.setCardBackgroundColor(Color.WHITE)
+        binding.previewPhoneCard.setCardBackgroundColor(colorInt)
         binding.imageSelectedThemePreview.alpha = 1f
         binding.imageSelectedThemePreview.clearColorFilter()
 

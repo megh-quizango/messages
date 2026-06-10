@@ -7,6 +7,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.text.messages.sms.messanger.util.MainBackPressInterstitialAdManager
 import com.text.messages.sms.messanger.util.LocaleHelper
+import com.text.messages.sms.messanger.util.ThemeManager
 
 /**
  * Base activity that ensures locale is applied and handles orientation
@@ -23,12 +24,14 @@ open class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         applyOrientationForScreenSize()
         super.onCreate(savedInstanceState)
+        ThemeManager.setupNavigationBar(this)
         setupAppWideBackPressInterstitial()
         preloadBackPressInterstitial()
     }
 
     override fun onResume() {
         super.onResume()
+        ThemeManager.setupNavigationBar(this)
         preloadBackPressInterstitial()
     }
 
