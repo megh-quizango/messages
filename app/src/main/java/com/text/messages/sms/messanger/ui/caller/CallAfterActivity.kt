@@ -110,7 +110,8 @@ class CallAfterActivity : BaseActivity() {
     private lateinit var callerDemoGallery: View
     private lateinit var quickReplyPreviewRow: View
     private lateinit var scheduleActionRow: View
-    private lateinit var quickReplyPreviewViews: List<TextView>
+    private lateinit var quickReplyInput: EditText
+    private lateinit var quickReplySend: View
     private lateinit var textCallerAppTitle: TextView
     private lateinit var buttonScheduleCard: View
     private lateinit var imageAvatar: ImageView
@@ -309,13 +310,10 @@ class CallAfterActivity : BaseActivity() {
         callerDemoGallery = findViewById(R.id.callerDemoGallery)
         quickReplyPreviewRow = findViewById(R.id.quickReplyPreviewRow)
         scheduleActionRow = findViewById(R.id.scheduleActionRow)
+        quickReplyInput = findViewById(R.id.quickReplyInput)
+        quickReplySend = findViewById(R.id.quickReplySend)
         textCallerAppTitle = findViewById(R.id.textCallerAppTitle)
         buttonScheduleCard = findViewById(R.id.buttonScheduleCard)
-        quickReplyPreviewViews = listOf(
-            findViewById(R.id.quickReplyPreviewOne),
-            findViewById(R.id.quickReplyPreviewTwo),
-            findViewById(R.id.quickReplyPreviewThree)
-        )
         imageAvatar = findViewById(R.id.imageAvatar)
         textAvatarLetter = findViewById(R.id.textAvatarLetter)
         textContactName = findViewById(R.id.textContactName)
@@ -475,16 +473,20 @@ class CallAfterActivity : BaseActivity() {
 
     private fun setupTabs() {
         tabMessages.setOnClickListener {
-            if (isDebounced()) makeCall()
+            if (!isDebounced()) return@setOnClickListener
+            makeCall()
         }
         tabQuickMessages.setOnClickListener {
-            if (isDebounced()) showQuickRepliesSheet()
+            if (!isDebounced()) return@setOnClickListener
+            showQuickReplyInputCard()
         }
         tabReminders.setOnClickListener {
-            if (isDebounced()) addToContacts()
+            if (!isDebounced()) return@setOnClickListener
+            addToContacts()
         }
         tabActions.setOnClickListener {
-            if (isDebounced()) showMoreActionsSheet()
+            if (!isDebounced()) return@setOnClickListener
+            showMoreActionsSheet()
         }
     }
 
@@ -610,7 +612,7 @@ class CallAfterActivity : BaseActivity() {
         callerDemoGallery.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
             if (rotatingCardIndex == 0) {
-                showQuickRepliesSheet()
+                quickReplyInput.requestFocus()
             } else {
                 openScheduledForCaller()
             }
@@ -618,6 +620,15 @@ class CallAfterActivity : BaseActivity() {
         buttonScheduleCard.setOnClickListener {
             if (!isDebounced()) return@setOnClickListener
             openScheduledForCaller()
+        }
+        quickReplySend.setOnClickListener {
+            if (!isDebounced()) return@setOnClickListener
+            val message = quickReplyInput.text?.toString()?.trim().orEmpty()
+            if (message.isBlank()) {
+                quickReplyInput.requestFocus()
+            } else {
+                sendQuickMessage(message)
+            }
         }
     }
 
@@ -640,11 +651,17 @@ class CallAfterActivity : BaseActivity() {
         rotatingCardHandler.postDelayed(rotatingCardRunnable, ROTATING_CARD_INTERVAL_MS)
     }
 
+    private fun showQuickReplyInputCard() {
+        rotatingCardIndex = 0
+        updateRotatingCard()
+        quickReplyInput.requestFocus()
+    }
+
     private fun updateRotatingCard() {
         val showQuickReplies = rotatingCardIndex == 0
         quickReplyPreviewRow.visibility = if (showQuickReplies) View.VISIBLE else View.GONE
-        textCallerViewMore.visibility = if (showQuickReplies) View.VISIBLE else View.GONE
-        textCallerAppTitle.visibility = if (showQuickReplies) View.VISIBLE else View.GONE
+        textCallerViewMore.visibility = View.GONE
+        textCallerAppTitle.visibility = View.GONE
         scheduleActionRow.visibility = if (showQuickReplies) View.GONE else View.VISIBLE
         callerDemoGallery.setBackgroundResource(
             if (showQuickReplies) {
@@ -662,22 +679,6 @@ class CallAfterActivity : BaseActivity() {
         }
         viewModel.updateMessageText(message)
         viewModel.sendMessage()
-    }
-
-    private fun bindQuickReplyPreview(responses: List<CallAfterViewModel.QuickResponse>) {
-        quickReplyPreviewViews.forEachIndexed { index, textView ->
-            val response = responses.getOrNull(index)
-            textView.visibility = if (response == null || response.isCustom) View.INVISIBLE else View.VISIBLE
-            if (response == null || response.isCustom) {
-                textView.setOnClickListener(null)
-                return@forEachIndexed
-            }
-            textView.text = response.text
-            textView.setOnClickListener {
-                if (!isDebounced()) return@setOnClickListener
-                sendQuickMessage(response.text)
-            }
-        }
     }
 
     private fun showCustomMessageDialog() {
@@ -976,7 +977,6 @@ class CallAfterActivity : BaseActivity() {
     private fun observeViewModel() {
         viewModel.quickResponses.observe(this) { responses ->
             quickResponseAdapter.submitList(responses.toList())
-            bindQuickReplyPreview(responses)
         }
 
         viewModel.isSending.observe(this) { isSending ->

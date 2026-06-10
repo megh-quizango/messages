@@ -298,79 +298,73 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/quickReplyPreviewRow"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_marginTop="6dp"
-                    android:baselineAligned="false"
-                    android:gravity="center"
-                    android:orientation="horizontal"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="-10dp"
+                    android:layout_marginEnd="-10dp"
+                    android:background="@drawable/bg_after_call_quick_reply_panel"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/textCallerAppTitle">
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <TextView
-                        android:id="@+id/quickReplyPreviewOne"
+                        android:id="@+id/quickReplyInputTitle"
                         android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="5dp"
-                        android:background="@drawable/bg_after_call_quick_reply_chip"
-                        android:clickable="true"
+                        android:layout_height="25dp"
+                        android:background="#F3F3F3"
                         android:ellipsize="end"
-                        android:focusable="true"
                         android:fontFamily="@font/poppins"
-                        android:foreground="?attr/selectableItemBackground"
-                        android:gravity="center"
+                        android:gravity="center_vertical"
                         android:includeFontPadding="false"
-                        android:maxLines="2"
-                        android:paddingHorizontal="6dp"
-                        android:text="@string/quick_response_1"
+                        android:maxLines="1"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:text="@string/callercad_quick_replies"
                         android:textColor="@color/black"
-                        android:textSize="10sp" />
+                        android:textSize="11sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView
-                        android:id="@+id/quickReplyPreviewTwo"
+                    <EditText
+                        android:id="@+id/quickReplyInput"
                         android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="5dp"
-                        android:background="@drawable/bg_after_call_quick_reply_chip"
-                        android:clickable="true"
+                        android:layout_height="0dp"
+                        android:background="#ECECEC"
                         android:ellipsize="end"
-                        android:focusable="true"
                         android:fontFamily="@font/poppins"
-                        android:foreground="?attr/selectableItemBackground"
-                        android:gravity="center"
+                        android:hint="@string/type_message_replies"
                         android:includeFontPadding="false"
-                        android:maxLines="2"
-                        android:paddingHorizontal="6dp"
-                        android:text="@string/quick_response_2"
+                        android:inputType="textCapSentences"
+                        android:maxLines="1"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="52dp"
+                        android:singleLine="true"
                         android:textColor="@color/black"
-                        android:textSize="10sp" />
+                        android:textColorHint="#777777"
+                        android:textSize="10sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/quickReplyInputTitle" />
 
-                    <TextView
-                        android:id="@+id/quickReplyPreviewThree"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginStart="5dp"
-                        android:background="@drawable/bg_after_call_quick_reply_chip"
+                    <ImageView
+                        android:id="@+id/quickReplySend"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
                         android:clickable="true"
-                        android:ellipsize="end"
                         android:focusable="true"
-                        android:fontFamily="@font/poppins"
                         android:foreground="?attr/selectableItemBackground"
-                        android:gravity="center"
-                        android:includeFontPadding="false"
-                        android:maxLines="2"
-                        android:paddingHorizontal="6dp"
-                        android:text="@string/quick_response_3"
-                        android:textColor="@color/black"
-                        android:textSize="10sp" />
-                </LinearLayout>
+                        android:padding="10dp"
+                        android:src="@drawable/ic_send"
+                        app:layout_constraintBottom_toBottomOf="@id/quickReplyInput"
+                        app:layout_constraintEnd_toEndOf="@id/quickReplyInput"
+                        app:layout_constraintTop_toTopOf="@id/quickReplyInput"
+                        tools:ignore="ContentDescription" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <LinearLayout
                     android:id="@+id/scheduleActionRow"

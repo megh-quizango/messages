@@ -63,7 +63,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/suggestedAppsSection"
                 android:layout_width="match_parent"
-                android:layout_height="190dp"
+                android:layout_height="164dp"
                 android:background="@drawable/bg_after_call_suggested_apps"
                 android:padding="10dp">
 
@@ -74,7 +74,7 @@
                     android:fontFamily="@font/poppins"
                     android:text="@string/callercad_suggested_apps"
                     android:textColor="#D7D7D7"
-                    android:textSize="12sp"
+                    android:textSize="18sp"
                     android:textStyle="normal"
                     app:layout_constraintEnd_toStartOf="@id/textAdBadge"
                     app:layout_constraintStart_toStartOf="parent"
@@ -117,20 +117,20 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:layout_width="72dp"
-                            android:layout_height="72dp"
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
                             android:background="@drawable/bg_after_call_suggested_icon"
                             android:fontFamily="@font/poppins"
                             android:gravity="center"
                             android:text="31"
                             android:textColor="#777777"
-                            android:textSize="30sp"
+                            android:textSize="24sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="9dp"
                             android:fontFamily="@font/poppins"
                             android:text="@string/callercad_calendar_2025"
                             android:textColor="#D7D7D7"
@@ -146,17 +146,17 @@
                         android:orientation="vertical">
 
                         <ImageView
-                            android:layout_width="72dp"
-                            android:layout_height="72dp"
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
                             android:background="@drawable/bg_after_call_suggested_icon"
-                            android:padding="13dp"
+                            android:padding="9dp"
                             android:src="@drawable/ic_gallery"
                             app:tint="#3B78D8" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="9dp"
                             android:fontFamily="@font/poppins"
                             android:text="@string/callercad_gallery_app"
                             android:textColor="#D7D7D7"
