@@ -95,6 +95,7 @@ open class BaseActivity : AppCompatActivity() {
             "WelcomeActivity",
             "OverlayPermissionActivity",
             "OverlayPermissionGuideActivity",
+            "CallAfterActivity",
             "LanguageTransitionAdActivity",
             "LanguageNativeFullscreenAdActivity",
             "ThemeTransitionAdActivity",

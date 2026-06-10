@@ -54,6 +54,7 @@ import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.AfterCallAdPreloader
 import com.text.messages.sms.messanger.util.AfterCallNotificationHelper
+import com.text.messages.sms.messanger.util.AppOpenManager
 import com.text.messages.sms.messanger.util.AppPreferences
 import com.text.messages.sms.messanger.util.CallAfterLauncher
 import com.text.messages.sms.messanger.util.ConversationCache
@@ -74,6 +75,7 @@ class CallAfterActivity : BaseActivity() {
     companion object {
         private const val TAG = "CallAfterActivity"
         private const val DEBOUNCE_DELAY_MS = 500L
+        private const val AFTER_CALL_APP_OPEN_SUPPRESSION_MS = 30_000L
         private const val PACKAGE_WHATSAPP = "com.whatsapp"
         private const val PACKAGE_WHATSAPP_BUSINESS = "com.whatsapp.w4b"
         private const val PACKAGE_GMAIL = "com.google.android.gm"
@@ -184,6 +186,7 @@ class CallAfterActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
+        AppOpenManager.suppressAppOpenFor(AFTER_CALL_APP_OPEN_SUPPRESSION_MS)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_call_after)
 
@@ -216,6 +219,7 @@ class CallAfterActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        AppOpenManager.suppressAppOpenFor(AFTER_CALL_APP_OPEN_SUPPRESSION_MS)
         if (::headerSection.isInitialized) {
             applyCallerCardTheme()
         }
