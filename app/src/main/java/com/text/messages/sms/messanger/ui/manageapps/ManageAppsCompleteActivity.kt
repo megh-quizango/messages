@@ -1,47 +1,28 @@
 package com.text.messages.sms.messanger.ui.manageapps
 
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
-import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
-import com.google.android.libraries.ads.mobile.sdk.banner.AdView
-import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
-import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdEventCallback
-import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityManageAppsCompleteBinding
-import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
-import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
-import com.text.messages.sms.messanger.util.AdConfig
-import com.text.messages.sms.messanger.util.AnalyticsHelper
-import com.text.messages.sms.messanger.util.NextGenAdHelper
-import com.text.messages.sms.messanger.util.RemoteConfigHelper
+import com.text.messages.sms.messanger.ui.base.BaseActivity
 import com.text.messages.sms.messanger.util.ThemeManager
 
 class ManageAppsCompleteActivity : BaseActivity() {
 
     private lateinit var binding: ActivityManageAppsCompleteBinding
-    private var nativeAd: NativeAd? = null
-    private var nativeAdView: NativeAdView? = null
-    private var adaptiveBannerView: AdView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         enableEdgeToEdge()
         binding = ActivityManageAppsCompleteBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
-        // Apply theme
-        ThemeManager.applyTheme(this, binding.root)
-        applyManageAppsChrome()
-        
+        ThemeManager.setupNavigationBar(this)
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -55,234 +36,15 @@ class ManageAppsCompleteActivity : BaseActivity() {
             stoppedCount
         )
 
-        setupBackButton()
-        initializeNativeAdView()
-        loadNativeAd()
-        binding.root.post {
-            applyManageAppsChrome()
-            binding.root.post { applyManageAppsChrome() }
-        }
-    }
-
-    private fun setupBackButton() {
-        binding.buttonBack.setOnClickListener {
-            finish()
-        }
+        binding.buttonBack.setOnClickListener { finish() }
+        applyManageAppsChrome()
     }
 
     private fun applyManageAppsChrome() {
-        val white = Color.WHITE
-        val blue = Color.parseColor("#0C56CF")
-        binding.root.setBackgroundColor(Color.WHITE)
-        binding.headerContainer.setBackgroundColor(blue)
-        binding.textHeading.setTextColor(white)
-        binding.textStoppedApps.setTextColor(white)
-        binding.buttonBack.imageTintList = ColorStateList.valueOf(white)
+        binding.textHeading.setTextColor(Color.WHITE)
+        binding.finalTextTop.setTextColor(Color.WHITE)
+        binding.textStoppedApps.setTextColor(Color.WHITE)
+        binding.buttonBack.imageTintList = ColorStateList.valueOf(Color.WHITE)
         binding.buttonBack.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
     }
-
-    private fun initializeNativeAdView() {
-        showManageAppsAdLoading()
-
-        // Pre-inflate the native ad view structure so the layout is complete from the start
-        nativeAdView = layoutInflater.inflate(R.layout.native_ad_layout, binding.nativeAdContainer, false) as NativeAdView
-        nativeAdView!!.visibility = android.view.View.GONE
-        binding.nativeAdContainer.addView(nativeAdView)
-        
-        val adBinding = NativeAdLayoutBinding.bind(nativeAdView!!)
-        
-        // Register views with NativeAdView (will be populated when ad loads)
-        nativeAdView!!.headlineView = adBinding.nativeAdHeadline
-        nativeAdView!!.bodyView = adBinding.nativeAdBody
-        nativeAdView!!.callToActionView = adBinding.nativeAdCallToAction
-        nativeAdView!!.iconView = adBinding.nativeAdIcon
-    }
-    
-    private fun loadNativeAd() {
-        if (RemoteConfigHelper.shouldUseManageAppsAdaptiveBannerOnly()) {
-            loadAdaptiveBanner()
-            return
-        }
-
-        val nativeAdUnitId = AdConfig.resolveNativeAdUnitId(this)
-        if (nativeAdUnitId.isBlank()) {
-            loadAdaptiveBanner()
-            return
-        }
-        showManageAppsAdLoading()
-        NextGenAdHelper.loadNative(
-            adUnitId = nativeAdUnitId,
-            preferLandscape = true,
-            onLoaded = { ad ->
-                ad.adEventCallback = object : NativeAdEventCallback {
-                    override fun onAdClicked() {
-                        AnalyticsHelper.logAdClick("native", nativeAdUnitId)
-                    }
-
-                    override fun onAdImpression() {
-                        AnalyticsHelper.logAdImpression("native", nativeAdUnitId)
-                    }
-                }
-                nativeAd = ad
-                adaptiveBannerView?.visibility = android.view.View.GONE
-                populateNativeAdView(ad)
-                AnalyticsHelper.logAdLoad("native", nativeAdUnitId, true)
-            },
-            onFailed = { loadAdError ->
-                AnalyticsHelper.logAdLoad("native", nativeAdUnitId, false)
-                AnalyticsHelper.logAdError("native", nativeAdUnitId, loadAdError.code.toString())
-                loadAdaptiveBanner()
-            }
-        )
-    }
-
-    private fun showManageAppsAdLoading() {
-        nativeAdView?.visibility = android.view.View.GONE
-        adaptiveBannerView?.visibility = android.view.View.GONE
-        AdLoadingShimmerHelper.showNativeLoading(binding.nativeAdContainer, nativeAdView)
-    }
-
-    private fun loadAdaptiveBanner() {
-        val bannerAdUnitId = AdConfig.resolveManageAppsAdaptiveBannerAdUnitId(this)
-        if (bannerAdUnitId.isBlank()) {
-            nativeAdView?.visibility = android.view.View.GONE
-            adaptiveBannerView?.visibility = android.view.View.GONE
-            AdLoadingShimmerHelper.hideNative(binding.nativeAdContainer, nativeAdView)
-            return
-        }
-
-        showManageAppsAdLoading()
-        binding.nativeAdContainer.post {
-            if (isFinishing || isDestroyed) {
-                return@post
-            }
-
-            nativeAd?.destroy()
-            nativeAd = null
-            nativeAdView?.visibility = android.view.View.GONE
-
-            val adWidthPx = binding.nativeAdContainer.width
-                .takeIf { it > 0 }
-                ?: (resources.displayMetrics.widthPixels - binding.nativeAdContainer.paddingLeft - binding.nativeAdContainer.paddingRight)
-            val adSize = getManageAppsAdaptiveAdSize(adWidthPx)
-            val slotHeightPx = measureManageAppsAdSlotHeightPx(adWidthPx)
-            val bannerView = getOrCreateAdaptiveBannerView(bannerAdUnitId)
-            bannerView.layoutParams = android.widget.FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                slotHeightPx
-            )
-            bannerView.visibility = android.view.View.GONE
-            NextGenAdHelper.loadBanner(
-                activity = this,
-                adView = bannerView,
-                adUnitId = bannerAdUnitId,
-                adSize = adSize,
-                onLoaded = { bannerAd ->
-                    bannerView.layoutParams = android.widget.FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        bannerAd.getAdSize().getHeightInPixels(this@ManageAppsCompleteActivity)
-                    )
-                    nativeAdView?.visibility = android.view.View.GONE
-                    AdLoadingShimmerHelper.showNativeContent(binding.nativeAdContainer, bannerView)
-                    AnalyticsHelper.logAdLoad("banner", bannerAdUnitId, true)
-                },
-                onFailed = { loadAdError ->
-                    nativeAdView?.visibility = android.view.View.GONE
-                    bannerView.visibility = android.view.View.GONE
-                    AdLoadingShimmerHelper.hideNative(binding.nativeAdContainer, bannerView)
-                    AnalyticsHelper.logAdLoad("banner", bannerAdUnitId, false)
-                    AnalyticsHelper.logAdError("banner", bannerAdUnitId, loadAdError.code.toString())
-                },
-                onClicked = {
-                    AnalyticsHelper.logAdClick("banner", bannerAdUnitId)
-                },
-                onImpression = {
-                    AnalyticsHelper.logAdImpression("banner", bannerAdUnitId)
-                }
-            )
-        }
-    }
-
-    private fun getOrCreateAdaptiveBannerView(adUnitId: String): AdView {
-        val existing = adaptiveBannerView
-        if (existing != null && existing.getTag(R.id.ad_unit_id_tag) == adUnitId) {
-            return existing
-        }
-
-        existing?.let {
-            binding.nativeAdContainer.removeView(it)
-            it.destroy()
-        }
-
-        return AdView(this).apply {
-            setTag(R.id.ad_unit_id_tag, adUnitId)
-            visibility = android.view.View.GONE
-            binding.nativeAdContainer.addView(
-                this,
-                android.widget.FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-            adaptiveBannerView = this
-        }
-    }
-
-    private fun getManageAppsAdaptiveAdSize(adWidthPx: Int): AdSize {
-        val adWidthDp = (adWidthPx / resources.displayMetrics.density).toInt().coerceAtLeast(1)
-        val slotHeightDp = (measureManageAppsAdSlotHeightPx(adWidthPx) / resources.displayMetrics.density)
-            .toInt()
-            .coerceAtLeast(50)
-        return AdSize.getInlineAdaptiveBannerAdSize(adWidthDp, slotHeightDp)
-    }
-
-    private fun measureManageAppsAdSlotHeightPx(adWidthPx: Int): Int {
-        val adView = nativeAdView ?: return (220 * resources.displayMetrics.density).toInt()
-        val widthSpec = android.view.View.MeasureSpec.makeMeasureSpec(adWidthPx, android.view.View.MeasureSpec.EXACTLY)
-        val heightSpec = android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
-        adView.measure(widthSpec, heightSpec)
-        return adView.measuredHeight.coerceAtLeast((220 * resources.displayMetrics.density).toInt())
-    }
-    
-    private fun populateNativeAdView(ad: NativeAd) {
-        // Use the pre-inflated view instead of creating a new one
-        val adView = nativeAdView ?: return
-        val adBinding = NativeAdLayoutBinding.bind(adView)
-        
-        if (ad.headline != null) {
-            adBinding.nativeAdHeadline.text = ad.headline
-        }
-        if (ad.body != null) {
-            adBinding.nativeAdBody.text = ad.body
-        }
-        if (ad.callToAction != null) {
-            adBinding.nativeAdCallToAction.text = ad.callToAction
-        }
-        
-        val icon = ad.icon
-        if (icon != null) {
-            adBinding.nativeAdIcon.setImageDrawable(icon.drawable)
-            adBinding.nativeAdIcon.visibility = android.view.View.VISIBLE
-        } else {
-            adBinding.nativeAdIcon.visibility = android.view.View.GONE
-        }
-        
-        val mediaContent = ad.mediaContent
-        adBinding.nativeAdMedia.visibility = if (mediaContent == null) {
-            android.view.View.GONE
-        } else {
-            android.view.View.VISIBLE
-        }
-        adBinding.nativeAdMedia.mediaContent = mediaContent
-        
-        adView.registerNativeAd(ad, adBinding.nativeAdMedia)
-        AdLoadingShimmerHelper.showNativeContent(binding.nativeAdContainer, adView)
-    }
-
-    override fun onDestroy() {
-        nativeAd?.destroy()
-        adaptiveBannerView?.destroy()
-        super.onDestroy()
-    }
 }
-

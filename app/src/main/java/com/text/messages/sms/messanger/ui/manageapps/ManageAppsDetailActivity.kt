@@ -23,7 +23,7 @@ import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdEventCallbac
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityManageAppsDetailBinding
-import com.text.messages.sms.messanger.databinding.NativeAdLayoutBinding
+import com.text.messages.sms.messanger.databinding.NativeManageAppAdLayoutBinding
 import com.text.messages.sms.messanger.util.AdLoadingShimmerHelper
 import com.text.messages.sms.messanger.util.AdConfig
 import com.text.messages.sms.messanger.util.AnalyticsHelper
@@ -72,7 +72,7 @@ class ManageAppsDetailActivity : BaseActivity() {
 
         // Get RAM used percentage from intent
         val ramUsedPercentage = intent.getIntExtra("ram_used_percentage", 56)
-        binding.textRamUsed.text = getString(R.string.manage_apps_ram_used_format, ramUsedPercentage)
+        binding.textRamPercent.text = ramUsedPercentage.toString()
 
         setupBackButton()
         setupRecyclerView()
@@ -81,10 +81,9 @@ class ManageAppsDetailActivity : BaseActivity() {
         loadNativeAd()
         fetchBackgroundApps()
         
-        // Apply theme to done button - set backgroundTint to null and apply theme color directly
+        // Keep the manage-apps flow on the reference blue, independent of the selected app theme.
         binding.buttonDone.backgroundTintList = null
-        val themeColor = ThemeManager.getThemeColor(this)
-        binding.buttonDone.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        binding.buttonDone.backgroundTintList = ColorStateList.valueOf(MANAGE_APPS_BLUE)
         
         // Apply theme after views are laid out
         binding.root.post {
@@ -199,11 +198,12 @@ class ManageAppsDetailActivity : BaseActivity() {
 
     private fun applyManageAppsChrome() {
         val white = Color.WHITE
-        val blue = Color.parseColor("#0C56CF")
-        binding.root.setBackgroundColor(Color.WHITE)
+        val blue = MANAGE_APPS_BLUE
+        binding.root.setBackgroundColor(blue)
         binding.headerContainer.setBackgroundColor(blue)
         binding.barContainer.setBackgroundColor(blue)
         binding.textHeading.setTextColor(white)
+        binding.textRamPercent.setTextColor(white)
         binding.textRamUsed.setTextColor(white)
         binding.textBackgroundApps.setTextColor(white)
         binding.textAppsTotal.setTextColor(white)
@@ -217,28 +217,23 @@ class ManageAppsDetailActivity : BaseActivity() {
         showManageAppsAdLoading()
 
         // Pre-inflate the native ad view structure so the layout is complete from the start
-        nativeAdView = layoutInflater.inflate(R.layout.native_ad_layout, binding.nativeAdContainer, false) as NativeAdView
+        nativeAdView = layoutInflater.inflate(R.layout.native_manage_app_ad_layout, binding.nativeAdContainer, false) as NativeAdView
         nativeAdView!!.visibility = View.GONE
         binding.nativeAdContainer.addView(nativeAdView)
         
-        val adBinding = NativeAdLayoutBinding.bind(nativeAdView!!)
+        val adBinding = NativeManageAppAdLayoutBinding.bind(nativeAdView!!)
         
         // Apply theme colors to native ad
-        val themeColor = ThemeManager.getThemeColor(this)
+        val blue = MANAGE_APPS_BLUE
         
         // Apply theme to entire ad view (will handle background)
         ThemeManager.applyTheme(this, nativeAdView!!)
         
-        // Apply theme to "Ad" label background
+        // Match the fixed-blue reference ad treatment.
         val adLabel = nativeAdView!!.findViewById<android.widget.TextView>(R.id.nativeAdLabel)
-        adLabel?.setBackgroundColor(themeColor)
+        adLabel?.setBackgroundColor(blue)
         
-        // Apply theme to info icon
-        val infoIcon = nativeAdView!!.findViewById<android.widget.ImageView>(R.id.nativeAdInfoIcon)
-        infoIcon?.imageTintList = android.content.res.ColorStateList.valueOf(themeColor)
-        
-        // Apply theme to call to action button
-        adBinding.nativeAdCallToAction.backgroundTintList = android.content.res.ColorStateList.valueOf(themeColor)
+        adBinding.nativeAdCallToAction.backgroundTintList = ColorStateList.valueOf(blue)
         
         // Register views with NativeAdView (will be populated when ad loads)
         nativeAdView!!.headlineView = adBinding.nativeAdHeadline
@@ -396,7 +391,7 @@ class ManageAppsDetailActivity : BaseActivity() {
     private fun populateNativeAdView(ad: NativeAd) {
         // Use the pre-inflated view instead of creating a new one
         val adView = nativeAdView ?: return
-        val adBinding = NativeAdLayoutBinding.bind(adView)
+        val adBinding = NativeManageAppAdLayoutBinding.bind(adView)
         
         // Set ad assets
         if (ad.headline != null) {
@@ -429,6 +424,10 @@ class ManageAppsDetailActivity : BaseActivity() {
         nativeAd?.destroy()
         adaptiveBannerView?.destroy()
         super.onDestroy()
+    }
+
+    companion object {
+        private val MANAGE_APPS_BLUE = Color.parseColor("#0C56CF")
     }
 }
 

@@ -147,6 +147,9 @@
     <string name="manage_apps_total_apps_format">Total: %1$d</string>
     <string name="manage_apps_stop">Stop</string>
     <string name="manage_apps_stopped">Stopped</string>
+    <string name="used">Used</string>
+    <string name="managing_apps">Managing Apps</string>
+    <string name="manage_apps_result_top">Background apps cleaned</string>
     <string name="invalid_filter">Invalid filter</string>
     <string name="select_conversations">Select Conversations</string>
     <string name="conversations_added_to_private">Conversations added to private</string>

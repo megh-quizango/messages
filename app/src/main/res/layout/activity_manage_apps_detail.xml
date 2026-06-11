@@ -4,168 +4,199 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:tag="exclude_theme_wallpaper"
-    android:background="@color/white">
-
-    <!-- ================= BLUE HEADER CONTAINER ================= -->
+    android:background="#2569F1"
+    android:fitsSystemWindows="true"
+    android:tag="exclude_theme_wallpaper">
 
     <LinearLayout
         android:id="@+id/headerContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:background="#0C56CF"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="vertical"
+        android:paddingBottom="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
+            android:id="@+id/toolbarRow"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_height="?attr/actionBarSize"
             android:gravity="center_vertical"
-            android:paddingStart="16dp"
+            android:orientation="horizontal"
+            android:paddingStart="22dp"
             android:paddingEnd="16dp">
 
             <ImageButton
                 android:id="@+id/buttonBack"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@drawable/bg_back_button"
-                android:src="@drawable/ic_arrow_back"
-                app:tint="@color/white"
+                android:background="@android:color/transparent"
                 android:contentDescription="@string/gen_activity_manage_apps_detail_content_description_1"
+                android:padding="10dp"
                 android:scaleType="centerInside"
-                android:padding="12dp"/>
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/white" />
 
             <TextView
                 android:id="@+id/textHeading"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginStart="16dp"
+                android:fontFamily="@font/poppins"
+                android:includeFontPadding="false"
                 android:text="@string/gen_activity_manage_apps_detail_text_2"
                 android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold"/>
-
+                android:textSize="22sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/textRamUsed"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/memoryContainer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:text="@string/gen_activity_manage_apps_detail_text_3"
-            android:textColor="@color/white"
-            android:textSize="32sp"
-            android:textStyle="bold"/>
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingTop="20dp"
+            android:paddingBottom="28dp">
 
+            <TextView
+                android:id="@+id/textRamPercent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins"
+                android:includeFontPadding="false"
+                android:text="77"
+                android:textColor="@color/white"
+                android:textSize="48sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="4dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins"
+                    android:includeFontPadding="false"
+                    android:text="%"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/textRamUsed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins"
+                    android:includeFontPadding="false"
+                    android:text="@string/used"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/nativeAdContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="0dp" />
     </LinearLayout>
-
-    <!-- ================= NATIVE AD CONTAINER ================= -->
-
-    <FrameLayout
-        android:id="@+id/nativeAdContainer"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="@drawable/bg_rounded_native_ad"
-        app:layout_constraintTop_toBottomOf="@id/headerContainer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- ================= BLUE BAR CONTAINER ================= -->
 
     <LinearLayout
         android:id="@+id/barContainer"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_height="38dp"
         android:background="#0C56CF"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:gravity="center_vertical"
-        app:layout_constraintTop_toBottomOf="@id/nativeAdContainer"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/headerContainer">
 
         <TextView
             android:id="@+id/textBackgroundApps"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
             android:text="@string/gen_activity_manage_apps_detail_text_4"
             android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"/>
+            android:textSize="17sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textAppsTotal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
             android:text="@string/gen_activity_manage_apps_detail_text_5"
             android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"/>
-
+            android:textSize="17sp"
+            android:textStyle="bold" />
     </LinearLayout>
-
-    <!-- ================= LOADING INDICATOR ================= -->
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progressIndicator"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginTop="32dp"
         android:indeterminate="true"
         android:indeterminateTint="#0C56CF"
         android:visibility="visible"
         app:indicatorColor="#0C56CF"
-        app:layout_constraintTop_toBottomOf="@id/barContainer"
+        app:layout_constraintBottom_toTopOf="@id/buttonDone"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- ================= APPS LIST ================= -->
+        app:layout_constraintTop_toBottomOf="@id/barContainer" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewApps"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="gone"
+        android:background="@color/white"
+        android:clipChildren="false"
         android:clipToPadding="false"
-        android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/barContainer"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/buttonDone"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/barContainer" />
 
-    <!-- ================= DONE BUTTON ================= -->
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonDone"
+    <LinearLayout
+        android:id="@+id/bottomContainer"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="@string/gen_activity_manage_apps_detail_text_6"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:backgroundTint="#0C56CF"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        app:cornerRadius="50dp"
+        android:layout_height="74dp"
+        android:background="@color/white"
+        android:gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonDone"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:backgroundTint="#0C56CF"
+            android:fontFamily="@font/poppins"
+            android:text="@string/gen_activity_manage_apps_detail_text_6"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:cornerRadius="32dp" />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-

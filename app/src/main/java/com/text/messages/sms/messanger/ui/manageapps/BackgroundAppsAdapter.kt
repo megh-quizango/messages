@@ -2,6 +2,7 @@ package com.text.messages.sms.messanger.ui.manageapps
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.graphics.Color
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -38,14 +39,14 @@ class BackgroundAppsAdapter(
             binding.buttonStop.elevation = 0f
             binding.buttonStop.stateListAnimator = null
             
-            // Apply theme color to text
-            val themeColor = com.text.messages.sms.messanger.util.ThemeManager.getThemeColor(binding.root.context)
-            binding.buttonStop.setTextColor(themeColor)
+            // Match the reference fixed-blue manage-apps action color.
+            val manageAppsBlue = Color.parseColor("#0C56CF")
+            binding.buttonStop.setTextColor(manageAppsBlue)
             
             // Apply theme to button background (transparent with themed stroke)
             binding.buttonStop.background?.mutate()?.let { drawable ->
                 if (drawable is android.graphics.drawable.GradientDrawable) {
-                    drawable.setStroke(2, themeColor)
+                    drawable.setStroke(2, manageAppsBlue)
                     drawable.setColor(android.graphics.Color.TRANSPARENT)
                 }
             }

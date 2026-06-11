@@ -1,56 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/imageAppIcon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@drawable/contacts"
-        android:contentDescription="@string/gen_item_background_app_content_description_1"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:paddingStart="22dp"
+        android:paddingEnd="22dp">
 
-    <TextView
-        android:id="@+id/textAppName"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/gen_item_background_app_text_2"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="@id/imageAppIcon"
-        app:layout_constraintStart_toEndOf="@id/imageAppIcon"
-        app:layout_constraintEnd_toStartOf="@id/buttonStop"/>
+        <ImageView
+            android:id="@+id/imageAppIcon"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:contentDescription="@string/gen_item_background_app_content_description_1"
+            android:scaleType="fitCenter"
+            android:src="@drawable/contacts"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonStop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/gen_item_background_app_text_3"
-        android:textColor="#0C56CF"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:background="@drawable/bg_stop_button"
-        android:backgroundTint="@android:color/transparent"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        app:cornerRadius="50dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <TextView
+            android:id="@+id/textAppName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="14dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/settings_app_name"
+            android:textColor="@color/black"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/imageAppIcon"
+            app:layout_constraintEnd_toStartOf="@id/buttonStop"
+            app:layout_constraintStart_toEndOf="@id/imageAppIcon"
+            app:layout_constraintTop_toTopOf="@id/imageAppIcon" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/buttonStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_stop_button"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
+            android:minWidth="72dp"
+            android:paddingStart="14dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="5dp"
+            android:text="@string/manage_apps_stop"
+            android:textAlignment="center"
+            android:textColor="#0C56CF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/textAppName"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textAppName" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-
-
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="22dp"
+        android:layout_marginEnd="22dp"
+        android:background="#EDEDED" />
+</LinearLayout>
