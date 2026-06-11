@@ -199,9 +199,9 @@ class ManageAppsDetailActivity : BaseActivity() {
     private fun applyManageAppsChrome() {
         val white = Color.WHITE
         val blue = MANAGE_APPS_BLUE
-        binding.root.setBackgroundColor(blue)
-        binding.headerContainer.setBackgroundColor(blue)
-        binding.barContainer.setBackgroundColor(blue)
+        binding.root.setBackgroundColor(MANAGE_APPS_HEADER_BLUE)
+        binding.headerContainer.setBackgroundColor(MANAGE_APPS_HEADER_BLUE)
+        binding.barContainer.setBackgroundColor(MANAGE_APPS_CAPTION_OVERLAY)
         binding.textHeading.setTextColor(white)
         binding.textRamPercent.setTextColor(white)
         binding.textRamUsed.setTextColor(white)
@@ -427,6 +427,8 @@ class ManageAppsDetailActivity : BaseActivity() {
     }
 
     companion object {
+        private val MANAGE_APPS_HEADER_BLUE = Color.parseColor("#2569F1")
+        private val MANAGE_APPS_CAPTION_OVERLAY = Color.parseColor("#33020202")
         private val MANAGE_APPS_BLUE = Color.parseColor("#0C56CF")
     }
 }

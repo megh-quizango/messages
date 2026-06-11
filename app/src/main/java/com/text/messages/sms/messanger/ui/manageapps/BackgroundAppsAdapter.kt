@@ -46,17 +46,17 @@ class BackgroundAppsAdapter(
             // Apply theme to button background (transparent with themed stroke)
             binding.buttonStop.background?.mutate()?.let { drawable ->
                 if (drawable is android.graphics.drawable.GradientDrawable) {
-                    drawable.setStroke(2, manageAppsBlue)
+                    drawable.setStroke(1, manageAppsBlue)
                     drawable.setColor(android.graphics.Color.TRANSPARENT)
                 }
             }
             
             if (app.isStopped) {
-                binding.buttonStop.setText(R.string.manage_apps_stopped)
+                binding.buttonStop.text = binding.root.context.getString(R.string.manage_apps_stopped).uppercase()
                 binding.buttonStop.isEnabled = false
                 binding.buttonStop.alpha = 0.6f
             } else {
-                binding.buttonStop.setText(R.string.manage_apps_stop)
+                binding.buttonStop.text = binding.root.context.getString(R.string.manage_apps_stop).uppercase()
                 binding.buttonStop.isEnabled = true
                 binding.buttonStop.alpha = 1.0f
             }

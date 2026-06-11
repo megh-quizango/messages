@@ -55,7 +55,6 @@
             android:layout_marginTop="40dp"
             android:fontFamily="@font/poppins"
             android:gravity="center"
-            android:text="@string/manage_apps_result_top"
             android:textColor="@color/white"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"

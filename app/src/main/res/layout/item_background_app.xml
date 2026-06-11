@@ -8,14 +8,14 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="76dp"
-        android:paddingStart="22dp"
-        android:paddingEnd="22dp">
+        android:layout_height="64dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
         <ImageView
             android:id="@+id/imageAppIcon"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:contentDescription="@string/gen_item_background_app_content_description_1"
             android:scaleType="fitCenter"
             android:src="@drawable/contacts"
@@ -27,16 +27,14 @@
             android:id="@+id/textAppName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="18dp"
-            android:layout_marginEnd="14dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="10dp"
             android:ellipsize="end"
-            android:fontFamily="@font/poppins"
             android:includeFontPadding="false"
             android:maxLines="1"
             android:text="@string/settings_app_name"
             android:textColor="@color/black"
-            android:textSize="17sp"
-            android:textStyle="bold"
+            android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@id/imageAppIcon"
             app:layout_constraintEnd_toStartOf="@id/buttonStop"
             app:layout_constraintStart_toEndOf="@id/imageAppIcon"
@@ -47,18 +45,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_stop_button"
-            android:fontFamily="@font/poppins"
             android:includeFontPadding="false"
-            android:minWidth="72dp"
-            android:paddingStart="14dp"
-            android:paddingTop="5dp"
-            android:paddingEnd="14dp"
-            android:paddingBottom="5dp"
+            android:minWidth="0dp"
+            android:paddingStart="10dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3dp"
             android:text="@string/manage_apps_stop"
             android:textAlignment="center"
             android:textColor="#0C56CF"
-            android:textSize="15sp"
-            android:textStyle="bold"
+            android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@id/textAppName"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/textAppName" />
@@ -66,8 +62,8 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginStart="22dp"
-        android:layout_marginEnd="22dp"
+        android:layout_height="0.8dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         android:background="#EDEDED" />
 </LinearLayout>
