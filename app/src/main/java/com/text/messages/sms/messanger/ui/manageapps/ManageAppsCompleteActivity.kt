@@ -3,9 +3,11 @@ package com.text.messages.sms.messanger.ui.manageapps
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityManageAppsCompleteBinding
 import com.text.messages.sms.messanger.ui.base.BaseActivity
@@ -40,11 +42,26 @@ class ManageAppsCompleteActivity : BaseActivity() {
         applyManageAppsChrome()
     }
 
+    override fun onResume() {
+        super.onResume()
+        applyManageAppsChrome()
+    }
+
     private fun applyManageAppsChrome() {
-        binding.textHeading.setTextColor(Color.WHITE)
-        binding.finalTextTop.setTextColor(Color.WHITE)
-        binding.textStoppedApps.setTextColor(Color.WHITE)
-        binding.buttonBack.imageTintList = ColorStateList.valueOf(Color.WHITE)
+        val light = Color.parseColor("#D8D8D8")
+        binding.root.setBackgroundResource(R.drawable.gradient_animation)
+        binding.textHeading.setTextColor(light)
+        binding.finalTextTop.setTextColor(light)
+        binding.textStoppedApps.setTextColor(light)
+        binding.buttonBack.imageTintList = ColorStateList.valueOf(light)
         binding.buttonBack.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+        window.statusBarColor = Color.parseColor("#2569F1")
+        window.navigationBarColor = Color.parseColor("#E0E0E0")
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = true
+        }
+        window.decorView.systemUiVisibility =
+            window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
     }
 }

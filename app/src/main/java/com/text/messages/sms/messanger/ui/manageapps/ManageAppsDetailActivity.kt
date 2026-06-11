@@ -15,6 +15,7 @@ import androidx.activity.enableEdgeToEdge
 import com.text.messages.sms.messanger.ui.base.BaseActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.AdView
@@ -91,6 +92,11 @@ class ManageAppsDetailActivity : BaseActivity() {
             applyManageAppsChrome()
             binding.root.post { applyManageAppsChrome() }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        applyManageAppsChrome()
     }
 
     private fun setupBackButton() {
@@ -197,10 +203,11 @@ class ManageAppsDetailActivity : BaseActivity() {
     }
 
     private fun applyManageAppsChrome() {
-        val white = Color.WHITE
+        val white = Color.parseColor("#D8D8D8")
         val blue = MANAGE_APPS_BLUE
-        binding.root.setBackgroundColor(MANAGE_APPS_HEADER_BLUE)
-        binding.headerContainer.setBackgroundColor(MANAGE_APPS_HEADER_BLUE)
+        binding.root.setBackgroundResource(R.drawable.gradient_animation)
+        binding.toolbarRow.setBackgroundColor(Color.TRANSPARENT)
+        binding.headerContainer.setBackgroundColor(Color.TRANSPARENT)
         binding.barContainer.setBackgroundColor(MANAGE_APPS_CAPTION_OVERLAY)
         binding.textHeading.setTextColor(white)
         binding.textRamPercent.setTextColor(white)
@@ -211,6 +218,14 @@ class ManageAppsDetailActivity : BaseActivity() {
         binding.buttonBack.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
         binding.buttonDone.backgroundTintList = ColorStateList.valueOf(blue)
         binding.buttonDone.setTextColor(white)
+        window.statusBarColor = MANAGE_APPS_HEADER_BLUE
+        window.navigationBarColor = Color.parseColor("#E0E0E0")
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = true
+        }
+        window.decorView.systemUiVisibility =
+            window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
     }
 
     private fun initializeNativeAdView() {

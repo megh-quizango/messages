@@ -4,180 +4,151 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@drawable/gradient_animation"
+    android:fitsSystemWindows="true"
+    android:tag="exclude_theme_wallpaper">
 
-    <!-- ================= BACK BUTTON ================= -->
+    <LinearLayout
+        android:id="@+id/toolbarRow"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <ImageButton
-        android:id="@+id/buttonBack"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_back_button"
-        android:src="@drawable/ic_arrow_back"
-        android:contentDescription="@string/gen_activity_manage_apps_content_description_1"
-        android:scaleType="centerInside"
-        android:padding="12dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/gen_activity_manage_apps_content_description_1"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="#D8D8D8" />
 
-    <!-- ================= HEADING ================= -->
+        <TextView
+            android:id="@+id/textHeading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
+            android:text="@string/gen_activity_manage_apps_text_2"
+            android:textColor="#D8D8D8"
+            android:textSize="28sp" />
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/textHeading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="@string/gen_activity_manage_apps_text_2"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="@id/buttonBack"
-        app:layout_constraintBottom_toBottomOf="@id/buttonBack"
-        app:layout_constraintStart_toEndOf="@id/buttonBack"/>
-
-    <!-- ================= RAM PERCENTAGE ================= -->
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressBarRam"
+        android:layout_width="112dp"
+        android:layout_height="112dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="34dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:progress="92"
+        app:indicatorColor="#C7C7C7"
+        app:indicatorInset="0dp"
+        app:indicatorSize="104dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbarRow"
+        app:trackColor="#66D8D8D8"
+        app:trackThickness="8dp" />
 
     <TextView
         android:id="@+id/textRamPercentage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/gen_activity_manage_apps_text_3"
-        android:textColor="#0C56CF"
-        android:textSize="48sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/buttonBack"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- ================= PROGRESS BAR ================= -->
-
-    <ProgressBar
-        android:id="@+id/progressBarRam"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="0dp"
-        android:layout_height="10dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="16dp"
-        android:progressDrawable="@drawable/bg_progress_bar"
-        android:max="100"
-        android:progress="44"
-        android:minHeight="12dp"
-        android:maxHeight="12dp"
-        app:layout_constraintTop_toBottomOf="@id/textRamPercentage"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- ================= AVAILABLE SPACE LABEL ================= -->
+        android:fontFamily="@font/poppins"
+        android:includeFontPadding="false"
+        android:text="92.41%"
+        android:textColor="#D8D8D8"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@id/progressBarRam"
+        app:layout_constraintEnd_toEndOf="@id/progressBarRam"
+        app:layout_constraintStart_toStartOf="@id/progressBarRam"
+        app:layout_constraintTop_toTopOf="@id/progressBarRam" />
 
     <TextView
         android:id="@+id/textAvailableSpace"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/poppins"
+        android:includeFontPadding="false"
         android:text="@string/gen_activity_manage_apps_text_4"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/progressBarRam"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:textAllCaps="true"
+        android:textColor="#D8D8D8"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="@id/progressBarRam"
+        app:layout_constraintStart_toStartOf="@id/progressBarRam"
+        app:layout_constraintTop_toBottomOf="@id/progressBarRam" />
 
-    <!-- ================= LOADING INDICATOR ================= -->
-
-    <ImageView
-        android:id="@+id/imageLoading"
+    <FrameLayout
+        android:id="@+id/loadingContainer"
         android:layout_width="250dp"
         android:layout_height="250dp"
-        android:layout_marginTop="64dp"
-        android:src="@drawable/loading"
-        android:contentDescription="@string/gen_activity_manage_apps_content_description_5"
-        android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@id/textAvailableSpace"
+        android:layout_marginTop="260dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/toolbarRow">
 
-    <!-- ================= LOADING PERCENTAGE TEXT ================= -->
+        <ImageView
+            android:id="@+id/imageLoading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/gen_activity_manage_apps_content_description_5"
+            android:scaleType="fitCenter"
+            android:src="@drawable/loading" />
+
+        <TextView
+            android:id="@+id/textLoadingPercentage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="@font/poppins"
+            android:includeFontPadding="false"
+            android:text="@string/gen_activity_manage_apps_text_6"
+            android:textColor="#D8D8D8"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            android:tag="exclude_from_theme_textcolor" />
+    </FrameLayout>
 
     <TextView
-        android:id="@+id/textLoadingPercentage"
+        android:id="@+id/textManagingApps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/gen_activity_manage_apps_text_6"
-        android:textColor="#0C56CF"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        android:visibility="visible"
-        android:tag="exclude_from_theme_textcolor"
-        app:layout_constraintTop_toTopOf="@id/imageLoading"
-        app:layout_constraintBottom_toBottomOf="@id/imageLoading"
-        app:layout_constraintStart_toStartOf="@id/imageLoading"
-        app:layout_constraintEnd_toEndOf="@id/imageLoading"/>
-
-    <!-- ================= PHONE IMAGE ================= -->
+        android:layout_marginTop="44dp"
+        android:fontFamily="@font/poppins"
+        android:includeFontPadding="false"
+        android:text="@string/managing_apps"
+        android:textColor="#D8D8D8"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/loadingContainer" />
 
     <ImageView
         android:id="@+id/imagePhone"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:layout_marginTop="64dp"
-        android:layout_marginLeft="6dp"
-        android:src="@drawable/phone"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
         android:contentDescription="@string/gen_activity_manage_apps_content_description_7"
         android:visibility="gone"
-        android:scaleType="fitCenter"
-        app:layout_constraintTop_toBottomOf="@id/textAvailableSpace"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"/>
-
-    <!-- ================= MANAGE BUTTON ================= -->
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonManage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
         android:text="@string/gen_activity_manage_apps_text_8"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:backgroundTint="#0C56CF"
-        android:paddingStart="48dp"
-        android:paddingEnd="48dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        app:cornerRadius="50dp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/imagePhone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- ================= BANNER AD ================= -->
-
-    <FrameLayout
-        android:id="@+id/bannerAdContainer"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:clipChildren="true"
-        android:clipToPadding="true"
-        android:tag="banner_ad_host_container"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <com.google.android.libraries.ads.mobile.sdk.banner.AdView
-            android:id="@+id/adViewBanner"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </FrameLayout>
-
+        app:layout_constraintStart_toEndOf="@id/imagePhone" />
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-
-
