@@ -154,7 +154,7 @@
         android:indeterminateTint="#0C56CF"
         android:visibility="visible"
         app:indicatorColor="#0C56CF"
-        app:layout_constraintBottom_toTopOf="@id/buttonDone"
+        app:layout_constraintBottom_toTopOf="@id/bottomContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/barContainer" />
@@ -169,7 +169,7 @@
         android:paddingTop="4dp"
         android:paddingBottom="8dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/buttonDone"
+        app:layout_constraintBottom_toTopOf="@id/bottomContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/barContainer" />
