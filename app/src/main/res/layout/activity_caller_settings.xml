@@ -1,164 +1,432 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/callercad_screen_bg_light"
+    android:fitsSystemWindows="true">
 
-    <!-- ================= BACK BUTTON ================= -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:background="@color/callercad_actionbar_bg"
+        android:elevation="1dp"
+        app:contentInsetStart="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <ImageButton
-        android:id="@+id/buttonBack"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_back_button"
-        android:src="@drawable/ic_arrow_back"
-        android:contentDescription="@string/gen_activity_caller_settings_content_description_1"
-        android:scaleType="centerInside"
-        android:padding="12dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <!-- ================= HEADING ================= -->
+            <ImageButton
+                android:id="@+id/buttonBack"
+                android:layout_width="44dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/custom_bordered_ripple"
+                android:contentDescription="@string/gen_activity_caller_settings_content_description_1"
+                android:padding="12dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/callercad_arrow_back_white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/textHeading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="@string/gen_activity_caller_settings_text_2"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="@id/buttonBack"
-        app:layout_constraintBottom_toBottomOf="@id/buttonBack"
-        app:layout_constraintStart_toEndOf="@id/buttonBack"/>
-
-    <!-- ================= SCROLL VIEW ================= -->
+            <TextView
+                android:id="@+id/textHeading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:fontFamily="@font/poppins"
+                android:includeFontPadding="false"
+                android:text="@string/callercad_settings"
+                android:textColor="@color/callercad_text_color_black"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/buttonBack"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.appcompat.widget.Toolbar>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:clipToPadding="false"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/buttonBack"
-        app:layout_constraintBottom_toTopOf="@id/bannerAdContainer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginBottom="15dp"
+            android:orientation="vertical">
 
-            <!-- Call Information Settings Section -->
-            <LinearLayout
+            <RelativeLayout
+                android:id="@+id/setAutoStartPermissionView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/bg_caller_section"
-                android:padding="16dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginTop="10dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/itemOne"
+                style="@style/CallerCadSettingsCard">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/gen_activity_caller_settings_text_3"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp"/>
+                    style="@style/CallerCadSettingsSectionTitle"
+                    android:text="@string/callercad_appearance" />
 
-                <!-- Missed call -->
-                <include
-                    layout="@layout/item_caller_setting"
-                    android:id="@+id/itemMissedCall"
-                    android:layout_marginBottom="24dp"/>
+                <RelativeLayout
+                    android:id="@+id/callerCadDarkMode"
+                    style="@style/CallerCadSettingsRow"
+                    android:layout_marginTop="13dp">
 
-                <!-- Completed call -->
-                <include
-                    layout="@layout/item_caller_setting"
-                    android:id="@+id/itemCompletedCall"
-                    android:layout_marginBottom="24dp"/>
+                    <ImageView
+                        android:id="@+id/callercadIconDarkMode"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/callercad_ic_darkmode" />
 
-                <!-- No answer -->
-                <include
-                    layout="@layout/item_caller_setting"
-                    android:id="@+id/itemNoAnswer"
-                    android:layout_marginBottom="24dp"/>
+                    <TextView
+                        android:id="@+id/tvDarkmode"
+                        style="@style/CallerCadSettingsTitle"
+                        android:text="@string/callercad_dark_mode"
+                        android:layout_toEndOf="@id/callercadIconDarkMode"
+                        android:layout_toStartOf="@id/insideDarkMode" />
 
-                <!-- Unknown caller -->
-                <include
-                    layout="@layout/item_caller_setting"
-                    android:id="@+id/itemUnknownCaller"/>
+                    <TextView
+                        android:id="@+id/switchDarkMode"
+                        style="@style/CallerCadSettingsDescription"
+                        android:layout_below="@id/tvDarkmode"
+                        android:layout_toEndOf="@id/callercadIconDarkMode"
+                        android:layout_toStartOf="@id/insideDarkMode"
+                        android:text="@string/callercad_switch_between_dark_and_light" />
 
+                    <ImageView
+                        android:id="@+id/insideDarkMode"
+                        style="@style/CallerCadSettingsArrow" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/callerCadThemeMain"
+                    style="@style/CallerCadSettingsRow"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:id="@+id/callercadIconTheme"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/callercad_ic_theme" />
+
+                    <TextView
+                        android:id="@+id/tvTheme"
+                        style="@style/CallerCadSettingsTitle"
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/callercadIconTheme"
+                        android:layout_toStartOf="@id/insideTheme"
+                        android:text="@string/callercad_theme" />
+
+                    <ImageView
+                        android:id="@+id/insideTheme"
+                        android:layout_width="23dp"
+                        android:layout_height="23dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="10dp"
+                        android:layout_toStartOf="@id/insideThemeMode"
+                        android:src="@drawable/ic_caller_cad_theme_style1" />
+
+                    <ImageView
+                        android:id="@+id/insideThemeMode"
+                        style="@style/CallerCadSettingsArrow" />
+                </RelativeLayout>
             </LinearLayout>
 
-            <!-- Extras Section -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/bg_caller_section"
-                android:padding="16dp">
+                android:id="@+id/itemTwo"
+                style="@style/CallerCadSettingsCard">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/gen_activity_caller_settings_text_4"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp"/>
+                    style="@style/CallerCadSettingsSectionTitle"
+                    android:text="@string/callercad_features" />
 
-                <!-- Show call info for contacts -->
-                <include
-                    layout="@layout/item_caller_setting"
-                    android:layout_height="wrap_content"
+                <RelativeLayout
+                    android:id="@+id/customizeInsideView"
+                    style="@style/CallerCadSettingsRow"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:id="@+id/callercadIconCustomize"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/callercad_ic_icon_customize" />
+
+                    <TextView
+                        android:id="@+id/tvCustomize"
+                        style="@style/CallerCadSettingsTitle"
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/callercadIconCustomize"
+                        android:text="@string/callercad_customize" />
+
+                    <TextView
+                        android:id="@+id/tvCustomizeSettingDefault"
+                        style="@style/CallerCadSettingsDescription"
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/tvCustomize"
+                        android:layout_toStartOf="@id/insideCustomize"
+                        android:gravity="end" />
+
+                    <ImageView
+                        android:id="@+id/insideCustomize"
+                        style="@style/CallerCadSettingsArrow" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/mainNotificationReminder"
                     android:layout_width="match_parent"
-                    android:id="@+id/itemShowCallInfo"
-                    android:layout_marginBottom="10dp"/>
+                    android:layout_height="wrap_content">
 
-                <!-- Show reminders in notifications -->
-                <include
-                    layout="@layout/item_caller_setting"
-                    android:id="@+id/itemShowReminders"/>
+                    <ImageView
+                        android:id="@+id/callercadIconNotificationReminder"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/callercad_thirdtab" />
 
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchNotificationReminder"
+                        style="@style/CallerCadSettingsSwitch"
+                        android:text="@string/callercad_show_reminders_in_notification" />
+                </RelativeLayout>
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/itemThree"
+                style="@style/CallerCadSettingsCard">
+
+                <TextView
+                    style="@style/CallerCadSettingsSectionTitle"
+                    android:text="@string/callercad_quick_message" />
+
+                <RelativeLayout
+                    android:id="@+id/quickRepliesView"
+                    style="@style/CallerCadSettingsRow"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:id="@+id/callercadIconQuickReplies"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/callercad_ic_send" />
+
+                    <TextView
+                        android:id="@+id/tvQuickReplies"
+                        style="@style/CallerCadSettingsTitle"
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/callercadIconQuickReplies"
+                        android:text="@string/callercad_edit_quick_messages" />
+
+                    <ImageView
+                        android:id="@+id/insideQuickReplies"
+                        style="@style/CallerCadSettingsArrow" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/itemFour"
+                style="@style/CallerCadSettingsCard">
+
+                <TextView
+                    android:id="@+id/txtTitleCaller"
+                    style="@style/CallerCadSettingsSectionTitle"
+                    android:text="@string/callercad_call_information_settings" />
+
+                <RelativeLayout
+                    android:id="@+id/mainMissedCall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="13dp">
+
+                    <ImageView
+                        android:id="@+id/callercadIconMissCall"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/caller_cad_ic_missed_call" />
+
+                    <TextView
+                        android:id="@+id/tvMissedCall"
+                        style="@style/CallerCadSettingsTitle"
+                        android:layout_toEndOf="@id/callercadIconMissCall"
+                        android:text="@string/callercad_missed_call" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchMissedCall"
+                        style="@style/CallerCadSettingsSwitchDescription"
+                        android:layout_below="@id/tvMissedCall"
+                        android:layout_toEndOf="@id/callercadIconMissCall"
+                        android:text="@string/callercad_caller_missedcalldes" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/mainCompletedCall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="13dp">
+
+                    <ImageView
+                        android:id="@+id/callerCadIconCompletedCall"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/caller_cad_ic_completed_call" />
+
+                    <TextView
+                        android:id="@+id/tvCompletedCall"
+                        style="@style/CallerCadSettingsTitle"
+                        android:layout_toEndOf="@id/callerCadIconCompletedCall"
+                        android:text="@string/callercad_completed_call" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchCompletedCall"
+                        style="@style/CallerCadSettingsSwitchDescription"
+                        android:layout_below="@id/tvCompletedCall"
+                        android:layout_toEndOf="@id/callerCadIconCompletedCall"
+                        android:text="@string/callercad_completedcalldes" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/mainNoAnswer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="13dp">
+
+                    <ImageView
+                        android:id="@+id/callerCadIconNoAnswer"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/caller_cad_ic_no_answer" />
+
+                    <TextView
+                        android:id="@+id/tvNoAnswer"
+                        style="@style/CallerCadSettingsTitle"
+                        android:layout_toEndOf="@id/callerCadIconNoAnswer"
+                        android:text="@string/caller_no_answer" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchNoAnswer"
+                        style="@style/CallerCadSettingsSwitchDescription"
+                        android:layout_below="@id/tvNoAnswer"
+                        android:layout_toEndOf="@id/callerCadIconNoAnswer"
+                        android:text="@string/callercad_noanswerdes" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/mainUnknownCaller"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="13dp">
+
+                    <ImageView
+                        android:id="@+id/callerCadIconUnknownCaller"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/caller_cad_ic_unknown_caller" />
+
+                    <TextView
+                        android:id="@+id/tvUnknownCaller"
+                        style="@style/CallerCadSettingsTitle"
+                        android:layout_toEndOf="@id/callerCadIconUnknownCaller"
+                        android:text="@string/callercad_unknown_caller" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchUnknownCaller"
+                        style="@style/CallerCadSettingsSwitchDescription"
+                        android:layout_below="@id/tvUnknownCaller"
+                        android:layout_toEndOf="@id/callerCadIconUnknownCaller"
+                        android:text="@string/callercad_unknowncallerdes" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/secCardSection"
+                style="@style/CallerCadSettingsCard">
+
+                <TextView
+                    android:id="@+id/tvExtra"
+                    style="@style/CallerCadSettingsSectionTitle"
+                    android:text="@string/callercad_extras" />
+
+                <RelativeLayout
+                    android:id="@+id/mainExtraContact"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <ImageView
+                        android:id="@+id/callerCadIconExtraContact"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/ic_icon_extra_contact" />
+
+                    <TextView
+                        android:id="@+id/contactPermission"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="27dp"
+                        android:text="@string/callercad_missing_permission"
+                        android:textColor="@color/callercad_red"
+                        android:textSize="10sp"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchExtraContact"
+                        style="@style/CallerCadSettingsSwitch"
+                        android:layout_below="@id/contactPermission"
+                        android:text="@string/callercad_show_call_info_for_contacts" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/itemFive"
+                style="@style/CallerCadSettingsCard">
+
+                <TextView
+                    android:id="@+id/tvAbout"
+                    style="@style/CallerCadSettingsSectionTitle"
+                    android:text="@string/callercad_about" />
+
+                <RelativeLayout
+                    android:id="@+id/licenses"
+                    style="@style/CallerCadSettingsRow"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:id="@+id/callercadIconAbout"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/caller_cad_ic_lock" />
+
+                    <TextView
+                        android:id="@+id/textLicenses"
+                        style="@style/CallerCadSettingsTitle"
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/callercadIconAbout"
+                        android:text="@string/callercad_licenses" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/sdkversion"
+                    style="@style/CallerCadSettingsRow"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:id="@+id/callercadIconSdkversion"
+                        style="@style/CallerCadSettingsIcon"
+                        android:src="@drawable/caller_cad_ic_info" />
+
+                    <TextView
+                        android:id="@+id/textSdkVersion"
+                        style="@style/CallerCadSettingsTitle"
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/callercadIconSdkversion"
+                        android:text="@string/callercad_version" />
+                </RelativeLayout>
+            </LinearLayout>
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
-
-    <!-- ================= BANNER AD ================= -->
-
-    <FrameLayout
-        android:id="@+id/bannerAdContainer"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:clipChildren="true"
-        android:clipToPadding="true"
-        android:tag="banner_ad_host_container"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <com.google.android.libraries.ads.mobile.sdk.banner.AdView
-            android:id="@+id/adViewBanner"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </FrameLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-
-
-

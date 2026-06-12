@@ -46,4 +46,15 @@
     <color name="whiteOnlyColor">#FFFFFFFF</color>
     <color name="theme_preview_surface">#F7F7F7</color>
     <color name="theme_selected_scrim">#66000000</color>
+    <color name="callercad_screen_bg_light">#F3F3F3</color>
+    <color name="callercad_actionbar_bg">#F3F3F3</color>
+    <color name="callercad_card_bg">#FFFFFFFF</color>
+    <color name="callercad_icon_color">#111111</color>
+    <color name="callercad_text_color_black">#111111</color>
+    <color name="callercad_text_color_grey">#777777</color>
+    <color name="callercad_selected_icon_color">#0C56CF</color>
+    <color name="callercad_selectedColor">#0C56CF</color>
+    <color name="callercad_red">#D32F2F</color>
+    <color name="ic_caller_cad_theme_style1_color_bottom">#004D57</color>
+    <color name="ic_caller_cad_theme_style1_color_top">#479DA2</color>
 </resources>

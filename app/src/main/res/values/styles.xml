@@ -118,5 +118,90 @@
         <item name="android:textSize">12sp</item>
     </style>
 
+    <style name="CallerCadSettingsCard">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:background">@drawable/bg_caller_round_more_items</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingHorizontal">10dp</item>
+        <item name="android:paddingVertical">10dp</item>
+    </style>
+
+    <style name="CallerCadSettingsSectionTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:textColor">@color/callercad_selected_icon_color</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="CallerCadSettingsRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/custom_bordered_item_ripple</item>
+    </style>
+
+    <style name="CallerCadSettingsIcon">
+        <item name="android:layout_width">20dp</item>
+        <item name="android:layout_height">20dp</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:layout_alignParentStart">true</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="tint">@color/callercad_selected_icon_color</item>
+    </style>
+
+    <style name="CallerCadSettingsArrow">
+        <item name="android:layout_width">18dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:layout_alignParentEnd">true</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:src">@drawable/callercad_ic_right_arrow</item>
+    </style>
+
+    <style name="CallerCadSettingsTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:textColor">@color/callercad_text_color_black</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="CallerCadSettingsDescription">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:textColor">@color/callercad_text_color_grey</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="CallerCadSettingsSwitch">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:layout_alignParentEnd">true</item>
+        <item name="android:paddingStart">30dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:paddingVertical">10dp</item>
+        <item name="android:textColor">@color/callercad_text_color_black</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="CallerCadSettingsSwitchDescription">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:textColor">@color/callercad_text_color_grey</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
 </resources>
 

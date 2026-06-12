@@ -1,21 +1,30 @@
 package com.text.messages.sms.messanger.ui.caller
 
+import android.Manifest
+import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import android.provider.Settings
 import android.view.View
-import androidx.annotation.StringRes
-import com.text.messages.sms.messanger.ui.base.BaseActivity
+import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
+import androidx.core.view.WindowInsetsControllerCompat
+import com.google.android.material.switchmaterial.SwitchMaterial
+import com.text.messages.sms.messanger.BuildConfig
 import com.text.messages.sms.messanger.R
 import com.text.messages.sms.messanger.databinding.ActivityCallerSettingsBinding
-import com.text.messages.sms.messanger.databinding.ItemCallerSettingBinding
+import com.text.messages.sms.messanger.ui.base.BaseActivity
+import com.text.messages.sms.messanger.ui.conversation.EditQuickResponseActivity
+import com.text.messages.sms.messanger.util.AnalyticsHelper
 import com.text.messages.sms.messanger.util.CallStateTracker
 import com.text.messages.sms.messanger.util.ThemeManager
-import com.text.messages.sms.messanger.util.loadBannerAdWithRemoteConfig
-import com.text.messages.sms.messanger.util.AnalyticsHelper
 
 class CallerSettingsActivity : BaseActivity() {
 
@@ -35,118 +44,113 @@ class CallerSettingsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        AnalyticsHelper.logScreenView("CallerSettingsActivity", "CallerSettingsActivity")
 
         binding = ActivityCallerSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
-        // Apply theme
-        ThemeManager.applyTheme(this, binding.root)
-        
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+
+        applyReferenceChrome()
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             insets
         }
-        
-        setupBackButton()
-        setupSettings()
-        setupBannerAd()
+
+        binding.buttonBack.setOnClickListener { finish() }
+        setupNavigationRows()
+        setupSwitches()
+        updatePermissionWarning()
     }
-    
-    private fun setupBackButton() {
-        binding.buttonBack.setOnClickListener {
-            finish()
+
+    override fun onResume() {
+        super.onResume()
+        applyReferenceChrome()
+        updatePermissionWarning()
+    }
+
+    private fun setupNavigationRows() {
+        binding.callerCadThemeMain.setOnClickListener {
+            startActivity(Intent(this, CallerThemeActivity::class.java))
+        }
+        binding.callerCadDarkMode.setOnClickListener {
+            startActivity(Intent(this, CallerThemeActivity::class.java))
+        }
+        binding.customizeInsideView.setOnClickListener {
+            startActivity(Intent(this, CallerThemeActivity::class.java))
+        }
+        binding.quickRepliesView.setOnClickListener {
+            startActivity(Intent(this, EditQuickResponseActivity::class.java))
+        }
+        binding.licenses.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.callercad_licenses)
+                .setMessage("Open source licenses are available in the app dependencies and Android system components used by #Messages.")
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
+        binding.sdkversion.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.callercad_version)
+                .setMessage("${getString(R.string.app_name)} ${BuildConfig.VERSION_NAME}")
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
+        binding.contactPermission.setOnClickListener { openAppSettings() }
+    }
+
+    private fun setupSwitches() {
+        bindSwitch(binding.switchNotificationReminder, KEY_SHOW_REMINDERS, true)
+        bindSwitch(binding.switchMissedCall, KEY_MISSED_CALL, true)
+        bindSwitch(binding.switchCompletedCall, KEY_COMPLETED_CALL, true)
+        bindSwitch(binding.switchNoAnswer, KEY_NO_ANSWER, true)
+        bindSwitch(binding.switchUnknownCaller, KEY_UNKNOWN_CALLER, true)
+        bindSwitch(binding.switchExtraContact, KEY_SHOW_CALL_INFO, false) {
+            updatePermissionWarning()
         }
     }
-    
-    private fun setupSettings() {
-        // Helper function to setup a toggle with theme styling
-        fun setupToggle(
-            binding: ItemCallerSettingBinding,
-            @StringRes titleResId: Int,
-            @StringRes descriptionResId: Int?,
-            key: String,
-            defaultValue: Boolean,
-            showDescription: Boolean = true
-        ) {
-            binding.textTitle.setText(titleResId)
-            if (showDescription) {
-                binding.textDescription.setText(descriptionResId ?: 0)
-                binding.textDescription.visibility = View.VISIBLE
-            } else {
-                binding.textDescription.text = ""
-                binding.textDescription.visibility = View.GONE
-            }
-            binding.switchToggle.visibility = View.VISIBLE
-            binding.switchToggle.isChecked = prefs.getBoolean(key, defaultValue)
-            binding.switchToggle.setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit().putBoolean(key, isChecked).apply()
-            }
-            // Apply theme-based styling using utility function
-            ThemeManager.applyToggleTheme(binding.switchToggle, this)
+
+    private fun bindSwitch(
+        switch: SwitchMaterial,
+        key: String,
+        defaultValue: Boolean,
+        afterChange: (() -> Unit)? = null
+    ) {
+        switch.isChecked = prefs.getBoolean(key, defaultValue)
+        ThemeManager.applyToggleTheme(switch, this)
+        switch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean(key, isChecked).apply()
+            afterChange?.invoke()
         }
-        
-        // Missed call
-        setupToggle(
-            ItemCallerSettingBinding.bind(binding.itemMissedCall.root),
-            R.string.caller_settings_missed_call_title,
-            R.string.caller_settings_missed_call_description,
-            KEY_MISSED_CALL,
-            true
-        )
-        
-        // Completed call
-        setupToggle(
-            ItemCallerSettingBinding.bind(binding.itemCompletedCall.root),
-            R.string.caller_settings_completed_call_title,
-            R.string.caller_settings_completed_call_description,
-            KEY_COMPLETED_CALL,
-            true
-        )
-        
-        // No answer
-        setupToggle(
-            ItemCallerSettingBinding.bind(binding.itemNoAnswer.root),
-            R.string.caller_settings_no_answer_title,
-            R.string.caller_settings_no_answer_description,
-            KEY_NO_ANSWER,
-            true
-        )
-        
-        // Unknown caller
-        setupToggle(
-            ItemCallerSettingBinding.bind(binding.itemUnknownCaller.root),
-            R.string.caller_settings_unknown_caller_title,
-            R.string.caller_settings_unknown_caller_description,
-            KEY_UNKNOWN_CALLER,
-            true
-        )
-        
-        // Show call info for contacts
-        setupToggle(
-            ItemCallerSettingBinding.bind(binding.itemShowCallInfo.root),
-            R.string.caller_settings_show_call_info_title,
-            null,
-            KEY_SHOW_CALL_INFO,
-            false,
-            false
-        )
-        
-        // Show reminders in notifications
-        setupToggle(
-            ItemCallerSettingBinding.bind(binding.itemShowReminders.root),
-            R.string.caller_settings_show_reminders_title,
-            null,
-            KEY_SHOW_REMINDERS,
-            true,
-            false
+    }
+
+    private fun updatePermissionWarning() {
+        val wantsContactInfo = prefs.getBoolean(KEY_SHOW_CALL_INFO, false)
+        val hasContactsPermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_CONTACTS
+        ) == PackageManager.PERMISSION_GRANTED
+        binding.contactPermission.visibility =
+            if (wantsContactInfo && !hasContactsPermission) View.VISIBLE else View.GONE
+    }
+
+    private fun openAppSettings() {
+        startActivity(
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+            }
         )
     }
-    
-    private fun setupBannerAd() {
-        binding.adViewBanner.loadBannerAdWithRemoteConfig()
+
+    private fun applyReferenceChrome() {
+        binding.root.setBackgroundColor(ContextCompat.getColor(this, R.color.callercad_screen_bg_light))
+        binding.toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.callercad_actionbar_bg))
+        binding.textHeading.setTextColor(ContextCompat.getColor(this, R.color.callercad_text_color_black))
+        window.statusBarColor = ContextCompat.getColor(this, R.color.callercad_actionbar_bg)
+        window.navigationBarColor = Color.WHITE
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = true
+            isAppearanceLightNavigationBars = true
+        }
     }
 }
-
