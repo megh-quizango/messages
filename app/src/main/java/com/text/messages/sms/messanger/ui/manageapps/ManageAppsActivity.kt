@@ -77,11 +77,8 @@ class ManageAppsActivity : BaseActivity() {
             }
             start()
         }
-        binding.imageLoading.animate()
-            .rotationBy(360f)
-            .setDuration(1800L)
-            .setInterpolator(LinearInterpolator())
-            .start()
+        binding.animationScan1.playAnimation()
+        binding.animationScan3.playAnimation()
         handler.postDelayed(openDetailRunnable, 1900L)
     }
 

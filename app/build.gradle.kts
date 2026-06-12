@@ -190,6 +190,7 @@ dependencies {
 
     // Shimmer Effect for Loading
     implementation("com.facebook.shimmer:shimmer:0.5.0")
+    implementation("com.airbnb.android:lottie:6.5.2")
 
     // Google Fonts
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
