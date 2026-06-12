@@ -113,7 +113,7 @@
             android:layout_height="match_parent"
             android:contentDescription="@string/gen_activity_manage_apps_content_description_5"
             app:lottie_autoPlay="true"
-            app:lottie_colorFilter="#FFFFFF"
+            app:lottie_colorFilter="@android:color/white"
             app:lottie_loop="true"
             app:lottie_rawRes="@raw/anim_scanner3" />
 
@@ -123,7 +123,7 @@
             android:layout_height="165dp"
             android:layout_gravity="center"
             app:lottie_autoPlay="true"
-            app:lottie_colorFilter="#FFFFFF"
+            app:lottie_colorFilter="@android:color/white"
             app:lottie_loop="true"
             app:lottie_rawRes="@raw/anim_scanner2" />
 
